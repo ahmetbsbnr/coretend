@@ -6,6 +6,7 @@ import ProductContract
 import AppShell
 import SafetyCore
 import Domain
+import Persistence
 
 /// The Clean space: every rule read at once, grouped by what it is, safe items already ticked,
 /// one review, one move to the Trash, and an Undo that puts everything back.
@@ -344,8 +345,12 @@ struct CleanView: View {
         Task { @MainActor in
             defer { busy = false }
             var putBack = 0
+            let store = try? await LocalStoreAccess.open()
             for entry in moved {
-                if (try? TrashRestorer().restore(entry.trash, to: entry.original)) != nil { putBack += 1 }
+                if (try? TrashRestorer().restore(entry.trash, to: entry.original)) != nil {
+                    putBack += 1
+                    try? await store?.append(ActivityEvent(id: UUID(), occurredAt: .now, kind: .restoredFromTrash, detail: entry.original.path))
+                }
             }
             lastMoved = []
             flight.landed = 0

@@ -140,7 +140,7 @@ struct SystemSnapshotView: View {
 
     @ViewBuilder private func eventLeaf(_ kind: ActivityKind) -> some View {
         switch kind {
-        case .movedToTrash, .migrationImported: RiskLeaf(.low, size: 12)
+        case .movedToTrash, .migrationImported, .restoredFromTrash: RiskLeaf(.low, size: 12)
         case .failed: RiskLeaf(.high, size: 12)
         default: RiskLeafShape(level: .low).stroke(Palette.secondaryInk.color, lineWidth: 1.2)
         }

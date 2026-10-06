@@ -1,7 +1,7 @@
 import Foundation
 import CSQLite
 
-public enum ActivityKind: String, Codable, CaseIterable, Sendable { case proposed, approved, refused, cancelled, movedToTrash, failed, migrationImported }
+public enum ActivityKind: String, Codable, CaseIterable, Sendable { case proposed, approved, refused, cancelled, movedToTrash, failed, migrationImported, restoredFromTrash }
 
 public struct ActivityEvent: Codable, Equatable, Sendable {
     public let id: UUID

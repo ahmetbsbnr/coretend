@@ -159,7 +159,7 @@ struct IntegrityView: View {
     private var survey: some View {
         SerreParcel {
             VStack(alignment: .leading, spacing: 12) {
-                Text(french ? "Toute la pépinière" : "The whole nursery").font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
+                Text(french ? "Toutes les apps d’un dossier" : "Every app in a folder").font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
                     .accessibilityAddTraits(.isHeader)
                 Text(french ? "Étiquette toutes les apps d’un dossier en une passe : signature et marqueur de quarantaine, sans rien modifier."
                             : "Labels every app of a folder in one pass: signature and quarantine marker, changing nothing.")

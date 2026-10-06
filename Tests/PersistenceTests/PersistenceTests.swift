@@ -63,6 +63,18 @@ final class PersistenceTests: XCTestCase {
         XCTAssertEqual(version, 5)
     }
 
+    func testAPutBackFromTheTrashIsRecordedAndReadBack() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-store-restore-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = try SQLiteStore(url: root.appendingPathComponent("fixture.sqlite"))
+        try await store.migrate()
+        try await store.append(ActivityEvent(id: UUID(), occurredAt: .now, kind: .restoredFromTrash, detail: "/fixture/cache"))
+        let events = try await store.events()
+        XCTAssertEqual(events.map(\.kind), [.restoredFromTrash])
+        XCTAssertEqual(events.first?.detail, "/fixture/cache")
+    }
+
     func testAppendAndQueryEventsInTimestampOrder() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-store-\(UUID())", isDirectory: true)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
