@@ -28,6 +28,8 @@ struct ApplicationsView: View {
     @State private var associationStatus: String?
     @State private var selectedRoot: URL?
     @State private var removalApp: ApplicationRecord?
+    /// The files the app left in the Library, offered with it.
+    @State private var removalLeftovers: [AppLeftover] = []
     @State private var removalReview: ActionReview?
     @State private var removalDialogPresented = false
     @State private var removalService: FileActionService?
@@ -142,11 +144,16 @@ struct ApplicationsView: View {
             reviewAssociations(for: app, in: root)
         }
         // Fixture-only (captures): open the folder given by the environment, as if chosen.
-        .task { if selectedRoot == nil, let root = CoreTendPreferences().fixtureScanRoot { discover(root) } }
+        // The apps are read on arrival: the fixture's folder in captures, else the first Applications folder.
+        .task {
+            guard selectedRoot == nil else { return }
+            if let root = CoreTendPreferences().fixtureScanRoot { discover(root) }
+            else if let first = ApplicationFolders.candidates(home: HomeFolder.url).first { discover(first) }
+        }
         .onDisappear { task?.cancel(); scanning = false; if removalReview != nil { cancelRemoval() } }
-        .confirmationDialog(french ? "Déplacer l’app vers la Corbeille macOS ?" : "Move app to macOS Trash?",
+        .confirmationDialog(french ? "Désinstaller \(removalApp?.displayName ?? "l’app") ?" : "Uninstall \(removalApp?.displayName ?? "the app")?",
                             isPresented: $removalDialogPresented, titleVisibility: .visible) {
-            Button(french ? "Déplacer le bundle" : "Move app bundle", role: .destructive) { beginRemoval() }
+            Button(french ? "Placer dans la Corbeille" : "Move to Trash", role: .destructive) { beginRemoval() }
             Button(copy("common.cancel"), role: .cancel) { cancelRemoval() }
                 // Return cancels: a move to the Trash is only ever a deliberate click.
                 .keyboardShortcut(.defaultAction)
@@ -310,18 +317,6 @@ struct ApplicationsView: View {
     private func actions(_ app: ApplicationRecord) -> some View {
         HStack(spacing: 10) {
             Button {
-                associationApp = app
-                associationResults = []
-                associationEvidence = [:]
-                associationStatus = nil
-                selectingAssociationFolder = true
-            } label: {
-                Label { Text(copy("apps.associated")) } icon: { Image(systemName: "doc.text.magnifyingglass") }
-            }
-            .buttonStyle(.serre(.secondary))
-            .disabled(locked)
-            .accessibilityHint(french ? "Choisissez un dossier précis. Aucun fichier ne sera modifié et aucune attribution ne sera déduite." : "Choose a specific folder. No files will be changed and ownership will not be inferred.")
-            Button {
                 NSWorkspace.shared.activateFileViewerSelecting([app.url])
             } label: {
                 Label { Text(copy("apps.reveal")) } icon: { Image(systemName: "folder") }
@@ -333,7 +328,7 @@ struct ApplicationsView: View {
             }
             .buttonStyle(.serre(.secondary))
             .disabled(locked)
-            .accessibilityHint(french ? "Seul ce bundle sera proposé, après revue, revalidation et confirmation." : "Only this app bundle will be proposed, after review, revalidation, and confirmation.")
+            .accessibilityHint(french ? "L’app et les fichiers qu’elle a laissés vont à la Corbeille, après confirmation." : "The app and the files it left go to the Trash, after confirmation.")
         }
         .padding(.leading, 54).padding(.bottom, 10)
     }
@@ -374,12 +369,19 @@ struct ApplicationsView: View {
             removalScopeHeld = root.startAccessingSecurityScopedResource()
             removalScopedRoot = root
             let store = try await LocalStoreAccess.open()
-            let rule = "apps.uninstall"
-            let allowed = Set([rule])
-            let executor = SafeActionExecutor(allowedRoots: [root], allowedRules: allowed, trash: AppTrashClient.make())
+            let rule = "apps.uninstall", leftoverRule = "apps.leftovers"
+            let allowed = Set([rule, leftoverRule])
+            let finder = AppLeftoverFinder(home: HomeFolder.url)
+            let leftovers = await Task.detached(priority: .userInitiated) {
+                finder.find(bundleIdentifier: app.bundleIdentifier, displayName: app.displayName)
+            }.value
+            let roots = [root, finder.root]
+            let executor = SafeActionExecutor(allowedRoots: roots, allowedRules: allowed, trash: AppTrashClient.make())
             let service = FileActionService(validator: .init(), executor: executor, store: store,
-                                            allowedRoots: [root], allowedRuleIDs: allowed)
-            let review = try service.prepareReview([FileActionSelection(url: app.url, ruleID: rule, expectedIdentity: app.fileIdentity)])
+                                            allowedRoots: roots, allowedRuleIDs: allowed)
+            let review = try service.prepareReview([FileActionSelection(url: app.url, ruleID: rule, expectedIdentity: app.fileIdentity)]
+                + leftovers.map { FileActionSelection(url: $0.url, ruleID: leftoverRule) })
+            removalLeftovers = leftovers
             guard await service.recordProposal(review) else {
                 notice = PageNotice(kind: .error, title: french ? "Journal indisponible; déplacement bloqué." : "History unavailable; move blocked.", nearActions: true)
                 releaseRemovalScope()
@@ -397,9 +399,16 @@ struct ApplicationsView: View {
 
     private var removalMessage: String {
         guard let app = removalApp else { return "" }
+        let size = ProductFormat.bytes(removalLeftovers.reduce(0) { $0 + $1.bytes }, french: french)
+        let names = removalLeftovers.prefix(6).map { "• " + HomeFolder.displayPath($0.url) }.joined(separator: "\n")
+        let more = removalLeftovers.count > 6 ? (french ? "\n… et \(removalLeftovers.count - 6) autres" : "\n… and \(removalLeftovers.count - 6) more") : ""
+        if removalLeftovers.isEmpty {
+            return french ? "\(app.url.path)\nAucun fichier laissé par l’app n’a été trouvé. L’app part à la Corbeille."
+                          : "\(app.url.path)\nNo file left by the app was found. The app goes to the Trash."
+        }
         return french
-            ? "\(app.displayName)\n\(app.bundleIdentifier)\n\(app.url.path)\nSeul ce bundle ira dans la Corbeille. Les données associées et héritées restent en place."
-            : "\(app.displayName)\n\(app.bundleIdentifier)\n\(app.url.path)\nOnly this bundle goes to Trash. Associated and legacy data stay in place."
+            ? "\(app.url.path)\net \(removalLeftovers.count) élément\(ProductFormat.frenchPlural(removalLeftovers.count)) laissé\(ProductFormat.frenchPlural(removalLeftovers.count)) par l’app (\(size)) :\n\(names)\(more)\nTout part à la Corbeille, rien n’est effacé."
+            : "\(app.url.path)\nand \(removalLeftovers.count) item\(removalLeftovers.count == 1 ? "" : "s") it left (\(size)):\n\(names)\(more)\nEverything goes to the Trash; nothing is erased."
     }
 
     private func beginRemoval() {
@@ -419,22 +428,25 @@ struct ApplicationsView: View {
             return
         }
         failures = [:]; flight.landed = 0; notice = nil
+        var appMoved = false
         let result = await executeShowingEachItem(service, batch, reduceMotion: reduceMotion) { item in
             guard item.moved else {
                 failures[item.targetURL] = item.failureKey
                 return
             }
+            guard item.targetURL.standardizedFileURL == app.url.standardizedFileURL else { return }
+            appMoved = true
             flight.send(item.targetURL, reduceMotion: reduceMotion)
             withAnimation(reduceMotion ? nil : MotionCurve.retreat.animation(duration: 0.2)) {
                 records.removeAll { $0.id == app.id }
             }
-            if associationApp?.id == app.id { associationApp = nil; associationResults = [] }
         }
-        notice = result.movedCount == 1
-            ? PageNotice(kind: .note, title: french ? "Bundle déplacé vers la Corbeille ; données associées inchangées." : "App bundle moved to Trash; associated data unchanged.",
-                         message: french ? "Il reste récupérable depuis la Corbeille de macOS." : "It can be restored from the macOS Trash.", nearActions: true)
-            : PageNotice(kind: .error, title: french ? "Le bundle est resté en place." : "The app bundle was left in place.",
-                         message: french ? "La ligne dit pourquoi ; rien n’a été effacé." : "Its row says why; nothing was erased.", nearActions: true)
+        removalLeftovers = []
+        notice = appMoved && result.movedCount == result.items.count
+            ? PageNotice(kind: .note, title: french ? "\(app.displayName) désinstallée : \(result.movedCount) élément\(ProductFormat.frenchPlural(result.movedCount)) dans la Corbeille."
+                                                    : "\(app.displayName) uninstalled: \(result.movedCount) item\(result.movedCount == 1 ? "" : "s") in the Trash.",
+                         message: french ? "Tout reste récupérable depuis la Corbeille de macOS." : "Everything can be restored from the macOS Trash.", nearActions: true)
+            : .moveOutcome(result, french: french)
     }
 
     private func cancelRemoval() {

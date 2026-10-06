@@ -913,4 +913,30 @@ extension FileActionServiceTests {
         XCTAssertEqual(calls, 0)
         XCTAssertEqual(try Data(contentsOf: copy), Data("same".utf8))
     }
+
+    func testLeftoversAreFoundOnlyAtKnownPlacesByExactIdentifierOrName() throws {
+        let home = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-leftovers-\(UUID())", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: home) }
+        let library = home.appendingPathComponent("Library")
+        for path in ["Application Support/com.example.notes/db", "Application Support/Example Notes/state",
+                     "Caches/com.example.notes/blob", "Containers/com.example.notes/Data/x",
+                     "Application Support/com.example.notesplus/other", "Caches/com.example.notes.helper/y"] {
+            let url = library.appendingPathComponent(path)
+            try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try Data(repeating: 1, count: 4096).write(to: url)
+        }
+        try FileManager.default.createDirectory(at: library.appendingPathComponent("Preferences/ByHost"), withIntermediateDirectories: true)
+        try Data().write(to: library.appendingPathComponent("Preferences/com.example.notes.plist"))
+        try Data().write(to: library.appendingPathComponent("Preferences/ByHost/com.example.notes.ABCD.plist"))
+
+        let found = AppLeftoverFinder(home: home).find(bundleIdentifier: "com.example.notes", displayName: "Example Notes")
+        let names = Set(found.map { $0.url.path.replacingOccurrences(of: library.path + "/", with: "") })
+        XCTAssertEqual(names, ["Application Support/com.example.notes", "Application Support/Example Notes",
+                               "Caches/com.example.notes", "Containers/com.example.notes",
+                               "Preferences/com.example.notes.plist", "Preferences/ByHost/com.example.notes.ABCD.plist"])
+        XCTAssertEqual(found.first { $0.url.lastPathComponent == "Example Notes" }?.evidence, .name)
+        XCTAssertTrue(AppLeftoverFinder(home: home).find(bundleIdentifier: "com.apple.Notes", displayName: "Notes").isEmpty,
+                      "Apple's apps are part of macOS")
+        XCTAssertTrue(AppLeftoverFinder(home: home).find(bundleIdentifier: "../escape", displayName: "Data").isEmpty)
+    }
 }
