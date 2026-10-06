@@ -10,26 +10,38 @@ public enum FullDiskAccessStatus: Equatable, Sendable {
 }
 
 public struct FullDiskAccessProbe: Sendable {
-    private let probe: URL
+    private let probes: [URL]
 
-    /// `home` is the person's home folder; the probe is the user's own privacy database, present on
-    /// every Mac and readable only with Full Disk Access.
+    /// `home` is the person's home folder. Several places only Full Disk Access opens are tried in
+    /// turn, because none exists on every Mac: the per-user privacy database (gone on recent
+    /// macOS), the system one, Safari's bookmarks and the Mail folder.
     public init(home: URL) {
-        probe = home.appendingPathComponent("Library/Application Support/com.apple.TCC/TCC.db")
+        probes = [
+            home.appendingPathComponent("Library/Application Support/com.apple.TCC/TCC.db"),
+            URL(fileURLWithPath: "/Library/Application Support/com.apple.TCC/TCC.db"),
+            home.appendingPathComponent("Library/Safari/Bookmarks.plist"),
+            home.appendingPathComponent("Library/Mail", isDirectory: true),
+        ]
     }
 
-    public init(probe: URL) { self.probe = probe }
+    public init(probes: [URL]) { self.probes = probes }
 
+    /// Granted when any existing probe can be read, denied when probes exist but none can,
+    /// unknown when none exists.
     public func status() -> FullDiskAccessStatus {
-        guard FileManager.default.fileExists(atPath: probe.path) else { return .unknown }
-        do {
-            let handle = try FileHandle(forReadingFrom: probe)
-            defer { try? handle.close() }
-            _ = try handle.read(upToCount: 1)
-            return .granted
-        } catch {
-            return .denied
+        var anyExists = false
+        for probe in probes {
+            var isDirectory: ObjCBool = false
+            guard FileManager.default.fileExists(atPath: probe.path, isDirectory: &isDirectory) else { continue }
+            anyExists = true
+            if isDirectory.boolValue {
+                if (try? FileManager.default.contentsOfDirectory(atPath: probe.path)) != nil { return .granted }
+            } else if let handle = try? FileHandle(forReadingFrom: probe) {
+                defer { try? handle.close() }
+                if (try? handle.read(upToCount: 1)) != nil { return .granted }
+            }
         }
+        return anyExists ? .denied : .unknown
     }
 
     /// The pane of System Settings where Full Disk Access is granted.

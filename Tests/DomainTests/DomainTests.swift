@@ -939,4 +939,18 @@ extension FileActionServiceTests {
                       "Apple's apps are part of macOS")
         XCTAssertTrue(AppLeftoverFinder(home: home).find(bundleIdentifier: "../escape", displayName: "Data").isEmpty)
     }
+
+    func testFullDiskAccessProbeTriesEachPlaceAndOnlySaysUnknownWhenNoneExists() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-fda-\(UUID())", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        let missing = root.appendingPathComponent("missing.db")
+        XCTAssertEqual(FullDiskAccessProbe(probes: [missing]).status(), .unknown)
+        let readable = root.appendingPathComponent("readable.db")
+        try Data([1]).write(to: readable)
+        XCTAssertEqual(FullDiskAccessProbe(probes: [missing, readable]).status(), .granted, "a later probe is tried when the first is absent")
+        let folder = root.appendingPathComponent("Mail", isDirectory: true)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        XCTAssertEqual(FullDiskAccessProbe(probes: [missing, folder]).status(), .granted)
+    }
 }

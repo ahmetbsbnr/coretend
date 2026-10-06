@@ -348,8 +348,12 @@ struct CleanView: View {
                 if (try? TrashRestorer().restore(entry.trash, to: entry.original)) != nil { putBack += 1 }
             }
             lastMoved = []
+            flight.landed = 0
             notice = PageNotice(kind: putBack == moved.count ? .note : .partial,
                                 title: french ? "\(putBack) remis en place sur \(moved.count)." : "\(putBack) of \(moved.count) put back.",
+                                message: putBack == moved.count ? nil
+                                    : (french ? "Les autres ont déjà été recréés par leur app ; leur copie reste dans la Corbeille, rien n’est écrasé."
+                                              : "The others were already recreated by their app; their copy stays in the Trash, nothing is overwritten."),
                                 nearActions: true)
             start()
         }

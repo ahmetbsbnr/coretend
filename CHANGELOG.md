@@ -1,5 +1,22 @@
 # Changelog
 
+## 2.1.1 — 2026-10-06
+
+Fixes found while testing 2.1 on a real Mac.
+
+- **Full Disk Access is detected again on recent macOS.** The per-user privacy database CoreTend
+  read no longer exists, so the first launch stayed on "Open System Settings" and the Home never
+  said access was missing. CoreTend now tries several protected places.
+- **Space on a large home folder**: results now reach the window once, at the end, instead of
+  ten times a second. On a 356,000-file home the window took 237 s where the scan engine alone
+  takes about 40 s; this removes that overhead.
+- **Uninstall** offers only the app when another copy with the same identifier is installed, so
+  it never takes the files that copy still uses.
+- **Undo** says why some items stayed in the Trash (their app had already recreated them), and
+  the Trash counter starts again at zero.
+- **VoiceOver**: the Undo and Open System Settings buttons are their own elements again.
+
+
 ## 2.1.0 — 2026-10-06
 
 CoreTend leaves the Mac App Store and becomes a complete, free app without a sandbox.

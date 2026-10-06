@@ -548,6 +548,9 @@ struct ExploreScanView: View {
                 let engine = LocalScanEngine()
                 let exclusions = try await LocalStoreAccess.exclusions()
                 let request = ScanRequest(roots: [ScanRoot(url: root, ruleID: .explore)], exclusions: exclusions)
+                // Results gather here and reach the view once, when the scan finishes: the page only
+                // shows the count while reading, and publishing every batch re-ran the view for nothing.
+                var collected: [ScanResult] = []
                 for try await batch in engine.scan(request).batched() {
                     guard !Task.isCancelled, activeScanID == scanID else { return }
                     var found: [ScanResult] = []
@@ -559,7 +562,8 @@ struct ExploreScanView: View {
                             if path == root.path { rootFailure = reason } else { partialFailures.insert(reason) }
                         case .finished:
                             // Everything read so far is in place before the scan is called finished.
-                            results.append(contentsOf: found); found = []; resultsVersion += 1
+                            collected.append(contentsOf: found); found = []
+                            results = collected; collected = []; resultsVersion += 1
                             if let latestCompleted { scanCompletedFiles = latestCompleted }
                             if recentFilesEnabled {
                                 let measured = results.suffix(SQLiteStore.maximumRecentFiles)
@@ -593,7 +597,7 @@ struct ExploreScanView: View {
                         case .progress(let completed): latestCompleted = completed
                         }
                     }
-                    if !found.isEmpty { results.append(contentsOf: found); resultsVersion += 1 }
+                    if !found.isEmpty { collected.append(contentsOf: found) }
                     if let latestCompleted { scanCompletedFiles = latestCompleted }
                 }
             } catch is CancellationError {
