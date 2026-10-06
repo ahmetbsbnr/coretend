@@ -7,7 +7,6 @@ import DesignSystem
 
 struct SettingsView: View {
     let french: Bool
-    @Binding var language: String
     @Binding var appearance: AppearancePreference
     @Binding var recentFilesEnabled: Bool
     @Binding var menuBarEnabled: Bool
@@ -61,11 +60,6 @@ struct SettingsView: View {
                 VStack(alignment: .leading, spacing: 14) {
                     if let status { SerreBanner(.note, title: status) }
                     if tab == "general" {
-                    section(french ? "Langue" : "Language") {
-                        choices([("system", ProductCopy.value(for: "settings.system", french: french)), ("fr", "Français"), ("en", "English")],
-                                selection: $language)
-                            .onChange(of: language) { _, value in Task { try? await store?.saveLanguagePreference(value) } }
-                    }
                     section(french ? "Apparence" : "Appearance") {
                         choices([(AppearancePreference.system, french ? "Système" : "System"),
                                  (AppearancePreference.light, french ? "Clair" : "Light"),
@@ -355,7 +349,6 @@ struct SettingsView: View {
             store = local
             let outcome = try await LegacyPreferencesImporter().importCopy(preview, into: local)
             exclusions = try await local.exclusions()
-            if let importedLanguage = preview.language { language = importedLanguage }
             status = french ? (outcome == .imported ? "Préférences importées; source conservée." : "Déjà importées; aucune copie répétée.") : (outcome == .imported ? "Preferences imported; source preserved." : "Already imported; no duplicate copy.")
         } catch { status = french ? "Import échoué; source conservée." : "Import failed; source preserved." }
     }

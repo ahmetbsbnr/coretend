@@ -40,7 +40,6 @@ final class CoreTendPreferencesTests: XCTestCase {
         ])
 
         preferences.saveLastDestination("record")
-        preferences.saveLanguage("fr")
         preferences.saveOnboardingCompleted(true)
         preferences.saveRecentFilesEnabled(true)
         preferences.saveMenuBarEnabled(true)
@@ -85,10 +84,20 @@ final class CoreTendPreferencesTests: XCTestCase {
         XCTAssertEqual(preferences.resolvedLanguage(storedValue: "en"), "system")
     }
 
-    func testProductionStoredLanguageRemainsSupported() {
+    func testProductionLanguageFollowsTheSystemAndIgnoresAStoredChoice() {
         let preferences = CoreTendPreferences(environment: [:])
 
-        XCTAssertEqual(preferences.resolvedLanguage(storedValue: "fr"), "fr")
+        XCTAssertEqual(preferences.resolvedLanguage(storedValue: "fr"), "system")
+        XCTAssertEqual(preferences.resolvedLanguage(storedValue: nil), "system")
+    }
+
+    func testSystemLanguageIsFrenchOnlyWhenMacOSPrefersFrench() {
+        XCTAssertTrue(AppLanguage.usesFrench("system", preferred: ["fr-FR", "en-US"]))
+        XCTAssertTrue(AppLanguage.usesFrench("system", preferred: ["fr-CA"]))
+        XCTAssertFalse(AppLanguage.usesFrench("system", preferred: ["de-DE", "fr-FR"]))
+        XCTAssertFalse(AppLanguage.usesFrench("system", preferred: ["tr-TR"]))
+        XCTAssertFalse(AppLanguage.usesFrench("system", preferred: []))
+        XCTAssertTrue(AppLanguage.usesFrench("fr", preferred: ["en-US"]))
     }
 
     func testAppearanceOverrideAppliesOnlyInFixtureMode() {

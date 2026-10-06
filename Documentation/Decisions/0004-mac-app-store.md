@@ -1,6 +1,6 @@
 # 0004 — CoreTend sur le Mac App Store
 
-**Date :** 29-09-2026 · **Statut :** acceptée par le mainteneur
+**Date :** 29-09-2026 · **Statut :** remplacée par 0005 (06-10-2026)
 
 ## Contexte
 

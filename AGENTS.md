@@ -44,7 +44,9 @@ maintenance seulement.
 - Tests et captures uniquement sur fixtures temporaires et fausse Corbeille ; jamais
   le vrai HOME, le vrai store CoreTend ni la vraie Corbeille. Dans l’app packagée,
   ne jamais confirmer un déplacement.
-- Zéro dépendance runtime, aucune télémétrie, aucun réseau silencieux.
+- Aucune télémétrie, aucun réseau silencieux (seule la mise à jour Sparkle parle au réseau, désactivable).
+  Toute dépendance runtime est justifiée dans le README.
+- Décision 0005 (06-10-2026) : plus d'App Store ni de sandbox ; langue = système (français sinon anglais).
 - Ne pas affirmer espace libéré, absence de malware, propriété d’un fichier, statut
   de release ou accessibilité sans preuve.
 

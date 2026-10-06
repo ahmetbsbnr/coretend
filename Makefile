@@ -1,6 +1,6 @@
-PY_TARGETS = generate-manifest build-site site-check traceability safety-audit architecture-audit uninstall-smoke app-runtime-smoke clean-release-build-smoke test-cli-interrupt benchmark-scan capture-kit-check capture-screens test-native-ui appstore-check
+PY_TARGETS = generate-manifest build-site site-check traceability safety-audit architecture-audit uninstall-smoke app-runtime-smoke clean-release-build-smoke test-cli-interrupt benchmark-scan capture-kit-check capture-screens test-native-ui
 
-.PHONY: package-release package-appstore appstore-check python-version capture-kit-check capture-screens test-native-ui test build generate-manifest build-site site-check traceability safety-audit architecture-audit install-smoke uninstall-smoke app-runtime-smoke clean-release-build-smoke test-cli-interrupt qualify package-local verify-package verify-install-package benchmark-scan
+.PHONY: package-release python-version capture-kit-check capture-screens test-native-ui test build generate-manifest build-site site-check traceability safety-audit architecture-audit install-smoke uninstall-smoke app-runtime-smoke clean-release-build-smoke test-cli-interrupt qualify package-local verify-package verify-install-package benchmark-scan
 
 # The scripts use Python 3.10 syntax. An older python3 (macOS ships 3.9 in /usr/bin)
 # fails deep inside a script, after others have already run, so check it first.
@@ -67,12 +67,7 @@ clean-release-build-smoke:
 	python3 -B -m unittest Scripts.test_clean_release_builds_unit Scripts.test_runtime_sqlite_scope Scripts.test_runtime_network_scope
 	python3 Scripts/test_clean_release_builds.py
 
-appstore-check:
-	python3 Scripts/check_appstore_listing.py
-	python3 -B -m unittest Scripts.test_appstore_export
-	bash -n Scripts/appstore_export.sh
-
-qualify: generate-manifest build-site site-check capture-kit-check appstore-check traceability safety-audit architecture-audit install-smoke uninstall-smoke app-runtime-smoke clean-release-build-smoke test test-cli-interrupt
+qualify: generate-manifest build-site site-check capture-kit-check traceability safety-audit architecture-audit install-smoke uninstall-smoke app-runtime-smoke clean-release-build-smoke test test-cli-interrupt
 
 test-cli-interrupt: build
 	python3 Scripts/test_cli_interrupt.py .build/debug/CoreTendCLI
@@ -90,13 +85,6 @@ benchmark-scan:
 	swift build -c release --product CoreTendCLI
 	python3 Scripts/benchmark_scan.py
 
-# The public build: CoreTend 2.0 replaces 1.x, so it keeps the 1.x bundle identifier.
+# The public build. CoreTend keeps the 1.x bundle identifier, so updates replace it in place.
 package-release:
-	CORETEND_BUNDLE_ID=com.ahmetbsbnr.coretend CORETEND_VERSION=2.0.0 CORETEND_BUILD=200 bash Scripts/package_local.sh
-
-# Mac App Store build: same app, signed with the App Sandbox entitlements. The upload re-signs it
-# with the distribution identity Xcode manages (Scripts/appstore_export.sh).
-package-appstore:
-	CORETEND_BUNDLE_ID=com.ahmetbsbnr.coretend CORETEND_VERSION=2.0.0 CORETEND_BUILD=$${CORETEND_BUILD:-201} bash Scripts/package_local.sh
-	codesign --force --sign - --entitlements Resources/AppStore/CoreTend.entitlements --options runtime Artifacts/CoreTend.app
-	codesign -d --entitlements - Artifacts/CoreTend.app 2>/dev/null | grep -q app-sandbox
+	CORETEND_BUNDLE_ID=com.ahmetbsbnr.coretend CORETEND_VERSION=2.1.0 CORETEND_BUILD=210 bash Scripts/package_local.sh
