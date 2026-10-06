@@ -2,6 +2,7 @@
 import hashlib
 import os
 import shutil
+import re
 import subprocess
 import tempfile
 from pathlib import Path
@@ -55,7 +56,11 @@ def main() -> None:
                 )
                 if result.returncode != 0:
                     raise RuntimeError(f"{build_name} {product} build failed:\n{result.stdout}")
-                if "warning:" in result.stdout.lower():
+                # SwiftPM's own package-cache notices ("warning: 'sparkle': skipping cache due to an
+                # error: …") come from the runner's shared cache, not from compiling CoreTend.
+                compiler_lines = [line for line in result.stdout.splitlines()
+                                  if not re.match(r"^warning: '[^']+': skipping cache", line.strip())]
+                if any("warning:" in line.lower() for line in compiler_lines):
                     raise RuntimeError(f"{build_name} {product} emitted a build warning:\n{result.stdout}")
 
                 executable = scratch / "release" / product
