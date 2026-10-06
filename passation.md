@@ -19,8 +19,7 @@ en fixture, invariants et particularités de l’hôte :
 - **06-10 — npm :** `coretend@2.1.0` publié. Le compte n'a qu'une passkey : publier avec
   `npx -y npm@12 stage publish --access public` (Node ≥ 22.22, ex. `/opt/homebrew/bin/node`),
   puis approuver sur npmjs.com › Staged Packages avec la passkey.
-- **Reste côté mainteneur :** retirer la soumission App Store dans App Store Connect ; `npm login`
-  puis publication npm ; sauvegarder la clé Sparkle (`generate_keys --account coretend -x fichier`).
+- **06-10 — clos :** soumission App Store retirée par le mainteneur ; clé Sparkle sauvegardée hors du Mac.
 
 - **04-10 (lenteurs) :** corrections de performance des analyses et build 202 exporté/signé ; upload bloqué par l’accès App Store Connect de Xcode ; vidéo de revue montée. Détail : journal P8 du 04-10.
 - **Reprise 04-10 :** motif confirmé (Guideline 2.1 — Information Needed, build 201) ; aucun défaut de code exigé. Audit : droits sandbox minimaux, aucun appel réseau ni URL dans `Sources`, pas de demande d’accès complet au disque. Copie de `/Applications` = PKG Organizer sans `_MASReceipt` (d’où le refus de lancement) → installer depuis TestFlight avant la vidéo. Brouillon de réponse mis à jour (macOS 27.0.1 26A434, dossier de démo). ASC non connecté dans Chrome/navigateur intégré : réponse non envoyée, rien resoumis.
