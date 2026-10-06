@@ -33,7 +33,7 @@ struct RecordView: View {
             SerreBanner(.note, title: copy("record.localNotice"))
             tools
             if loading && events.isEmpty {
-                Text(french ? "Chargement de l’herbier…" : "Loading the herbarium…")
+                Text(french ? "Chargement de l’historique…" : "Loading history…")
                     .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
             }
             if let message = errorMessage {
@@ -161,7 +161,7 @@ struct RecordView: View {
     /// What happened, as a leaf: moved and imported in green, failed split, the rest outlined.
     @ViewBuilder private func marker(_ kind: ActivityKind) -> some View {
         switch kind {
-        case .movedToTrash, .migrationImported: RiskLeaf(.low, size: 14)
+        case .movedToTrash, .migrationImported, .restoredFromTrash: RiskLeaf(.low, size: 14)
         case .failed: RiskLeaf(.high, size: 14)
         case .proposed, .approved:
             RiskLeafShape(level: .low).stroke(Palette.accent.color, lineWidth: 1.3).accessibilityHidden(true)

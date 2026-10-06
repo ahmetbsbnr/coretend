@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.1.2 — 2026-10-06
+
+More fixes from testing on a real Mac.
+
+- **History records Undo**: each item put back from the Trash appears as "Put back from the Trash".
+- **Plain words everywhere**: the last greenhouse terms ("herbarium", "nursery", "plant label",
+  "plot") are gone from History, Space and Startup and signatures.
+
+
 ## 2.1.1 — 2026-10-06
 
 Fixes found while testing 2.1 on a real Mac.

@@ -144,7 +144,7 @@ public extension CLIError {
 }
 
 public enum CoreTendCLIRunner {
-    public static let version = "2.1.1"
+    public static let version = "2.1.2"
 
     public static let helpText = """
     CoreTend — see what fills your Mac, clear it safely
