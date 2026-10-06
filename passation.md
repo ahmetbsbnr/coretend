@@ -16,6 +16,9 @@ en fixture, invariants et particularités de l’hôte :
   (`python3 Scripts/make_release_manifest.py --dir <dossier release> --version X.Y.Z --build N`,
   puis `gh release upload vX.Y.Z <dossier>/latest.json`) ; le portfolio le lit chaque semaine.
   Ajouté à v2.1.0 ; le portfolio affiche 2.1.0.
+- **06-10 — npm :** `coretend@2.1.0` publié. Le compte n'a qu'une passkey : publier avec
+  `npx -y npm@12 stage publish --access public` (Node ≥ 22.22, ex. `/opt/homebrew/bin/node`),
+  puis approuver sur npmjs.com › Staged Packages avec la passkey.
 - **Reste côté mainteneur :** retirer la soumission App Store dans App Store Connect ; `npm login`
   puis publication npm ; sauvegarder la clé Sparkle (`generate_keys --account coretend -x fichier`).
 
