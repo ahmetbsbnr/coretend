@@ -10,7 +10,7 @@ Your whole Mac in one click, caches and developer files cleaned in one review, a
 <p align="center">
   <a href="https://github.com/ahmetbsbnr/coretend/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/ahmetbsbnr/coretend?sort=semver&color=2C6E35&label=release"></a>
   <a href="https://www.npmjs.com/package/coretend"><img alt="npm" src="https://img.shields.io/npm/v/coretend?color=2C6E35&label=npm"></a>
-  <img alt="macOS 14+" src="https://img.shields.io/badge/macOS-14%2B%20·%20Apple%20silicon-0F2019">
+  <img alt="macOS 14+" src="https://img.shields.io/badge/macOS-14%2B%20·%20Apple%20silicon%20%2B%20Intel-0F2019">
   <img alt="Signed and notarized" src="https://img.shields.io/badge/Developer%20ID-notarized-2C6E35">
   <a href="LICENSE"><img alt="Apache 2.0" src="https://img.shields.io/badge/license-Apache--2.0-0F2019"></a>
 </p>
@@ -18,7 +18,7 @@ Your whole Mac in one click, caches and developer files cleaned in one review, a
 <p align="center">
   <a href="https://coretend.ahmetbsbnr.com">Website</a> ·
   <a href="https://coretend.ahmetbsbnr.com/en/download">Download</a> ·
-  <a href="CHANGELOG.md">What's new in 2.1</a> ·
+  <a href="CHANGELOG.md">What's new in 2.2</a> ·
   <a href="https://coretend.ahmetbsbnr.com/fr/index">Français</a>
 </p>
 
@@ -39,6 +39,15 @@ Your whole Mac in one click, caches and developer files cleaned in one review, a
 
 History of every scan and move stays at the sidebar's foot.
 
+## Around the Mac
+
+- **Shortcuts and Siri:** Get Free Space, Get Space to Clear, Open CoreTend (read and open only).
+- **Widget:** free space and what the last Clean found.
+- **Finder:** right-click a folder › Analyze with CoreTend; or drop it on the Dock icon.
+- **System features (optional):** tidy `/Library/Caches` and turn third-party system services on or
+  off through a small signed helper, installed only when you turn it on in Settings › System
+  ([decision 0006](Documentation/Decisions/0006-integrations-helper-intel.md)).
+
 ## What CoreTend will never do
 
 - **Erase anything for good.** Moves go to the macOS Trash after your review; CoreTend checks each
@@ -49,11 +58,11 @@ History of every scan and move stays at the sidebar's foot.
 
 ## Install
 
-- **Download** `CoreTend-2.1.2-arm64.dmg` (notarized) from [Releases](https://github.com/ahmetbsbnr/coretend/releases/latest) or the [site](https://coretend.ahmetbsbnr.com).
+- **Download** `CoreTend-2.2.0-universal.dmg` (notarized) from [Releases](https://github.com/ahmetbsbnr/coretend/releases/latest) or the [site](https://coretend.ahmetbsbnr.com).
 - **Homebrew:** `brew install --cask ahmetbsbnr/coretend/coretend` (also links `coretend` in your PATH)
 - **Terminal and AI assistants:** [`coretend` on npm](https://www.npmjs.com/package/coretend) — `npx coretend clean` · `npx -y coretend mcp`; see [CLI.md](Documentation/CLI.md).
 
-macOS 14 Sonoma or later, Apple silicon. English and French (follows macOS). CoreTend asks for Full
+macOS 14 Sonoma or later, Apple silicon or Intel. English and French (follows macOS). CoreTend asks for Full
 Disk Access once, to read Mail, Safari and app data; without it, it reads what macOS allows.
 
 ## Build from source
@@ -67,7 +76,9 @@ make package-local                  # an unsigned CoreTend.app in Artifacts/
 
 Swift 6, SwiftPM; one runtime dependency, [Sparkle](https://sparkle-project.org), for signed updates. The code is organised in modules: `DesignSystem` (the Serre
 design and the living greenhouse), `ScanCore` (read-only scanning), `SafetyCore` (the only code that
-may move a file — to the Trash), `Domain`, `Persistence`, `AppShell` and the app itself.
+may move a file — to the Trash), `Domain`, `Persistence`, `AppShell` and the app itself, plus
+the widget (`CoreTendWidget`), the Finder menu (`CoreTendFinder`) and the optional system helper
+(`CoreTendHelper`, `HelperProtocol`), which link no other package.
 
 ## Contributing
 

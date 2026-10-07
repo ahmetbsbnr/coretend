@@ -5,6 +5,7 @@ import DesignSystem
 import Observation
 import ScanCore
 import Domain
+import WidgetKit
 
 @main
 struct CoreTendApp: App {
@@ -87,6 +88,8 @@ final class CoreTendNavigation {
     /// The last read of every cleanup rule, shared by the Home and Clean spaces.
     var cleanupReport: CleanupSurveyReport?
     var cleanupReportDate: Date?
+    /// A folder to map as soon as the Space space shows (Finder, Dock, `coretend://scan`).
+    var pendingScanRoot: URL?
 
     init(language: String) {
         self.language = language
@@ -95,6 +98,22 @@ final class CoreTendNavigation {
 
     var usesFrench: Bool {
         AppLanguage.usesFrench(language)
+    }
+
+    /// A link from the widget, the Finder menu or Shortcuts, or a folder dropped on the Dock icon.
+    func open(_ url: URL) {
+        switch ExternalLink(url) {
+        case .open(let destination): selection = destination
+        case .scan(let folder): scan(folder)
+        case nil: break
+        }
+    }
+
+    private func scan(_ folder: URL) {
+        var isDirectory: ObjCBool = false
+        guard FileManager.default.fileExists(atPath: folder.path, isDirectory: &isDirectory), isDirectory.boolValue else { return }
+        selection = .space
+        pendingScanRoot = folder
     }
 }
 
@@ -180,6 +199,18 @@ private struct CoreTendRootView: View {
         .sheet(item: $navigation.activeSheet) { sheet in
             // Sheets are separate presentations and do not inherit the window's tint.
             sheetContent(sheet).tint(Palette.accent.color).buttonStyle(.serre(.secondary)).environment(updater)
+        }
+        .onOpenURL { navigation.open($0) }
+        // « Open CoreTend » from Shortcuts or Siri.
+        // The widget shows the last survey's total (a number and a date only).
+        .onChange(of: navigation.cleanupReport) { _, report in
+            guard let report, preferences.usesPersistentStorage else { return }
+            SharedSnapshot(reclaimableBytes: report.bytes, surveyedAt: navigation.cleanupReportDate ?? .now).save()
+            WidgetCenter.shared.reloadAllTimelines()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .coreTendOpenDestination)) { note in
+            guard let raw = note.object as? String else { return }
+            navigation.selection = Destination.restored(from: raw)
         }
         .onChange(of: navigation.selection) { _, destination in
             if let destination { preferences.saveLastDestination(destination.rawValue) }

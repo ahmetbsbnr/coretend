@@ -1,6 +1,6 @@
 # coretend
 
-CoreTend for the terminal and for AI assistants, on macOS (Apple silicon).
+CoreTend for the terminal and for AI assistants, on macOS (Apple silicon or Intel).
 
 ```sh
 npx coretend clean            # what can be cleaned; nothing moves

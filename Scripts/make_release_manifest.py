@@ -23,7 +23,7 @@ def facts(name):
     data = path.read_bytes()
     return hashlib.sha256(data).hexdigest(), len(data)
 
-zip_name, dmg_name = f"CoreTend-{args.version}-arm64.zip", f"CoreTend-{args.version}-arm64.dmg"
+zip_name, dmg_name = f"CoreTend-{args.version}-universal.zip", f"CoreTend-{args.version}-universal.dmg"
 zip_sha, zip_size = facts(zip_name)
 dmg_sha, dmg_size = facts(dmg_name)
 manifest = {
@@ -32,13 +32,14 @@ manifest = {
     "product": "CoreTend",
     "channel": "stable",
     "prerelease": False,
-    "architecture": "arm64",
+    "architecture": "universal",
+    "architectures": ["arm64", "x86_64"],
     "minimumMacOS": "14.0",
     "signed": True,
     "notarized": True,
     "knownLimitations": [
         "Developer ID signed (Team NSCUV5G738) and notarized by Apple; the app and DMG are stapled.",
-        "Built and tested on one physical Mac (arm64, macOS 27); macOS 14 and 15 not yet tested on hardware.",
+        "Universal (Apple silicon and Intel). Tested on one physical Mac (arm64, macOS 27); Intel, macOS 14 and 15 not yet tested on hardware.",
         "Full VoiceOver review not yet performed by a person.",
     ],
     "repositoryURL": "https://github.com/ahmetbsbnr/coretend",

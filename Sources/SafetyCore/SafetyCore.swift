@@ -209,3 +209,63 @@ public struct TrashRestorer: Sendable {
         try FileManager.default.moveItem(at: trashURL, to: original)
     }
 }
+
+public enum SystemCacheRefusal: Error, Equatable, Sendable {
+    /// Not a direct child of the system caches folder, an Apple cache, or a symbolic link.
+    case notASystemCache
+    /// The destination is not the person's own Trash folder.
+    case notATrashFolder
+    /// The system refused the rename (errno).
+    case moveFailed(Int32)
+}
+
+/// For the system helper only (it runs as root): moves one direct child of /Library/Caches into
+/// the Trash folder of the person who asked, under a free name. One rename between two folders
+/// held open without following links, so a link swapped in by anyone cannot redirect it; the item
+/// is never copied, never overwritten, never erased, and Undo (`TrashRestorer`) can put it back.
+public struct SystemCacheTrasher: Sendable {
+    public let cachesRoot: URL
+
+    public init(cachesRoot: URL = URL(fileURLWithPath: "/Library/Caches", isDirectory: true)) {
+        self.cachesRoot = cachesRoot.standardizedFileURL
+    }
+
+    /// Whether `item` is something this type may move: a direct child of the caches folder, not an
+    /// Apple cache, not a symbolic link.
+    public func accepts(_ item: URL) -> Bool {
+        let item = item.standardizedFileURL
+        guard item.deletingLastPathComponent().path == cachesRoot.path else { return false }
+        let name = item.lastPathComponent
+        guard !name.isEmpty, !name.hasPrefix("."), !name.lowercased().hasPrefix("com.apple.") else { return false }
+        var info = stat()
+        guard lstat(item.path, &info) == 0 else { return false }
+        return (info.st_mode & S_IFMT) != S_IFLNK
+    }
+
+    /// `trashFolder` must be a real folder named `.Trash` owned by `owner`.
+    public func trash(_ item: URL, into trashFolder: URL, owner: uid_t) throws -> URL {
+        let item = item.standardizedFileURL
+        guard accepts(item) else { throw SystemCacheRefusal.notASystemCache }
+        let trash = trashFolder.standardizedFileURL
+        guard trash.lastPathComponent == ".Trash" else { throw SystemCacheRefusal.notATrashFolder }
+        let source = Darwin.open(cachesRoot.path, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
+        guard source >= 0 else { throw SystemCacheRefusal.notASystemCache }
+        defer { close(source) }
+        let destination = Darwin.open(trash.path, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
+        guard destination >= 0 else { throw SystemCacheRefusal.notATrashFolder }
+        defer { close(destination) }
+        var info = stat()
+        guard fstat(destination, &info) == 0, info.st_uid == owner else { throw SystemCacheRefusal.notATrashFolder }
+        let name = item.lastPathComponent
+        var attempt = 1
+        while true {
+            let target = attempt == 1 ? name : "\(name) \(attempt)"
+            // RENAME_EXCL: an existing item in the Trash is never replaced.
+            if renameatx_np(source, name, destination, target, UInt32(RENAME_EXCL)) == 0 {
+                return trash.appendingPathComponent(target)
+            }
+            guard errno == EEXIST, attempt < 1000 else { throw SystemCacheRefusal.moveFailed(errno) }
+            attempt += 1
+        }
+    }
+}

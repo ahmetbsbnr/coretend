@@ -35,7 +35,7 @@ done
 
 xcrun stapler validate "$app_arg" >/dev/null || { printf 'App is not stapled; notarize it first\n' >&2; exit 65; }
 version=$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' "$app_arg/Contents/Info.plist")
-dmg="$output_arg/CoreTend-$version-arm64.dmg"
+dmg="$output_arg/CoreTend-$version-universal.dmg"
 [[ ! -e "$dmg" ]] || { printf 'Refusing to overwrite %s\n' "$dmg" >&2; exit 73; }
 
 stage=$(mktemp -d "${TMPDIR:-/tmp}/coretend-dmg.XXXXXX")

@@ -49,6 +49,13 @@ public struct PaletteRole: Sendable {
             return NSColor(srgbRed: value.red, green: value.green, blue: value.blue, alpha: 1)
         })
     }
+
+    /// A fixed color for one appearance. Widgets use it: their views are drawn by the system, which
+    /// does not run the dynamic color above.
+    public func color(for scheme: ColorScheme) -> Color {
+        let value = scheme == .dark ? dark : light
+        return Color(.sRGB, red: value.red, green: value.green, blue: value.blue)
+    }
 }
 
 public enum Palette {

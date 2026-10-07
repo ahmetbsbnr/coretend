@@ -7,6 +7,16 @@ en fixture, invariants et particularités de l’hôte :
 
 ## Où on en est
 
+- **07-10 — CoreTend 2.2 (décision 0006) :** binaire universel (Apple silicon + Intel, `CORETEND_UNIVERSAL=1`,
+  fichiers `CoreTend-<v>-universal.*`) ; Raccourcis/Siri (App Intents en lecture, métadonnées extraites par
+  `appintentsmetadataprocessor` dans `package_local.sh`) ; widget (`CoreTendWidget`, sandboxé, groupe
+  `NSCUV5G738.com.ahmetbsbnr.coretend`) ; extension Finder (`CoreTendFinder`) ; liens `coretend://open|scan`
+  et dossier déposé sur le Dock ; helper système optionnel (`CoreTendHelper` + `HelperProtocol`,
+  `SMAppService`, XPC, liste blanche, `SafetyCore.SystemCacheTrasher`). Kit de lancement :
+  `Documentation/Launch/Launch-kit.md` ; dossier Setapp : `Documentation/Distribution/Setapp.md`.
+  Construire avec la `swift` d'Xcode (`xcrun swift`) : une `swift` swiftly placée avant dans le PATH
+  ne trouve pas l'overlay SwiftUI de Quick Look.
+
 - **06-10 — CoreTend 2.1, app libre (décision 0005) :** App Store abandonné, sandbox retiré, 4 espaces
   (Accueil, Espace, Nettoyer, Apps), accès complet au disque, Nettoyer en une passe (14 règles) avec
   Annuler, désinstallation complète, Sparkle (clé EdDSA dans le trousseau, compte `coretend`),

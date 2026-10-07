@@ -1,5 +1,22 @@
 # Changelog
 
+## 2.2.0 — 2026-10-07
+
+CoreTend reaches every Mac and the rest of macOS.
+
+### New
+- **Intel Macs**: one universal app for Apple silicon and Intel, macOS 14 or later.
+- **Shortcuts and Siri**: « Get Free Space », « Get Space to Clear » and « Open CoreTend ». They
+  read and open; none moves a file.
+- **Widget**: your Mac's free space and what the last Clean found, on the desktop or in
+  Notification Center. Click it to open Clean.
+- **Finder**: right-click a folder › « Analyze with CoreTend » opens its map. Drop a folder on the
+  Dock icon for the same.
+- **System features (optional)**: turn them on in Settings › System to tidy the caches in
+  /Library/Caches and turn third-party system services on or off. A small signed helper does it,
+  only for CoreTend, only from a fixed list of requests; everything goes to your Trash, with Undo.
+  Turning it off removes the helper.
+
 ## 2.1.2 — 2026-10-06
 
 More fixes from testing on a real Mac.
