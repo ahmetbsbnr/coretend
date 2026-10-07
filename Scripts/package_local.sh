@@ -105,20 +105,27 @@ for size in 16 32 128 256 512; do
 done
 iconutil -c icns "$iconset" -o "$app_path/Contents/Resources/AppIcon.icns"
 # Shortcuts and Siri: Xcode's App Intents metadata, extracted from the compiler's constant values
-# (SwiftPM does not run the extractor), and the French titles and phrases.
+# (SwiftPM does not run the extractor), and the French titles and phrases. Older SwiftPM build
+# engines emit no constant values; only the public build requires them.
 intents_list="$stage_dir/intents-sources.txt"
 consts_list="$stage_dir/intents-consts.txt"
 ls "$repo_root"/Sources/CoreTendApp/*.swift > "$intents_list"
-find "$repo_root/.build/out/Intermediates.noindex/CoreTend.build/Release/CoreTendApp-p.build/Objects-normal/arm64" \
-  -name '*.swiftconstvalues' > "$consts_list"
-[[ -s "$consts_list" ]] || { printf 'No Swift constant values for the App Intents extractor.\n' >&2; exit 1; }
-swift_bin="$(xcrun --find swift)"
-xcrun appintentsmetadataprocessor --output "$app_path/Contents/Resources" \
-  --toolchain-dir "${swift_bin%/usr/bin/swift}" --module-name CoreTendApp --sdk-root "$(xcrun --show-sdk-path)" \
-  --xcode-version "$(xcodebuild -version | awk '/Build version/ {print $3}')" --platform-family macOS \
-  --deployment-target 14.0 --target-triple arm64-apple-macos14.0 --source-file-list "$intents_list" \
-  --swift-const-vals-list "$consts_list" --binary-file "$bin_dir/CoreTendApp" --force >/dev/null 2>&1
-[[ -f "$app_path/Contents/Resources/Metadata.appintents/extract.actionsdata" ]] || { printf 'App Intents metadata missing.\n' >&2; exit 1; }
+find "$repo_root/.build" -path '*CoreTendApp*' -path '*/Release/*' -path '*arm64*' -name '*.swiftconstvalues' > "$consts_list" 2>/dev/null || true
+if [[ -s "$consts_list" ]]; then
+  swift_bin="$(xcrun --find swift)"
+  xcrun appintentsmetadataprocessor --output "$app_path/Contents/Resources" \
+    --toolchain-dir "${swift_bin%/usr/bin/swift}" --module-name CoreTendApp --sdk-root "$(xcrun --show-sdk-path)" \
+    --xcode-version "$(xcodebuild -version | awk '/Build version/ {print $3}')" --platform-family macOS \
+    --deployment-target 14.0 --target-triple arm64-apple-macos14.0 --source-file-list "$intents_list" \
+    --swift-const-vals-list "$consts_list" --binary-file "$bin_dir/CoreTendApp" --force >/dev/null 2>&1 || true
+fi
+if [[ ! -f "$app_path/Contents/Resources/Metadata.appintents/extract.actionsdata" ]]; then
+  if [[ "${CORETEND_SPARKLE:-0}" == "1" ]]; then
+    printf 'App Intents metadata missing from the public build.\n' >&2
+    exit 1
+  fi
+  printf 'Note: no App Intents metadata in this local build (Shortcuts actions absent).\n' >&2
+fi
 ditto "$repo_root/Resources/Intents" "$app_path/Contents/Resources"
 cat > "$app_path/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
