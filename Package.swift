@@ -12,7 +12,10 @@ let package = Package(
         .library(name: "Domain", targets: ["Domain"]),
         .library(name: "DesignSystem", targets: ["DesignSystem"]),
         .executable(name: "CoreTendApp", targets: ["CoreTendApp"]),
-        .executable(name: "CoreTendCLI", targets: ["CoreTendCLI"])],
+        .executable(name: "CoreTendCLI", targets: ["CoreTendCLI"]),
+        .executable(name: "CoreTendWidget", targets: ["CoreTendWidget"]),
+        .executable(name: "CoreTendFinder", targets: ["CoreTendFinder"]),
+        .executable(name: "CoreTendHelper", targets: ["CoreTendHelper"])],
     // Sparkle: the one runtime dependency, for signed updates the person can turn off (decision 0005).
     dependencies: [.package(url: "https://github.com/sparkle-project/Sparkle", from: "2.7.0")],
     targets: [
@@ -22,9 +25,14 @@ let package = Package(
         .target(name: "AppShell"),
         .target(name: "DesignSystem"),
         .target(name: "Domain", dependencies: ["ProductContract", "SafetyCore", "Persistence"]),
-        .executableTarget(name: "CoreTendApp", dependencies: ["AppShell", "DesignSystem", "ProductContract", "Persistence", "ScanCore", "Domain",
+        .executableTarget(name: "CoreTendApp", dependencies: ["AppShell", "DesignSystem", "ProductContract", "Persistence", "ScanCore", "Domain", "HelperProtocol",
                                                               .product(name: "Sparkle", package: "Sparkle")],
                           linkerSettings: [.unsafeFlags(["-Xlinker", "-reproducible", "-Xlinker", "-rpath", "-Xlinker", "@executable_path/../Frameworks"])]),
+        // Extensions and the optional system helper (decision 0006), packaged inside CoreTend.app.
+        .executableTarget(name: "CoreTendWidget", dependencies: ["AppShell", "DesignSystem"]),
+        .executableTarget(name: "CoreTendFinder"),
+        .target(name: "HelperProtocol"),
+        .executableTarget(name: "CoreTendHelper", dependencies: ["HelperProtocol", "SafetyCore"]),
         .target(name: "CLIContract", dependencies: ["Persistence", "ScanCore", "Domain", "SafetyCore"]),
         .executableTarget(name: "CoreTendCLI", dependencies: ["CLIContract"],
                           linkerSettings: [.unsafeFlags(["-Xlinker", "-reproducible"], .when(configuration: .release))]),
@@ -37,6 +45,7 @@ let package = Package(
         .testTarget(name: "AppShellTests", dependencies: ["AppShell"]),
         .testTarget(name: "DesignSystemTests", dependencies: ["DesignSystem"]),
         .testTarget(name: "DomainTests", dependencies: ["Domain", "SafetyCore", "Persistence"]),
+        .testTarget(name: "HelperProtocolTests", dependencies: ["HelperProtocol"]),
         .testTarget(name: "CLIContractTests", dependencies: ["CLIContract", "SafetyCore", "ScanCore"])
     ]
 )

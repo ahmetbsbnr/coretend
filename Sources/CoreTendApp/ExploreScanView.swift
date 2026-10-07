@@ -18,6 +18,7 @@ struct ExploreScanView: View {
     let french: Bool
     @Binding var recentFilesEnabled: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(CoreTendNavigation.self) private var navigation
     @State private var selectingFolder = false
     @State private var scanning = false
     @State private var scanCompletedFiles = 0
@@ -149,6 +150,12 @@ struct ExploreScanView: View {
         }
         // Fixture-only (captures): open the folder given by the environment, as if chosen.
         .task { if selectedRoot == nil, let root = CoreTendPreferences().fixtureScanRoot { beginScan(root) } }
+        // A folder sent from the Finder or dropped on the Dock icon.
+        .task(id: navigation.pendingScanRoot) {
+            guard let root = navigation.pendingScanRoot else { return }
+            navigation.pendingScanRoot = nil
+            beginScan(root)
+        }
         .onDisappear {
             viewVisible = false
             scanTask?.cancel(); activeScanID = nil; scanning = false

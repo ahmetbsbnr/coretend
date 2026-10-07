@@ -11,8 +11,8 @@ const os = require("node:os");
 const path = require("node:path");
 const pkg = require("../package.json");
 
-if (process.platform !== "darwin" || process.arch !== "arm64") {
-  console.error("coretend runs on macOS with Apple silicon.");
+if (process.platform !== "darwin" || !["arm64", "x64"].includes(process.arch)) {
+  console.error("coretend runs on macOS (Apple silicon or Intel).");
   process.exit(1);
 }
 

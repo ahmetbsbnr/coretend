@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generate the CoreTend website: bilingual, static, no script, a living greenhouse in CSS.
 
-Pages: index, features, download, privacy, support, developer (EN and FR) and a language chooser.
+Pages: index, features, download, privacy, support, developer, press (EN and FR) and a language chooser.
 Release facts (version, date, download URL, SHA-256) come from Website/release.json; while it
 says the release is not published, every page says so and no download link is shown.
 """
@@ -16,7 +16,9 @@ from export_design_tokens import export_tokens
 ROOT = Path(__file__).resolve().parents[1]
 SITE = ROOT / "Website"
 LANGUAGES = ("en", "fr")
-ROUTES = ("index", "features", "download", "privacy", "support", "developer")
+ROUTES = ("index", "features", "download", "privacy", "support", "developer", "press")
+# The press kit is linked from the footer only.
+HEADER_ROUTES = ("features", "download", "privacy", "support", "developer")
 REPO = "https://github.com/ahmetbsbnr/coretend"
 NPM = "https://www.npmjs.com/package/coretend"
 TAP = "https://github.com/ahmetbsbnr/homebrew-coretend"
@@ -62,17 +64,30 @@ DESTINATIONS = {
 
 COPY = {
     "en": {
+        "press": {
+            "title": "Press kit",
+            "description": "CoreTend press kit: overview, verifiable facts, logos and screenshots, contact.",
+            "lead": "Everything you need to write about CoreTend: the facts, the visuals and a contact. Free to reuse.",
+            "sections": [
+                ("In one sentence", "CoreTend is a free, open-source Mac app that shows what fills the disk and clears it safely: everything goes through the Trash, with Undo."),
+                ("The facts", "Free, Apache 2.0, signed with Developer ID and notarized by Apple. Universal (Apple silicon and Intel), macOS 14 or later. No telemetry, no account. English and French."),
+                ("New in 2.2", "Intel Macs, a widget, Shortcuts and Siri actions, a Finder menu, optional system features through a signed helper."),
+                ("What it never does", "It never erases for good, shows no score or alarm, and invents no figure."),
+                ("Logos and screenshots", "App icon, mark and logotype in SVG and PNG, light and dark screenshots: in the GitHub repository, folders Resources/Brand and Website/screenshots."),
+                ("Contact", "Ahmet Basbunar — contact@ahmetbsbnr.com. Demos and questions welcome."),
+            ],
+        },
         "skip": "Skip to content", "nav_label": "Main navigation", "other": "Français", "note": "local care",
         "nav": {"index": "Home", "features": "Features", "download": "Download", "privacy": "Privacy",
-                "support": "Support", "developer": "Developers"},
+                "support": "Support", "developer": "Developers", "press": "Press"},
         "footer": "See what fills your Mac. Clear it safely. Free and open source, Apache 2.0.",
         "footer_links": "Explore",
-        "unpublished": "CoreTend 2.1 is almost ready. The download appears here on release day.",
+        "unpublished": "CoreTend 2.2 is almost ready. The download appears here on release day.",
         "cta_download": "Download for Mac", "cta_features": "See what it does",
-        "requirements": "macOS 14 Sonoma or later · Apple silicon · English and French",
+        "requirements": "macOS 14 Sonoma or later · Apple silicon or Intel · English and French",
         "home": {
             "title": "See what fills your Mac. Clear it safely.",
-            "description": "CoreTend 2.1 for macOS: see what takes space, clean caches and developer files, uninstall apps completely. Everything goes to the Trash. Free, open source, no telemetry.",
+            "description": "CoreTend 2.2 for macOS, on Apple silicon and Intel: see what takes space, clean caches and developer files, uninstall apps completely. Everything goes to the Trash. Free, open source, no telemetry.",
             "lead": "CoreTend reads your whole Mac, shows what takes the space and gives it back in one click — to the Trash, never erased, with Undo. Free, open source, and nothing leaves your Mac.",
             "tools_title": "Four spaces, one question each",
             "tools_lead": "No dashboard to decode: each space answers one question and has one main button.",
@@ -102,7 +117,7 @@ COPY = {
         },
         "features": {
             "title": "Everything CoreTend does",
-            "description": "The four spaces of CoreTend 2.1 — Home, Space, Clean and Apps — plus the command line and the MCP server for AI assistants.",
+            "description": "The four spaces of CoreTend 2.2 — Home, Space, Clean and Apps — plus the widget, Shortcuts, the Finder menu, the command line and the MCP server for AI assistants.",
             "lead": "Every space reads first and explains what it found. Nothing moves without your review, and everything that moves goes to the Trash.",
             "jump": "Jump to a space",
             "also_title": "Across the app",
@@ -111,11 +126,15 @@ COPY = {
                 ("For AI assistants", "coretend mcp lets Claude, Cursor and others ask what fills your disk — read-only."),
                 ("Signed updates", "Sparkle checks the site for a new version, only if you allow it, and installs it when you accept."),
                 ("Menu bar", "Optional: free space, memory and load at a glance."),
+                ("Widget", "Free space and what the last Clean found, on the desktop or in Notification Center."),
+                ("Shortcuts and Siri", "Get Free Space, Get Space to Clear, Open CoreTend. They read and open; none moves a file."),
+                ("Finder and Dock", "Right-click a folder › Analyze with CoreTend, or drop it on the Dock icon, to see its map."),
+                ("System features", "Optional: a small signed helper, installed from Settings › System, tidies /Library/Caches and turns third-party system services on or off — to the Trash, with Undo."),
             ],
         },
         "download": {
             "title": "Get CoreTend",
-            "description": "Download CoreTend for macOS 14 or later on Apple silicon: signed and notarized by Apple, free and open source. Also on Homebrew and npm.",
+            "description": "Download CoreTend for macOS 14 or later on Apple silicon or Intel: signed and notarized by Apple, free and open source. Also on Homebrew and npm.",
             "lead": "Free, signed with a Developer ID and notarized by Apple. It updates itself when you allow it.",
             "install_title": "Install",
             "install": [
@@ -124,9 +143,9 @@ COPY = {
                 ("Terminal and AI assistants", "npx coretend mcp"),
             ],
             "npm_link": "The coretend package on npm (command line and MCP server)",
-            "new_title": "New in 2.1",
-            "new": "Four spaces instead of eight tools. Your whole Mac in one click with Full Disk Access. Clean reads 14 rules at once — Xcode, simulators, npm, pnpm, Gradle, Cargo, Mail — and Undo puts things back. Apps uninstall completely. Signed automatic updates, a command line that cleans, and an MCP server for AI assistants.",
-            "from1": "Coming from 2.0? Download 2.1 once (or run brew upgrade); later versions arrive on their own.",
+            "new_title": "New in 2.2",
+            "new": "Intel Macs too: one universal app. A widget, Shortcuts and Siri actions, Analyze with CoreTend in the Finder and on the Dock icon, and optional system features for /Library/Caches and system services. Since 2.1: four spaces instead of eight tools. Your whole Mac in one click with Full Disk Access. Clean reads 14 rules at once — Xcode, simulators, npm, pnpm, Gradle, Cargo, Mail — and Undo puts things back. Apps uninstall completely. Signed automatic updates, a command line that cleans, and an MCP server for AI assistants.",
+            "from1": "Already on 2.1? CoreTend updates itself. Coming from 2.0? Download it once (or run brew upgrade).",
             "sha": "SHA-256 · DMG",
             "sha_dmg": "SHA-256 · ZIP",
             "dmg": "ZIP archive",
@@ -175,17 +194,30 @@ COPY = {
         },
     },
     "fr": {
+        "press": {
+            "title": "Kit presse",
+            "description": "Kit presse de CoreTend : présentation, faits vérifiables, logos et captures, contact.",
+            "lead": "Tout ce qu’il faut pour parler de CoreTend : les faits, les visuels et un contact. Libre de reprise.",
+            "sections": [
+                ("En une phrase", "CoreTend est une app Mac gratuite et open source qui montre ce qui remplit le disque et le libère sans risque : tout passe par la Corbeille, avec Annuler."),
+                ("Les faits", "Gratuite, Apache 2.0, signée Developer ID et notarisée par Apple. Universelle (Apple silicon et Intel), macOS 14 ou plus récent. Aucune télémétrie, aucun compte. Français et anglais."),
+                ("Nouveautés de la 2.2", "Mac Intel, widget, actions Raccourcis et Siri, menu du Finder, fonctions système optionnelles par un assistant signé."),
+                ("Ce qu’elle ne fait pas", "Elle n’efface rien pour de bon, n’affiche ni score ni alarme, et n’invente aucun chiffre."),
+                ("Logos et captures", "Icône, symbole et logotype en SVG et PNG, captures claires et sombres : dans le dépôt GitHub, dossiers Resources/Brand et Website/screenshots."),
+                ("Contact", "Ahmet Basbunar — contact@ahmetbsbnr.com. Démo et questions bienvenues."),
+            ],
+        },
         "skip": "Aller au contenu", "nav_label": "Navigation principale", "other": "English", "note": "entretien local",
         "nav": {"index": "Accueil", "features": "Fonctionnalités", "download": "Télécharger", "privacy": "Confidentialité",
-                "support": "Assistance", "developer": "Développeurs"},
+                "support": "Assistance", "developer": "Développeurs", "press": "Presse"},
         "footer": "Voyez ce qui remplit votre Mac. Libérez-le sans risque. Gratuit et open source, Apache 2.0.",
         "footer_links": "Explorer",
-        "unpublished": "CoreTend 2.1 est presque prête. Le téléchargement apparaîtra ici le jour de la sortie.",
+        "unpublished": "CoreTend 2.2 est presque prête. Le téléchargement apparaîtra ici le jour de la sortie.",
         "cta_download": "Télécharger pour Mac", "cta_features": "Voir ce qu’elle fait",
-        "requirements": "macOS 14 Sonoma ou plus récent · Apple silicon · français et anglais",
+        "requirements": "macOS 14 Sonoma ou plus récent · Apple silicon ou Intel · français et anglais",
         "home": {
             "title": "Voyez ce qui remplit votre Mac. Libérez-le sans risque.",
-            "description": "CoreTend 2.1 pour macOS : voyez ce qui prend de la place, nettoyez caches et fichiers de développement, désinstallez complètement vos apps. Tout part à la Corbeille. Gratuit, open source, sans télémétrie.",
+            "description": "CoreTend 2.2 pour macOS, sur Apple silicon et Intel : voyez ce qui prend de la place, nettoyez caches et fichiers de développement, désinstallez complètement vos apps. Tout part à la Corbeille. Gratuit, open source, sans télémétrie.",
             "lead": "CoreTend lit tout votre Mac, montre ce qui prend la place et vous la rend en un clic — à la Corbeille, jamais effacé, avec Annuler. Gratuit, open source, et rien ne quitte votre Mac.",
             "tools_title": "Quatre espaces, une question chacun",
             "tools_lead": "Pas de tableau de bord à déchiffrer : chaque espace répond à une question et a un seul bouton principal.",
@@ -215,7 +247,7 @@ COPY = {
         },
         "features": {
             "title": "Tout ce que fait CoreTend",
-            "description": "Les quatre espaces de CoreTend 2.1 — Accueil, Espace, Nettoyer et Apps — plus la ligne de commande et le serveur MCP pour les assistants IA.",
+            "description": "Les quatre espaces de CoreTend 2.2 — Accueil, Espace, Nettoyer et Apps — plus le widget, Raccourcis, le menu du Finder, la ligne de commande et le serveur MCP pour les assistants IA.",
             "lead": "Chaque espace lit d’abord et explique ce qu’il a trouvé. Rien ne bouge sans votre revue, et tout ce qui bouge part à la Corbeille.",
             "jump": "Aller à un espace",
             "also_title": "Dans toute l’app",
@@ -224,11 +256,15 @@ COPY = {
                 ("Pour les assistants IA", "coretend mcp permet à Claude, Cursor et d’autres de demander ce qui remplit votre disque — en lecture seule."),
                 ("Mises à jour signées", "Sparkle demande au site s’il existe une nouvelle version, seulement si vous l’autorisez, et l’installe quand vous acceptez."),
                 ("Barre des menus", "En option : espace libre, mémoire et charge d’un coup d’œil."),
+                ("Widget", "L’espace libre et ce que le dernier Nettoyer a trouvé, sur le bureau ou dans le centre de notifications."),
+                ("Raccourcis et Siri", "Obtenir l’espace libre, Obtenir l’espace à libérer, Ouvrir CoreTend. Elles lisent et ouvrent ; aucune ne déplace de fichier."),
+                ("Finder et Dock", "Clic droit sur un dossier › Analyser avec CoreTend, ou déposez-le sur l’icône du Dock, pour voir sa carte."),
+                ("Fonctions système", "En option : un petit assistant signé, installé depuis Réglages › Système, range /Library/Caches et active ou désactive les services tiers du système — à la Corbeille, avec Annuler."),
             ],
         },
         "download": {
             "title": "Obtenir CoreTend",
-            "description": "Téléchargez CoreTend pour macOS 14 ou plus récent sur Apple silicon : signée et notarisée par Apple, gratuite et open source. Aussi sur Homebrew et npm.",
+            "description": "Téléchargez CoreTend pour macOS 14 ou plus récent sur Apple silicon ou Intel : signée et notarisée par Apple, gratuite et open source. Aussi sur Homebrew et npm.",
             "lead": "Gratuite, signée avec un Developer ID et notarisée par Apple. Elle se met à jour seule si vous l’autorisez.",
             "install_title": "Installer",
             "install": [
@@ -237,9 +273,9 @@ COPY = {
                 ("Terminal et assistants IA", "npx coretend mcp"),
             ],
             "npm_link": "Le paquet coretend sur npm (ligne de commande et serveur MCP)",
-            "new_title": "Nouveautés de la 2.1",
-            "new": "Quatre espaces au lieu de huit outils. Tout votre Mac en un clic avec l’accès complet au disque. Nettoyer lit 14 règles d’un coup — Xcode, simulateurs, npm, pnpm, Gradle, Cargo, Mail — et Annuler remet tout en place. Apps désinstalle complètement. Mises à jour automatiques signées, une ligne de commande qui nettoie et un serveur MCP pour les assistants IA.",
-            "from1": "Vous avez la 2.0 ? Téléchargez la 2.1 une fois (ou lancez brew upgrade) ; les versions suivantes arriveront seules.",
+            "new_title": "Nouveautés de la 2.2",
+            "new": "Les Mac Intel aussi : une seule app universelle. Un widget, des actions Raccourcis et Siri, Analyser avec CoreTend dans le Finder et sur l’icône du Dock, et des fonctions système optionnelles pour /Library/Caches et les services du système. Depuis la 2.1 : quatre espaces au lieu de huit outils. Tout votre Mac en un clic avec l’accès complet au disque. Nettoyer lit 14 règles d’un coup — Xcode, simulateurs, npm, pnpm, Gradle, Cargo, Mail — et Annuler remet tout en place. Apps désinstalle complètement. Mises à jour automatiques signées, une ligne de commande qui nettoie et un serveur MCP pour les assistants IA.",
+            "from1": "Vous avez la 2.1 ? CoreTend se met à jour seule. Vous venez de la 2.0 ? Téléchargez-la une fois (ou lancez brew upgrade).",
             "sha": "SHA-256 · DMG",
             "sha_dmg": "SHA-256 · ZIP",
             "dmg": "Archive ZIP",
@@ -367,7 +403,7 @@ def route_url(lang: str, route: str) -> str:
 def header(lang: str, route: str) -> str:
     c = COPY[lang]
     links = "".join(f'<a href="{route_url(lang, r)}"{" aria-current=\"page\"" if r == route else ""}>{escape(c["nav"][r])}</a>'
-                    for r in ROUTES if r != "index")
+                    for r in HEADER_ROUTES)
     other = "fr" if lang == "en" else "en"
     return f"""<a class="skip-link" href="#main">{escape(c['skip'])}</a>
 <header class="site-header">

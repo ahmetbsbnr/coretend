@@ -87,4 +87,4 @@ benchmark-scan:
 
 # The public build. CoreTend keeps the 1.x bundle identifier, so updates replace it in place.
 package-release:
-	CORETEND_BUNDLE_ID=com.ahmetbsbnr.coretend CORETEND_VERSION=2.1.2 CORETEND_BUILD=212 CORETEND_SPARKLE=1 bash Scripts/package_local.sh
+	CORETEND_BUNDLE_ID=com.ahmetbsbnr.coretend CORETEND_VERSION=2.2.0 CORETEND_BUILD=220 CORETEND_SPARKLE=1 CORETEND_UNIVERSAL=1 bash Scripts/package_local.sh

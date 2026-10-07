@@ -1,0 +1,14 @@
+/* Shortcuts and Siri (Sources/CoreTendApp/CoreTendIntents.swift). */
+"Open CoreTend" = "Ouvrir CoreTend";
+"Opens CoreTend on the space you choose." = "Ouvre CoreTend sur l’espace choisi.";
+"Get Free Space" = "Obtenir l’espace libre";
+"Says how much space is free on the Mac's disk. Reads only." = "Indique l’espace libre sur le disque du Mac. Lecture seule.";
+"Get Space to Clear" = "Obtenir l’espace à libérer";
+"Reads every cleanup rule and says how much CoreTend could move to the Trash. Moves nothing." = "Lit toutes les règles de nettoyage et indique ce que CoreTend pourrait mettre à la Corbeille. Ne déplace rien.";
+"Space" = "Espace";
+"Home" = "Accueil";
+"Clean" = "Nettoyer";
+"Apps" = "Apps";
+"History" = "Historique";
+"Free Space" = "Espace libre";
+"Space to Clear" = "Espace à libérer";

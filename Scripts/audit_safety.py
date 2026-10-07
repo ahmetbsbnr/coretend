@@ -64,6 +64,16 @@ for file in (root/'Sources').rglob('*.swift'):
    errors.append('TrashRestorer no longer satisfies its out-of-Trash-only contract')
   else:
    text = text.replace(restore, '', 1)
+  # The system helper's one move: a direct, non-Apple child of /Library/Caches renamed, never
+  # overwriting, into a .Trash folder owned by the person, both folders opened without following links.
+  system_move = 'renameatx_np(source, name, destination, target, UInt32(RENAME_EXCL))'
+  system_guarded = ('guard accepts(item) else { throw SystemCacheRefusal.notASystemCache }' in text
+                    and 'trash.lastPathComponent == ".Trash"' in text
+                    and 'info.st_uid == owner' in text
+                    and text.count('O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC') == 2
+                    and '!name.lowercased().hasPrefix("com.apple.")' in text)
+  if text.count('renameatx_np(') != 1 or text.count(system_move) != 1 or not system_guarded:
+   errors.append('SystemCacheTrasher no longer satisfies its caches-to-Trash-only contract')
  for pattern in (r'FileManager\.(?:default\.)?removeItem', r'\bunlink\s*\(', r'FileManager\.(?:default\.)?moveItem', r'\.removeItem\s*\('):
   if re.search(pattern,text): errors.append(f'production mutation API in {file.relative_to(root)}: {pattern}')
 trash=[f for f in (root/'Sources').rglob('*.swift') if 'trashItem(' in f.read_text()]
@@ -82,8 +92,16 @@ network_patterns = (
  r'\b(?:connect|getaddrinfo|socket)\s*\(',
  r'\bProcess\s*\(',
 )
+# The system helper runs one program, launchctl, with arguments it builds itself (decision 0006).
+LAUNCHCTL_RUNNER = 'Sources/CoreTendHelper/Launchctl.swift'
 for file in (root/'Sources').rglob('*.swift'):
  text=file.read_text()
+ if file.relative_to(root).as_posix() == LAUNCHCTL_RUNNER:
+  executables = re.findall(r'executableURL\s*=\s*([^\n]+)', text)
+  if text.count('Process()') != 1 or executables != ['URL(fileURLWithPath: "/bin/launchctl")']:
+   errors.append('the helper may only run /bin/launchctl, from one place')
+  else:
+   text = text.replace('Process()', '', 1)
  for pattern in network_patterns:
   if re.search(pattern,text,re.MULTILINE):
    errors.append(f'network client or telemetry API in runtime: {file.relative_to(root)}: {pattern}')

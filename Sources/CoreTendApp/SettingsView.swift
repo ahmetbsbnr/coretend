@@ -43,7 +43,8 @@ struct SettingsView: View {
                 ForEach([("general", french ? "Général" : "General", SerreGlyph.settings),
                          ("access", french ? "Accès" : "Access", SerreGlyph.explore),
                          ("privacy", french ? "Confidentialité" : "Privacy", SerreGlyph.integrity),
-                         ("data", french ? "Données" : "Data", SerreGlyph.record)], id: \.0) { item in
+                         ("data", french ? "Données" : "Data", SerreGlyph.record),
+                         ("system", french ? "Système" : "System", SerreGlyph.cleanup)], id: \.0) { item in
                     Button {
                         withAnimation(MotionToken.standard.animation(reduceMotion: false)) { tab = item.0 }
                     } label: {
@@ -136,6 +137,9 @@ struct SettingsView: View {
                         Button(french ? "Prévisualiser l’export…" : "Preview export…") { Task { await buildDiagnosticPreview() } }
                             .buttonStyle(.serre(.secondary))
                     }
+                    }
+                    if tab == "system" {
+                        SystemToolsView(french: french) { title, help, content in section(title, help: help) { content } }
                     }
                     if tab == "data" {
                     section(french ? "Conservation des données" : "Data retention") {

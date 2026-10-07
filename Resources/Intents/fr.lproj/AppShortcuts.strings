@@ -1,0 +1,4 @@
+"How much space is free with ${applicationName}" = "Combien d’espace libre avec ${applicationName}";
+"What can ${applicationName} clear" = "Que peut libérer ${applicationName}";
+"Open ${applicationName}" = "Ouvrir ${applicationName}";
+"Open ${space} in ${applicationName}" = "Ouvrir ${space} dans ${applicationName}";
