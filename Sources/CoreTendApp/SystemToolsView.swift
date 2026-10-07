@@ -106,6 +106,8 @@ struct SystemToolsView<Section: View>: View {
                     }
                 }
                 .disabled(working)
+                .accessibilityLabel(daemon.label)
+                .accessibilityHint(daemon.program)
             }
         }
         Button(daemons == nil ? t("Lire les services", "Read services") : t("Relire", "Read again")) { Task { await loadDaemons() } }
