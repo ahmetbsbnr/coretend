@@ -3,6 +3,15 @@
     <channel>
         <title>CoreTend</title>
         <item>
+            <title>2.2.0</title>
+            <pubDate>Wed, 07 Oct 2026 09:36:53 +0200</pubDate>
+            <link>https://coretend.ahmetbsbnr.com</link>
+            <sparkle:version>220</sparkle:version>
+            <sparkle:shortVersionString>2.2.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/ahmetbsbnr/coretend/releases/download/v2.2.0/CoreTend-2.2.0-universal.zip" length="10201816" type="application/octet-stream" sparkle:edSignature="POQuSvv8RJOQQTZNw9NCB8fOqznoLZBMhZmy26LZRUX0ZxpcfTJdJTy4MT2TATLhbU9z0H5QQa8lHkmkukc7Bw=="/>
+        </item>
+        <item>
             <title>2.1.2</title>
             <pubDate>Tue, 06 Oct 2026 20:54:51 +0200</pubDate>
             <link>https://coretend.ahmetbsbnr.com</link>
