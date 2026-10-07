@@ -1,6 +1,6 @@
 {
   "name": "coretend",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "CoreTend for the terminal and AI assistants: see what fills your Mac, clear it safely (Trash only), and a read-only MCP server.",
   "keywords": ["macos", "disk", "cleanup", "storage", "mcp", "model-context-protocol", "cli"],
   "homepage": "https://coretend.ahmetbsbnr.com",
@@ -14,7 +14,7 @@
   "cpu": ["arm64", "x64"],
   "engines": { "node": ">=18" },
   "coretend": {
-    "url": "https://github.com/ahmetbsbnr/coretend/releases/download/v2.1.0/coretend-cli-2.1.0-arm64.zip",
-    "sha256": "027911bbff8d2b858f93b60d68bf604989ff246bf4580dff5fee6c7ffdf2d27b"
+    "url": "https://github.com/ahmetbsbnr/coretend/releases/download/v2.2.0/coretend-cli-2.2.0-universal.zip",
+    "sha256": "a1fbd17c79cdf9f10a61d010cd140c4f04863e4947ec0bf60e18b0a7de496da5"
   }
 }
