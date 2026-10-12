@@ -3,6 +3,7 @@ from html.parser import HTMLParser
 import json
 from pathlib import Path
 import re
+from xml.etree import ElementTree
 from urllib.parse import urlparse
 from site_accessibility_contract import reduced_motion_contract_errors
 root = Path(__file__).resolve().parents[1] / 'Website'
@@ -11,7 +12,7 @@ class Page(HTMLParser):
     def handle_starttag(self, tag, attrs):
         data=dict(attrs)
         if tag=='a' and data.get('href'): self.links.append(data['href'])
-        if tag=='script': self.scripts+=1
+        if tag=='script' and data.get('type')!='application/ld+json': self.scripts+=1
         if tag=='img':
             self.images.append(data.get('src') or '')
             if not (data.get('alt') or '').strip(): self.images.append('missing-alt')
@@ -51,6 +52,54 @@ for file in sorted(root.rglob('*.html')):
         if root not in target.parents and target != root: errors.append(f'{file}: link escapes Website: {link}')
         elif not target.is_file(): errors.append(f'{file}: missing target: {link}')
 if not (root/'_headers').is_file(): errors.append('missing static security headers')
+language_index=(root/'index.html').read_text()
+for expected in (
+    '<title>CoreTend for macOS — Safe storage analysis and cleanup</title>',
+    '<link rel="canonical" href="https://coretend.ahmetbsbnr.com/">',
+    'hreflang="en" href="https://coretend.ahmetbsbnr.com/en"',
+    'hreflang="fr" href="https://coretend.ahmetbsbnr.com/fr"',
+    'hreflang="x-default" href="https://coretend.ahmetbsbnr.com/"',
+    'og:title',
+    'storage analysis and cleanup',
+):
+    if expected not in language_index: errors.append(f'language chooser SEO metadata missing: {expected}')
+if 'choose your language' in language_index.lower(): errors.append('language chooser SEO title must describe CoreTend')
+origin='https://coretend.ahmetbsbnr.com'
+for lang in ('en','fr'):
+    for page in ('index','features','download','privacy','support','developer','press'):
+        route=f'/{lang}' + ('' if page=='index' else f'/{page}')
+        html=(root/lang/('index.html' if page=='index' else f'{page}.html')).read_text()
+        if f'<link rel="canonical" href="{origin}{route}">' not in html:
+            errors.append(f'{lang}/{page}: missing canonical URL')
+        for locale in ('en','fr'):
+            alternate=f'<link rel="alternate" hreflang="{locale}" href="{origin}{("/"+locale) + ("" if page=="index" else "/"+page)}">'
+            if alternate not in html: errors.append(f'{lang}/{page}: missing {locale} alternate URL')
+        if page=='index' and f'<link rel="alternate" hreflang="x-default" href="{origin}/">' not in html:
+            errors.append(f'{lang}/{page}: missing x-default language URL')
+for lang in ('en','fr'):
+    home_html=(root/lang/'index.html').read_text()
+    blocks=re.findall(r'<script type="application/ld\+json">(.*?)</script>', home_html, re.S)
+    if len(blocks)!=1: errors.append(f'{lang}/index: expected one SoftwareApplication JSON-LD block')
+    else:
+        try:
+            data=json.loads(blocks[0])
+            if data.get('@type')!='SoftwareApplication' or data.get('name')!='CoreTend': errors.append(f'{lang}/index: JSON-LD must describe CoreTend')
+        except json.JSONDecodeError as error: errors.append(f'{lang}/index: invalid JSON-LD: {error}')
+indexnow=[f for f in root.glob('*.txt') if re.fullmatch(r'[0-9a-f]{32}', f.stem)]
+if len(indexnow)!=1 or indexnow[0].read_text()!=indexnow[0].stem: errors.append('missing or invalid IndexNow key file')
+robots=root/'robots.txt'
+sitemap=root/'sitemap.xml'
+if not robots.is_file() or f'Sitemap: {origin}/sitemap.xml' not in robots.read_text():
+    errors.append('robots.txt must allow crawling and point to the sitemap')
+if not sitemap.is_file():
+    errors.append('missing sitemap.xml')
+else:
+    try:
+        sitemap_urls={node.text for node in ElementTree.parse(sitemap).iter('{http://www.sitemaps.org/schemas/sitemap/0.9}loc')}
+        expected_urls={f'{origin}/'} | {f'{origin}/{lang}' + ('' if page=='index' else f'/{page}') for lang in ('en','fr') for page in ('index','features','download','privacy','support','developer','press')}
+        if sitemap_urls != expected_urls: errors.append('sitemap.xml must list every canonical EN/FR route and the language landing page')
+    except ElementTree.ParseError as error:
+        errors.append(f'sitemap.xml is invalid: {error}')
 vercel_config=json.loads((root.parent/'vercel.json').read_text())
 for redirect in vercel_config.get('redirects', []):
     if redirect.get('source') in ('/en', '/fr'):

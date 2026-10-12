@@ -22,6 +22,9 @@ HEADER_ROUTES = ("features", "download", "privacy", "support", "developer")
 REPO = "https://github.com/ahmetbsbnr/coretend"
 NPM = "https://www.npmjs.com/package/coretend"
 TAP = "https://github.com/ahmetbsbnr/homebrew-coretend"
+SITE_ORIGIN = "https://coretend.ahmetbsbnr.com"
+# IndexNow key (Bing, Yandex, Seznam, Naver): public by design, served at /<key>.txt.
+INDEXNOW_KEY = "5f91602dd568b07d398aa2b512becf92"
 
 
 def channels(lang: str) -> str:
@@ -572,9 +575,41 @@ def simple(lang: str, route: str) -> str:
 </main>"""
 
 
+def structured_data(lang: str, rel: dict) -> str:
+    """schema.org SoftwareApplication for search engines; data only, never executed."""
+    data = {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "CoreTend",
+        "url": f"{SITE_ORIGIN}{route_url(lang, 'index')}",
+        "description": COPY[lang]["home"]["description"],
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "macOS 14 or later",
+        "softwareVersion": rel["version"],
+        "dateModified": rel["date"],
+        "downloadUrl": rel["url"],
+        "image": f"{SITE_ORIGIN}/brand/coretend-app-icon-1024.png",
+        "inLanguage": ["en", "fr"],
+        "isAccessibleForFree": True,
+        "license": "https://www.apache.org/licenses/LICENSE-2.0",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
+        "author": {"@type": "Person", "name": "Ahmet Basbunar"},
+        "sameAs": [REPO, NPM],
+    }
+    payload = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
+    return f'<script type="application/ld+json">{payload}</script>'
+
+
 def document(lang: str, route: str, rel: dict) -> str:
     page = COPY[lang]["home" if route == "index" else route]
-    other = "fr" if lang == "en" else "en"
+    canonical = f"{SITE_ORIGIN}{route_url(lang, route)}"
+    alternates = "\n  ".join(
+        f'<link rel="alternate" hreflang="{locale}" href="{SITE_ORIGIN}{route_url(locale, route)}">'
+        for locale in LANGUAGES
+    )
+    if route == "index":
+        alternates += f'\n  <link rel="alternate" hreflang="x-default" href="{SITE_ORIGIN}/">'
+    ld_json = "\n  " + structured_data(lang, rel) if route == "index" else ""
     body = {"index": lambda: home(lang, rel), "features": lambda: features(lang),
             "download": lambda: download(lang, rel)}.get(route, lambda: simple(lang, route))()
     return f"""<!doctype html>
@@ -584,15 +619,17 @@ def document(lang: str, route: str, rel: dict) -> str:
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="{escape(page['description'], quote=True)}">
   <meta name="theme-color" content="#0F2019">
-  <link rel="alternate" hreflang="{other}" href="../{other}/{file_name(route)}">
+  <link rel="canonical" href="{canonical}">
+  {alternates}
   <link rel="icon" href="../brand/coretend-mark-dark.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="../brand/coretend-app-icon-1024.png">
   <meta property="og:type" content="website">
   <meta property="og:title" content="{escape(page['title'], quote=True)} — CoreTend">
   <meta property="og:description" content="{escape(page['description'], quote=True)}">
-  <meta property="og:image" content="../brand/coretend-app-icon-1024.png">
+  <meta property="og:url" content="{canonical}">
+  <meta property="og:image" content="{SITE_ORIGIN}/brand/coretend-app-icon-1024.png">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'">
-  <title>{escape(page['title'])} — CoreTend</title>
+  <title>{escape(page['title'])} — CoreTend</title>{ld_json}
   <link rel="stylesheet" href="../design-tokens.css">
   <link rel="stylesheet" href="../site.css">
   <link rel="stylesheet" href="../living.css">
@@ -612,11 +649,21 @@ def language_index() -> str:
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="CoreTend — see what fills your Mac, clear it safely. Voyez ce qui remplit votre Mac, libérez-le sans risque.">
+  <meta name="description" content="CoreTend is a free, open-source macOS app for storage analysis and cleanup. See what's using space, review every action, and send eligible items to the Trash. No account or telemetry.">
   <meta name="theme-color" content="#0F2019">
+  <link rel="canonical" href="https://coretend.ahmetbsbnr.com/">
+  <link rel="alternate" hreflang="en" href="https://coretend.ahmetbsbnr.com/en">
+  <link rel="alternate" hreflang="fr" href="https://coretend.ahmetbsbnr.com/fr">
+  <link rel="alternate" hreflang="x-default" href="https://coretend.ahmetbsbnr.com/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="CoreTend">
+  <meta property="og:title" content="CoreTend for macOS — Safe storage analysis and cleanup">
+  <meta property="og:description" content="See what's using space on your Mac, review every action, and send eligible items to the Trash. Free, open source, and private by design.">
+  <meta property="og:url" content="https://coretend.ahmetbsbnr.com/">
+  <meta property="og:image" content="https://coretend.ahmetbsbnr.com/brand/coretend-app-icon-1024.png">
   <link rel="icon" href="brand/coretend-mark-dark.svg" type="image/svg+xml">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'">
-  <title>CoreTend — choose your language / choisir la langue</title>
+  <title>CoreTend for macOS — Safe storage analysis and cleanup</title>
   <link rel="stylesheet" href="design-tokens.css">
   <link rel="stylesheet" href="site.css">
   <link rel="stylesheet" href="living.css">
@@ -637,6 +684,27 @@ def language_index() -> str:
 """
 
 
+def search_assets() -> None:
+    urls = [f"{SITE_ORIGIN}/"] + [
+        f"{SITE_ORIGIN}{route_url(lang, route)}"
+        for lang in LANGUAGES
+        for route in ROUTES
+    ]
+    entries = "\n".join(f"  <url><loc>{url}</loc></url>" for url in urls)
+    (SITE / "sitemap.xml").write_text(
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        f"{entries}\n</urlset>\n",
+        encoding="utf-8",
+    )
+    (SITE / "robots.txt").write_text(
+        "User-agent: *\nAllow: /\n"
+        f"Sitemap: {SITE_ORIGIN}/sitemap.xml\n",
+        encoding="utf-8",
+    )
+    (SITE / f"{INDEXNOW_KEY}.txt").write_text(INDEXNOW_KEY, encoding="utf-8")
+
+
 def main() -> None:
     export_tokens()
     rel = release()
@@ -651,6 +719,7 @@ def main() -> None:
         for route in ROUTES:
             (SITE / lang / file_name(route)).write_text(document(lang, route, rel), encoding="utf-8")
     (SITE / "index.html").write_text(language_index(), encoding="utf-8")
+    search_assets()
 
 
 if __name__ == "__main__":
