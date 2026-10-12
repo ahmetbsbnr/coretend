@@ -1,5 +1,6 @@
 {
   "name": "coretend",
+  "mcpName": "io.github.ahmetbsbnr/coretend",
   "version": "2.2.0",
   "description": "CoreTend for the terminal and AI assistants: see what fills your Mac, clear it safely (Trash only), and a read-only MCP server.",
   "keywords": ["macos", "disk", "cleanup", "storage", "mcp", "model-context-protocol", "cli"],
