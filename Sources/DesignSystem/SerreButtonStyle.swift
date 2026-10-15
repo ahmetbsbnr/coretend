@@ -106,8 +106,7 @@ public struct SerreButtonChrome<Label: View>: View {
         content
             .environment(\.serreHover, state.hovered)
             .contentShape(shape)
-            // Bare content shows its own selection; a container's focus must not ring every child.
-            .overlay { if state.focused && kind != .bare { shape.inset(by: -3).stroke(Palette.focus.color, lineWidth: 2) } }
+            .overlay { if state.focused { shape.inset(by: -3).stroke(Palette.focus.color, lineWidth: 2) } }
             .scaleEffect(state.pressed ? 0.97 : 1)
             .opacity(state.enabled ? 1 : 0.4)
     }

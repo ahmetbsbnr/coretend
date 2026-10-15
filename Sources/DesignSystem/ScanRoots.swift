@@ -118,8 +118,8 @@ public struct ScanRoots: View {
 
     private var soil: some View {
         ZStack(alignment: .top) {
-            LeafCorner.control.shape.fill(LinearGradient(colors: [Palette.accent.color.opacity(0.14), Palette.accent.color.opacity(0.04)], startPoint: .top, endPoint: .bottom))
-            Palette.accent.color.opacity(0.5).frame(height: 1).padding(.horizontal, 10).padding(.top, 14)
+            LeafCorner.control.shape.fill(Palette.deep.color)
+            Palette.strongSeparator.color.frame(height: 1).padding(.horizontal, 10).padding(.top, 14)
             if !reduceMotion {
                 RootSystem(depth: shownDepth)
                     .stroke(Palette.accent.color, style: StrokeStyle(lineWidth: 1.6, lineCap: .round, lineJoin: .round))

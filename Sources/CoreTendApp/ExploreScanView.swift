@@ -357,9 +357,8 @@ struct ExploreScanView: View {
                 scrollTarget = "explore.list"
             }
         } label: {
-            // Decision 0008: each plot is a pane of lit glass; neighbours by size alternate lagoon
-            // and chlorophyll so the eye separates them, the largest the most saturated.
-            let hue = rank.isMultiple(of: 2) ? (folder ? Palette.lagoon.color : Palette.accent.color) : (folder ? Palette.accent.color : Palette.lagoon.color)
+            // Decision 0008: each plot is a pane of lit glass; folders lean teal, files green.
+            let hue = folder ? Palette.lagoon.color : Palette.accent.color
             shape
                 .fill(LinearGradient(colors: [hue.opacity(min(1, strength + (hovered || focused ? 0.35 : 0.15))), hue.opacity(strength * 0.75)],
                                      startPoint: .topLeading, endPoint: .bottomTrailing))
@@ -371,16 +370,13 @@ struct ExploreScanView: View {
                 .animation(.spring(response: 0.3, dampingFraction: 0.7), value: hovered)
                 .overlay(alignment: .topLeading) {
                     if tile.frame.width > 90 && tile.frame.height > 38 {
-                        let large = tile.frame.width > 180 && tile.frame.height > 110
-                        VStack(alignment: .leading, spacing: large ? 4 : 1) {
-                            Text((folder ? "▸ " : "") + URL(fileURLWithPath: tile.id).lastPathComponent)
-                                .font(large ? CoreTendTypography.body.weight(.semibold) : CoreTendTypography.caption.weight(.semibold))
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text((folder ? "▸ " : "") + URL(fileURLWithPath: tile.id).lastPathComponent).font(CoreTendTypography.caption.weight(.semibold))
                                 .lineLimit(1)
-                            Text(ProductFormat.bytes(tile.bytes, french: french))
-                                .font(large ? .custom("IowanOldStyle-Bold", size: 26, relativeTo: .title2) : CoreTendTypography.caption)
+                            Text(ProductFormat.bytes(tile.bytes, french: french)).font(CoreTendTypography.caption)
                         }
                         .foregroundStyle(Palette.ink.color)
-                        .padding(large ? 12 : 6)
+                        .padding(6)
                     }
                 }
         }

@@ -41,24 +41,11 @@ public extension AnyTransition {
     /// Under Reduce Motion, a 120 ms crossfade.
     static func grow(from origin: CGPoint, reduceMotion: Bool) -> AnyTransition {
         if reduceMotion { return .opacity.animation(.easeOut(duration: 0.12)) }
-        // Decision 0008: the page opens from the chosen row, out of focus and slightly small, and
-        // springs into place; the page that leaves sinks back and blurs away.
         let arrive = AnyTransition.modifier(active: GrowMask(progress: 0, origin: origin), identity: GrowMask(progress: 1, origin: origin))
-            .combined(with: .modifier(active: Depth(blur: 18, scale: 0.94, opacity: 0), identity: Depth(blur: 0, scale: 1, opacity: 1)))
-            .animation(.spring(response: 0.62, dampingFraction: 0.82))
-        let leave = AnyTransition.modifier(active: Depth(blur: 12, scale: 1.03, opacity: 0), identity: Depth(blur: 0, scale: 1, opacity: 1))
-            .animation(MotionCurve.retreat.animation(duration: 0.22))
+            .combined(with: .offset(y: 12))
+            .animation(MotionCurve.sap.animation(duration: MotionToken.grow.duration))
+        let leave = AnyTransition.opacity.combined(with: .offset(y: 6))
+            .animation(MotionCurve.retreat.animation(duration: 0.18))
         return .asymmetric(insertion: arrive, removal: leave)
-    }
-}
-
-/// Focus, size and presence of a page during a transition.
-struct Depth: ViewModifier {
-    let blur: CGFloat
-    let scale: CGFloat
-    let opacity: Double
-
-    func body(content: Content) -> some View {
-        content.blur(radius: blur).scaleEffect(scale, anchor: .topLeading).opacity(opacity)
     }
 }
