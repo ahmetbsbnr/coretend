@@ -95,6 +95,19 @@ final class AppShellTests: XCTestCase {
         }
     }
 
+    func testExplanationPromptCarriesOnlyThePlaceAndTheRuleInTheAppLanguage() {
+        let french = ExplanationPrompt.prompt(displayPath: "~/Library/Caches/com.example", ruleTitle: "Caches", french: true)
+        XCTAssertEqual(french, "Élément : ~/Library/Caches/com.example\nTrouvé par la règle : Caches\nExplique ce que c’est.")
+        XCTAssertTrue(ExplanationPrompt.prompt(displayPath: "~/x", ruleTitle: "Logs", french: false).hasPrefix("Item: ~/x"))
+        XCTAssertTrue(ExplanationPrompt.instructions(french: true).contains("français"))
+        XCTAssertFalse(ExplanationPrompt.instructions(french: false).localizedCaseInsensitiveContains("trash"),
+                       "what a move does comes from CoreTend's rules, not from the model")
+        for key in ["explain.action", "explain.title", "explain.what", "explain.app", "explain.ifMoved", "explain.thinking", "explain.failed", "explain.caveat"] {
+            XCTAssertNotEqual(ProductCopy.value(for: key, french: false), key)
+            XCTAssertNotEqual(ProductCopy.value(for: key, french: true), key)
+        }
+    }
+
     func testMenuBarMetricsAndLatestActivityCopyExistsInBothLanguages() {
         for key in ["menubar.metrics.title", "menubar.metrics.help", "menubar.metrics.updated", "menubar.activity.title", "menubar.activity.empty", "menubar.activity.unavailable", "menubar.open"] {
             XCTAssertNotEqual(ProductCopy.value(for: key, french: false), key)

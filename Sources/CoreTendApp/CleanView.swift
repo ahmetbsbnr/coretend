@@ -34,6 +34,8 @@ struct CleanView: View {
     @State private var lastMoved: [(trash: URL, original: URL)] = []
     /// Items (not files: a model's layers go with it) the last move put in the Trash.
     @State private var lastMovedItems = 0
+    /// The item whose explanation sheet is open.
+    @State private var explaining: CleanupItem?
     /// Bytes of those items, from the review.
     @State private var lastMovedBytes: Int64 = 0
 
@@ -72,6 +74,12 @@ struct CleanView: View {
             }
         }
         .onDisappear { task?.cancel() }
+        .sheet(item: $explaining) { item in
+            ItemExplanationSheet(displayPath: HomeFolder.displayPath(item.url),
+                                 ruleTitle: CleanupRuleCatalog.rule(item.ruleID).map { copy($0.titleKey) } ?? "",
+                                 ruleExplanation: CleanupRuleCatalog.rule(item.ruleID).map { copy($0.explanationKey) } ?? "",
+                                 french: french) { explaining = nil }
+        }
         .confirmationDialog(copy("clean.confirm.title"), isPresented: $confirming, titleVisibility: .visible) {
             Button(copy("clean.confirm.action"), role: .destructive) { execute() }
             Button(copy("common.cancel"), role: .cancel) { cancelReview() }.keyboardShortcut(.defaultAction)
@@ -215,6 +223,9 @@ struct CleanView: View {
         .leafFlightRow(item.url)
         .contextMenu {
             Button(copy("clean.reveal")) { NSWorkspace.shared.activateFileViewerSelecting([item.url]) }
+            if ItemExplainer.isAvailable {
+                Button(copy("explain.action")) { explaining = item }
+            }
         }
     }
 
