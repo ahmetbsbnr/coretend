@@ -2,6 +2,7 @@ import SwiftUI
 import AppShell
 import DesignSystem
 import Domain
+import ScanCore
 
 /// Where each destination's row sits in the window, so the content can grow from the row that
 /// was chosen (UI guide § 8, "changement de destination").
@@ -66,6 +67,18 @@ struct SerreSidebar: View {
         .onKeyPress(.upArrow) { move(-1) }
         .onChange(of: selection) { _, _ in growVine() }
         .task {
+            // The Clean figure is read once even when the app opens on another space.
+            if navigation.cleanupReport == nil {
+                let home = HomeFolder.url
+                let exclusions = (try? await LocalStoreAccess.exclusions()) ?? []
+                if let found = try? await Task.detached(priority: .utility, operation: { try await CleanupSurvey(home: home).run(exclusions: exclusions) }).value,
+                   navigation.cleanupReport == nil {
+                    navigation.cleanupReport = found
+                    navigation.cleanupReportDate = .now
+                }
+            }
+        }
+        .task {
             while !Task.isCancelled {
                 snapshot = await Task.detached(priority: .utility) { MacOSSystemSnapshotReader().read() }.value
                 try? await Task.sleep(for: .seconds(60))
@@ -77,7 +90,7 @@ struct SerreSidebar: View {
         HStack(spacing: 11) {
             SerreLogo(size: 34, germinates: true).ambientSway(degrees: 5)
             VStack(alignment: .leading, spacing: 0) {
-                Text("CoreTend").font(.custom("IowanOldStyle-Bold", size: 21, relativeTo: .title3)).foregroundStyle(Palette.ink.color)
+                Text("CoreTend").font(.custom("IowanOldStyle-Bold", size: 21, relativeTo: .title3)).foregroundStyle(Palette.ink.color).lineLimit(1)
                 Text(ProductCopy.inline("entretien local", "local care", french: french)).font(CoreTendTypography.caption).foregroundStyle(Palette.tertiaryInk.color)
             }
         }
@@ -89,7 +102,7 @@ struct SerreSidebar: View {
         Button(action: openSearch) {
             HStack(spacing: 9) {
                 SerreIcon(.search, size: 15)
-                Text(ProductCopy.inline("Rechercher", "Search", french: french)).font(CoreTendTypography.body)
+                Text(ProductCopy.inline("Rechercher", "Search", french: french)).font(CoreTendTypography.body).lineLimit(1)
                 Spacer(minLength: 4)
                 Text("⌘K").font(CoreTendTypography.caption.monospaced())
                     .padding(.horizontal, 6).padding(.vertical, 2)
@@ -152,6 +165,7 @@ struct SerreSidebar: View {
                 .scaleEffect(hover && !selected ? 1.06 : 1)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(ProductCopy.value(for: destination.titleKey, french: french))
+                        .lineLimit(1)
                         .font(CoreTendTypography.body.weight(selected ? .semibold : .medium))
                         .foregroundStyle(Palette.ink.color)
                     Text(metric(destination))
@@ -199,13 +213,13 @@ struct SerreSidebar: View {
                         .frame(width: 46, height: 46)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(ProductFormat.bytes(free, french: french))
-                            .font(.custom("IowanOldStyle-Bold", size: 18, relativeTo: .headline)).foregroundStyle(Palette.ink.color)
+                            .font(.custom("IowanOldStyle-Bold", size: 18, relativeTo: .headline)).foregroundStyle(Palette.ink.color).lineLimit(1)
                             .contentTransition(.numericText())
                         Text(ProductCopy.inline("libres sur %1$@", "free of %1$@", french: french, ProductFormat.bytes(total, french: french)))
-                            .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                            .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color).lineLimit(1)
                         if case .known(let purgeable) = snapshot.purgeableBytes, purgeable > 0 {
                             Text(ProductCopy.inline("+ %1$@ purgeables", "+ %1$@ purgeable", french: french, ProductFormat.bytes(purgeable, french: french)))
-                                .font(CoreTendTypography.caption).foregroundStyle(Palette.tertiaryInk.color)
+                                .font(CoreTendTypography.caption).foregroundStyle(Palette.tertiaryInk.color).lineLimit(1)
                         }
                     }
                     Spacer(minLength: 0)

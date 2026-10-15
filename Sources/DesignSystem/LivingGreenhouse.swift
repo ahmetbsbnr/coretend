@@ -305,7 +305,9 @@ public struct DestinationPlant: View {
             }
             .ambientSway(degrees: activity == .growing ? 12 : 7, phase: Double(glyph.hashValue % 7),
                          period: activity == .growing ? 0.9 : 2.6, caused: activity == .growing)
-            Capsule().fill(Palette.deep.color).frame(width: 84, height: 5)
+            Capsule().fill(LinearGradient(colors: [Palette.accent.color.opacity(0), Palette.accent.color.opacity(0.7), Palette.accent.color.opacity(0)], startPoint: .leading, endPoint: .trailing))
+                .frame(width: 96, height: 4)
+                .shadow(color: Palette.accent.color.opacity(0.6), radius: 6)
         }
         .accessibilityHidden(true)
         .onAppear {

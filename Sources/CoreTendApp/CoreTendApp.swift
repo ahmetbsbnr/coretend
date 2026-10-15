@@ -158,8 +158,11 @@ private struct CoreTendRootView: View {
             SerreSidebar(selection: $navigation.selection, french: french, searchNamespace: searchSpace,
                          openSearch: toggleSearch,
                          openSettings: { navigation.activeSheet = .settings })
-                .navigationSplitViewColumnWidth(min: 248, ideal: 272)
                 .toolbar(removing: .sidebarToggle)
+                // A width restored by macOS can be narrower than the column's minimum; the
+                // content holds its own so names never wrap mid-word.
+                .frame(minWidth: 264)
+                .navigationSplitViewColumnWidth(min: 264, ideal: 280, max: 360)
                 .navigationTitle("CoreTend")
         } detail: {
             GeometryReader { detail in
