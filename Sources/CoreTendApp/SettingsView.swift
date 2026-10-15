@@ -31,6 +31,8 @@ struct SettingsView: View {
     @State private var alertsDenied = false
     @Environment(AppUpdater.self) private var updater
     @State private var tab = "general"
+    @Namespace private var tabMarker
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         VStack(spacing: 0) {
@@ -49,12 +51,21 @@ struct SettingsView: View {
                          ("data", ProductCopy.inline("Données", "Data", french: french), SerreGlyph.record),
                          ("system", ProductCopy.inline("Système", "System", french: french), SerreGlyph.cleanup)], id: \.0) { item in
                     Button {
-                        withAnimation(MotionToken.standard.animation(reduceMotion: false)) { tab = item.0 }
+                        withAnimation(reduceMotion ? nil : .spring(response: 0.42, dampingFraction: 0.74)) { tab = item.0 }
                     } label: {
                         Label { Text(item.1) } icon: { SerreIcon(item.2, size: 15) }
-                            .font(CoreTendTypography.body).foregroundStyle(tab == item.0 ? Palette.ink.color : Palette.secondaryInk.color)
+                            .font(CoreTendTypography.body.weight(tab == item.0 ? .semibold : .regular))
+                            .foregroundStyle(tab == item.0 ? Palette.onAccent.color : Palette.secondaryInk.color)
+                            .padding(.horizontal, 12).padding(.vertical, 7)
+                            .background {
+                                // Decision 0009: a leaf marker slides to the chosen tab.
+                                if tab == item.0 {
+                                    LeafCorner.control.shape.fill(Palette.accent.color).matchedGeometryEffect(id: "tab", in: tabMarker)
+                                }
+                            }
+                            .contentShape(LeafCorner.control.shape)
                     }
-                    .buttonStyle(.serre(.row(selected: tab == item.0)))
+                    .buttonStyle(.serre(.bare))
                     .fixedSize()
                     .accessibilityAddTraits(tab == item.0 ? .isSelected : [])
                 }
@@ -195,7 +206,7 @@ struct SettingsView: View {
             }
             .padding(12)
         }
-        .frame(minWidth: 680, idealWidth: 760, minHeight: 520, idealHeight: 640, maxHeight: 760)
+        .frame(minWidth: 760, idealWidth: 880, minHeight: 600, idealHeight: 720, maxHeight: 860)
         .background(Palette.canvas.color)
         .task {
             await load()
@@ -282,6 +293,8 @@ struct SettingsView: View {
                 content()
             }
         }
+        // Each section of a tab rises into place when the tab opens (decision 0009).
+        .serreRise(1)
     }
 
     /// A choice among a few values, as Serre rows side by side.

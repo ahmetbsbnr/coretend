@@ -46,6 +46,8 @@ struct ApplicationsView: View {
     @State private var sizes: [String: Int64] = [:]
     @State private var sizing = false
     @State private var sortMode = "name"
+    /// The app under the pointer: its icon lifts and leans (decision 0009).
+    @State private var hoveredApp: String?
     /// The app whose row is open with its actions.
     @State private var expanded: String?
     @State private var associationEvidence: [URL: AssociationEvidence] = [:]
@@ -275,7 +277,7 @@ struct ApplicationsView: View {
                     LazyVStack(spacing: 0) {
                         ForEach(Array(visibleRecords.enumerated()), id: \.element.id) { index, app in
                             if index > 0 { Palette.separator.color.frame(height: 1).padding(.leading, 56) }
-                            row(app).serreRise(index)
+                            row(app).serreRise(min(index, 10))
                         }
                     }
                     .id(plantingSeed)
@@ -297,7 +299,10 @@ struct ApplicationsView: View {
         return HStack(alignment: .top, spacing: 14) {
             Image(nsImage: NSWorkspace.shared.icon(forFile: app.url.path))
                 .resizable().interpolation(.high)
-                .frame(width: 40, height: 40)
+                .frame(width: 44, height: 44)
+                .scaleEffect(hoveredApp == app.id && !reduceMotion ? 1.12 : 1, anchor: .bottom)
+                .rotationEffect(.degrees(hoveredApp == app.id && !reduceMotion ? -6 : 0), anchor: .bottom)
+                .animation(.spring(response: 0.35, dampingFraction: 0.55), value: hoveredApp == app.id)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 3) {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
@@ -317,14 +322,20 @@ struct ApplicationsView: View {
                 }
             }
             Spacer(minLength: 8)
-            VStack(alignment: .trailing, spacing: 2) {
+            VStack(alignment: .trailing, spacing: 4) {
                 Text(sizes[app.id].map { ProductFormat.bytes($0, french: french) } ?? "—")
-                    .font(CoreTendTypography.body).foregroundStyle(Palette.ink.color).monospacedDigit()
+                    .font(.custom("IowanOldStyle-Bold", size: 19, relativeTo: .title3)).foregroundStyle(Palette.ink.color).monospacedDigit()
+                    .contentTransition(.numericText())
+                if let size = sizes[app.id], let largest = sizes.values.max(), largest > 0 {
+                    StemMeasure(fraction: Double(size) / Double(largest), lit: hoveredApp == app.id || expanded == app.id)
+                        .frame(width: 120)
+                }
                 Image(systemName: expanded == app.id ? "chevron.up" : "chevron.down")
                     .font(.caption).foregroundStyle(Palette.tertiaryInk.color)
             }
         }
         .contentShape(Rectangle())
+        .onHover { inside in hoveredApp = inside ? app.id : (hoveredApp == app.id ? nil : hoveredApp) }
         .onTapGesture {
             withAnimation(reduceMotion ? nil : MotionCurve.sprout.animation(duration: 0.35)) {
                 expanded = expanded == app.id ? nil : app.id

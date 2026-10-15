@@ -15,6 +15,8 @@ public enum SerreButtonKind: Equatable, Sendable {
     case icon
     /// A thumbnail or other content that is itself the button: outline on hover.
     case tile
+    /// Content that draws its own selection (a sliding marker): only press and disabled states.
+    case bare
 }
 
 public struct SerreButtonStyle: ButtonStyle {
@@ -103,7 +105,8 @@ public struct SerreButtonChrome<Label: View>: View {
         content
             .environment(\.serreHover, state.hovered)
             .contentShape(shape)
-            .overlay { if state.focused { shape.inset(by: -3).stroke(Palette.focus.color, lineWidth: 2) } }
+            // Bare content shows its own selection; a container's focus must not ring every child.
+            .overlay { if state.focused && kind != .bare { shape.inset(by: -3).stroke(Palette.focus.color, lineWidth: 2) } }
             .scaleEffect(state.pressed ? 0.97 : 1)
             .opacity(state.enabled ? 1 : 0.4)
     }
@@ -111,6 +114,8 @@ public struct SerreButtonChrome<Label: View>: View {
     @ViewBuilder private var content: some View {
         let shape = LeafCorner.control.shape
         switch kind {
+        case .bare:
+            label
         case .primary:
             label.font(CoreTendTypography.body.weight(.semibold))
                 .foregroundStyle(Palette.onAccent.color)

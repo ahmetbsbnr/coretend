@@ -16,6 +16,8 @@ struct DuplicateScanView: View {
     let french: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Namespace private var keeperSpace
+    /// Bumped when a copy is ticked, so leaves fall from its box.
+    @State private var falls: [URL: Int] = [:]
     @State private var selectingFolder = false
     @State private var scanning = false
     @State private var scanCompletedFiles = 0
@@ -321,10 +323,12 @@ struct DuplicateScanView: View {
         return HStack(spacing: 10) {
             Button {
                 guard !kept, !locked else { return }
-                if selected { selectedCopies.remove(file) } else { selectedCopies.insert(file) }
+                if selected { selectedCopies.remove(file) } else { selectedCopies.insert(file); falls[file, default: 0] += 1 }
             } label: {
                 HStack(spacing: 12) {
                     SerreCheck(isOn: selected).opacity(kept ? 0 : 1)
+                        // Decision 0009: a ticked copy shakes leaves off its box.
+                        .overlay { LeafFall(trigger: falls[file] ?? 0, tint: Palette.accent.color).frame(width: 130, height: 130).allowsHitTesting(false) }
                     VStack(alignment: .leading, spacing: 2) {
                         Text(file.lastPathComponent).font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
                             .lineLimit(1).truncationMode(.middle)

@@ -133,9 +133,13 @@ struct RecordView: View {
                     .font(.custom("IowanOldStyle-Roman", size: 20, relativeTo: .title3))
                     .foregroundStyle(Palette.ink.color)
                     .accessibilityAddTraits(.isHeader)
-                ForEach(Array(group.events.enumerated()), id: \.element.id) { index, event in
-                    entry(event).serrePress(first + index)
+                VStack(alignment: .leading, spacing: 12) {
+                    ForEach(Array(group.events.enumerated()), id: \.element.id) { index, event in
+                        entry(event).serrePress(first + index)
+                    }
                 }
+                // Decision 0009: the day's entries hang on one stem that grows down the page.
+                .background(alignment: .topLeading) { HerbariumStem(order: first).frame(width: 14).padding(.top, 8) }
             }
         }
     }
@@ -228,5 +232,31 @@ private struct ActivityExportDocument: FileDocument {
     }
     func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
         FileWrapper(regularFileWithContents: data)
+    }
+}
+
+/// The stem the entries of a day hang on: it grows from the day's title down to the last entry.
+private struct HerbariumStem: View {
+    let order: Int
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var grown = false
+
+    var body: some View {
+        GeometryReader { proxy in
+            Path { path in
+                path.move(to: CGPoint(x: proxy.size.width / 2, y: 0))
+                path.addCurve(to: CGPoint(x: proxy.size.width / 2, y: max(proxy.size.height - 14, 0)),
+                              control1: CGPoint(x: proxy.size.width / 2 - 3, y: proxy.size.height * 0.35),
+                              control2: CGPoint(x: proxy.size.width / 2 + 3, y: proxy.size.height * 0.7))
+            }
+            .trim(from: 0, to: grown ? 1 : 0)
+            .stroke(Palette.accent.color.opacity(0.45), style: StrokeStyle(lineWidth: 1.5, lineCap: .round))
+        }
+        .accessibilityHidden(true)
+        .onAppear {
+            if reduceMotion { grown = true } else {
+                withAnimation(.easeOut(duration: 0.9).delay(min(Double(order) * 0.05, 0.4))) { grown = true }
+            }
+        }
     }
 }
