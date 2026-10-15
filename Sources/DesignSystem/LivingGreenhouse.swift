@@ -69,6 +69,9 @@ public struct GreenhouseScene: View {
     @State private var grown = false
     /// Where the pointer is over the bed, so the shoots bend away from it (decision 0009).
     @State private var pointerX: CGFloat?
+    /// A click shakes the shoots around it and leaves fall from that point.
+    @State private var gust = 0
+    @State private var gustPoint: CGPoint?
 
     public init(state: GreenhouseState, height: CGFloat = 150) { self.state = state; self.height = height }
 
@@ -79,14 +82,22 @@ public struct GreenhouseScene: View {
                 Canvas { canvas, size in drawGlass(&canvas, size: size); drawBackRow(&canvas, size: size) }
                 PollenField(density: 1)
                 ForEach(0..<Self.count, id: \.self) { index in
-                    ShootView(state: state, index: index, count: Self.count, size: size, pointerX: pointerX)
+                    ShootView(state: state, index: index, count: Self.count, size: size, pointerX: pointerX,
+                              gust: gust, gustX: gustPoint?.x)
                 }
+                LeafFall(trigger: gust, tint: Palette.accent.color, origin: gustPoint, count: 14)
             }
+            .contentShape(Rectangle())
             .onContinuousHover { phase in
                 switch phase {
                 case .active(let location): pointerX = location.x
                 case .ended: pointerX = nil
                 }
+            }
+            .onTapGesture(coordinateSpace: .local) { location in
+                guard !reduceMotion else { return }
+                gustPoint = location
+                gust += 1
             }
         }
         .frame(height: height)
@@ -168,8 +179,12 @@ private struct ShootView: View {
     let count: Int
     let size: CGSize
     let pointerX: CGFloat?
+    let gust: Int
+    let gustX: CGFloat?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var sprouted = false
+    /// The swing a click gives the shoots near it; a loose spring brings them back.
+    @State private var shake = 0.0
 
     var body: some View {
         let w = size.width, h = size.height
@@ -190,10 +205,19 @@ private struct ShootView: View {
         .scaleEffect(x: sprouted ? 1 : 0.4, y: sprouted ? 1 : 0.02, anchor: .bottom)
         .rotationEffect(.degrees(lean(at: x)), anchor: .bottom)
         .animation(reduceMotion ? nil : .spring(response: 0.5, dampingFraction: 0.55), value: pointerX)
+        .rotationEffect(.degrees(shake), anchor: .bottom)
         .position(x: x, y: soilTop - box.height / 2)
         .onAppear {
             if reduceMotion { sprouted = true; return }
             withAnimation(.spring(response: 0.7, dampingFraction: 0.62).delay(0.15 + Double(index) * 0.045)) { sprouted = true }
+        }
+        .onChange(of: gust) { _, _ in
+            guard !reduceMotion, let gustX else { return }
+            let distance = x - gustX
+            guard abs(distance) < 220 else { return }
+            let strength = (220 - abs(distance)) / 220
+            shake = (distance >= 0 ? 1 : -1) * 26 * strength
+            withAnimation(.spring(response: 0.55, dampingFraction: 0.22).delay(abs(distance) / 900)) { shake = 0 }
         }
     }
 

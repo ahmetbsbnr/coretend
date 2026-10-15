@@ -35,10 +35,15 @@ struct SeededRandom {
 public struct LeafFall: View {
     let trigger: Int
     let tint: Color
+    /// Where the leaves leave from; the centre of the view when nil.
+    let origin: CGPoint?
+    let count: Int
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var start: Date?
 
-    public init(trigger: Int, tint: Color) { self.trigger = trigger; self.tint = tint }
+    public init(trigger: Int, tint: Color, origin: CGPoint? = nil, count: Int = 9) {
+        self.trigger = trigger; self.tint = tint; self.origin = origin; self.count = count
+    }
 
     public var body: some View {
         TimelineView(.animation(paused: start == nil)) { timeline in
@@ -47,8 +52,8 @@ public struct LeafFall: View {
                 let age = timeline.date.timeIntervalSince(start)
                 guard age < 1.1 else { return }
                 var random = SeededRandom(seed: UInt64(trigger + 3))
-                let origin = CGPoint(x: size.width / 2, y: size.height / 2)
-                for _ in 0..<9 {
+                let origin = self.origin ?? CGPoint(x: size.width / 2, y: size.height / 2)
+                for _ in 0..<count {
                     let angle = -Double.pi / 2 + (random.next() - 0.5) * 2.4
                     let speed = 55 + random.next() * 70
                     let sway = (random.next() - 0.5) * 30

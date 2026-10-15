@@ -183,6 +183,14 @@ struct SerreSidebar: View {
             } icon: {
                 SerreIcon(destination.glyph).foregroundStyle(selected ? Palette.accent.color : Palette.secondaryInk.color)
                     .ambientSway(degrees: selected ? 6 : 3, phase: Double(destination.shortcutNumber) * 0.61)
+                    // Chosen, the plant hops once out of its pot.
+                    .keyframeAnimator(initialValue: 0.0, trigger: selected) { content, lift in
+                        content.offset(y: -lift).rotationEffect(.degrees(lift * 2), anchor: .bottom)
+                    } keyframes: { _ in
+                        let height = selected && !reduceMotion ? 5.0 : 0
+                        SpringKeyframe(height, duration: 0.16, spring: .snappy)
+                        SpringKeyframe(0, duration: 0.5, spring: .bouncy(duration: 0.5, extraBounce: 0.3))
+                    }
             }
             .font(CoreTendTypography.body.weight(selected ? .semibold : .regular))
             .foregroundStyle(selected ? Palette.ink.color : Palette.secondaryInk.color)

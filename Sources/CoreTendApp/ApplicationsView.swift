@@ -14,6 +14,8 @@ import DesignSystem
 struct ApplicationsView: View {
     let french: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// The measured total as shown: it counts towards the sum of the sizes.
+    @State private var shownTotal = 0.0
     @State private var selectingFolder = false
     /// Folder the system panel opens on when a suggested folder is chosen in the App Sandbox.
     @State private var suggestedDirectory: URL?
@@ -266,8 +268,13 @@ struct ApplicationsView: View {
                 if sizing {
                     Text(copy("apps.sizing")).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                 } else if !sizes.isEmpty {
-                    Text("\(copy("apps.size.total")) \(ProductFormat.bytes(sizes.values.reduce(0, +), french: french))")
+                    let total = sizes.values.reduce(0, +)
+                    let label = copy("apps.size.total")
+                    CountingText(value: shownTotal) { [french] value in "\(label) \(ProductFormat.bytes(Int64(value), french: french))" }
                         .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                        .onChange(of: total, initial: true) { _, value in
+                            withAnimation(reduceMotion ? nil : .timingCurve(0.16, 1, 0.3, 1, duration: 1.1)) { shownTotal = Double(value) }
+                        }
                 }
             }
             if visibleRecords.isEmpty {

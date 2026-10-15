@@ -78,9 +78,8 @@ struct IntegrityView: View {
         VStack(alignment: .leading, spacing: 14) {
             SerreParcel {
                 HStack(alignment: .center, spacing: 14) {
-                    Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))
-                        .resizable().interpolation(.high).frame(width: 48, height: 48)
-                        .accessibilityHidden(true)
+                    // Decision 0009: the inspected app hangs on its label and swings into place.
+                    HangingIcon(url: url).id(labelSeed)
                     VStack(alignment: .leading, spacing: 3) {
                         Text(copy("integrity.label")).font(CoreTendTypography.caption.weight(.semibold)).foregroundStyle(Palette.secondaryInk.color)
                         Text(appName ?? url.lastPathComponent).font(CoreTendTypography.body.weight(.semibold)).foregroundStyle(Palette.ink.color)
@@ -420,4 +419,29 @@ struct IntegrityView: View {
     }
 
     private func copy(_ key: String) -> String { ProductCopy.value(for: key, french: french) }
+}
+
+/// An app icon hung from a label: it arrives tilted and swings back on a loose spring, and tilts
+/// again under the pointer.
+private struct HangingIcon: View {
+    let url: URL
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var swing = -22.0
+    @State private var hovered = false
+
+    var body: some View {
+        Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))
+            .resizable().interpolation(.high).frame(width: 48, height: 48)
+            .rotationEffect(.degrees(swing + (hovered ? 8 : 0)), anchor: .top)
+            .scaleEffect(hovered ? 1.08 : 1, anchor: .top)
+            .accessibilityHidden(true)
+            .onHover { inside in
+                guard !reduceMotion else { return }
+                withAnimation(.spring(response: 0.45, dampingFraction: 0.4)) { hovered = inside }
+            }
+            .onAppear {
+                if reduceMotion { swing = 0; return }
+                withAnimation(.spring(response: 0.8, dampingFraction: 0.28).delay(0.15)) { swing = 0 }
+            }
+    }
 }

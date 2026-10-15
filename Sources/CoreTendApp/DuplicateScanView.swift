@@ -18,6 +18,8 @@ struct DuplicateScanView: View {
     @Namespace private var keeperSpace
     /// Bumped when a copy is ticked, so leaves fall from its box.
     @State private var falls: [URL: Int] = [:]
+    /// The recoverable total as shown: it counts towards the measured value.
+    @State private var shownTotal = 0.0
     @State private var selectingFolder = false
     @State private var scanning = false
     @State private var scanCompletedFiles = 0
@@ -240,8 +242,13 @@ struct DuplicateScanView: View {
                         .font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
                     let total = groups.compactMap { DuplicateSpace.recoverable(fileSize: groupSizes[$0.digest], copies: (standing($0) ?? $0.files).count) }.reduce(0, +)
                     if total > 0 {
-                        Text(ProductCopy.inline("· %1$@ récupérables en ne gardant qu’un exemplaire", "· %1$@ recoverable keeping one copy", french: french, "\(ProductFormat.bytes(total, french: french))"))
-                            .font(CoreTendTypography.caption).foregroundStyle(Palette.accent.color)
+                        CountingText(value: shownTotal) { [french] value in
+                            ProductCopy.inline("· %1$@ récupérables en ne gardant qu’un exemplaire", "· %1$@ recoverable keeping one copy", french: french, ProductFormat.bytes(Int64(value), french: french))
+                        }
+                        .font(CoreTendTypography.caption).foregroundStyle(Palette.accent.color)
+                        .onChange(of: total, initial: true) { _, value in
+                            withAnimation(reduceMotion ? nil : .timingCurve(0.16, 1, 0.3, 1, duration: 1.1)) { shownTotal = Double(value) }
+                        }
                     }
                     Spacer()
                     Text(ProductCopy.inline("Aucune sélection automatique", "Nothing selected automatically", french: french))

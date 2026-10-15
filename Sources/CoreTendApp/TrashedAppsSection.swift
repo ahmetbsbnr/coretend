@@ -25,7 +25,7 @@ struct TrashedAppsSection: View {
                         Text(copy("apps.trashed.help")).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
                             .fixedSize(horizontal: false, vertical: true)
                         if let notice { SerreBanner(notice.kind == .error ? .partial : .note, title: notice.title, message: notice.message) }
-                        ForEach(apps) { app in row(app) }
+                        ForEach(Array(apps.enumerated()), id: \.element.id) { index, app in row(app).serreRise(min(index + 1, 8)) }
                     }
                 }
             }

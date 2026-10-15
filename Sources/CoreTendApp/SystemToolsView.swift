@@ -94,7 +94,7 @@ struct SystemToolsView<Section: View>: View {
         }
         if let caches {
             if caches.isEmpty { note(ProductCopy.inline("Aucun cache système à ranger.", "No system cache to tidy.", french: french)) }
-            ForEach(caches) { item in
+            ForEach(Array(caches.enumerated()), id: \.element.id) { index, item in
                 HStack(spacing: 10) {
                     VStack(alignment: .leading, spacing: 1) {
                         Text(URL(fileURLWithPath: item.path).lastPathComponent).font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
@@ -104,6 +104,7 @@ struct SystemToolsView<Section: View>: View {
                     Button(ProductCopy.inline("Corbeille…", "Trash…", french: french)) { pending = item }.disabled(working)
                         .accessibilityLabel(ProductCopy.inline("Mettre %1$@ à la Corbeille", "Move %1$@ to the Trash", french: french, "\(item.path)"))
                 }
+                .serreRise(min(index, 8))
             }
         }
         Button(caches == nil ? ProductCopy.inline("Lire les caches système", "Read system caches", french: french) : ProductCopy.inline("Relire", "Read again", french: french)) { Task { await loadCaches() } }
@@ -113,7 +114,7 @@ struct SystemToolsView<Section: View>: View {
     @ViewBuilder private var daemonList: some View {
         if let daemons {
             if daemons.isEmpty { note(ProductCopy.inline("Aucun service tiers.", "No third-party service.", french: french)) }
-            ForEach(daemons) { daemon in
+            ForEach(Array(daemons.enumerated()), id: \.element.id) { index, daemon in
                 Toggle(isOn: Binding(get: { !daemon.disabled }, set: { value in Task { await setDaemon(daemon, enabled: value) } })) {
                     VStack(alignment: .leading, spacing: 1) {
                         Text(daemon.label).font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
@@ -124,6 +125,7 @@ struct SystemToolsView<Section: View>: View {
                 .disabled(working)
                 .accessibilityLabel(daemon.label)
                 .accessibilityHint(daemon.program)
+                .serreRise(min(index, 8))
             }
         }
         Button(daemons == nil ? ProductCopy.inline("Lire les services", "Read services", french: french) : ProductCopy.inline("Relire", "Read again", french: french)) { Task { await loadDaemons() } }
@@ -133,13 +135,14 @@ struct SystemToolsView<Section: View>: View {
     @ViewBuilder private var snapshotList: some View {
         if let snapshots {
             if snapshots.isEmpty { note(ProductCopy.inline("Aucun instantané local.", "No local snapshot.", french: french)) }
-            ForEach(snapshots, id: \.self) { date in
+            ForEach(Array(snapshots.enumerated()), id: \.element) { index, date in
                 HStack(spacing: 10) {
                     Text(snapshotLabel(date)).font(CoreTendTypography.body.monospacedDigit()).foregroundStyle(Palette.ink.color)
                     Spacer()
                     Button(ProductCopy.inline("Supprimer…", "Delete…", french: french)) { pendingSnapshot = date }.disabled(working)
                         .accessibilityLabel(ProductCopy.inline("Supprimer l’instantané du %1$@", "Delete the snapshot of %1$@", french: french, "\(snapshotLabel(date))"))
                 }
+                .serreRise(min(index, 8))
             }
         }
         Button(snapshots == nil ? ProductCopy.inline("Lire les instantanés", "Read snapshots", french: french) : ProductCopy.inline("Relire", "Read again", french: french)) { Task { await loadSnapshots() } }
