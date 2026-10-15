@@ -280,6 +280,14 @@ final class DomainTests: XCTestCase {
         XCTAssertEqual(service.snapshot(), expected)
     }
 
+    func testPurgeableSpaceIsImportantAvailabilityMinusFreeAndNeverNegative() {
+        XCTAssertEqual(SystemSnapshot.purgeable(free: .known(100), importantAvailable: .known(350)), .known(250))
+        XCTAssertEqual(SystemSnapshot.purgeable(free: .known(400), importantAvailable: .known(350)), .known(0))
+        if case .known = SystemSnapshot.purgeable(free: .unknown(reason: "x"), importantAvailable: .known(350)) {
+            XCTFail("an unknown free space must not produce a purgeable figure")
+        }
+    }
+
     func testUnknownStorageIsNotConvertedToZero() {
         let snapshot = SystemSnapshot(measuredAt: .now, availableBytes: .unknown(reason: "unavailable"),
                                       totalBytes: .unknown(reason: "unavailable"), activeProcessorCount: 4,

@@ -34,6 +34,8 @@ struct CleanView: View {
     @State private var lastMoved: [(trash: URL, original: URL)] = []
     /// Items (not files: a model's layers go with it) the last move put in the Trash.
     @State private var lastMovedItems = 0
+    /// Bytes of those items, from the review.
+    @State private var lastMovedBytes: Int64 = 0
 
     private var groups: [CleanupGroup] { report?.groups ?? [] }
     private var allItems: [CleanupItem] { groups.flatMap(\.items) }
@@ -217,7 +219,7 @@ struct CleanView: View {
     }
 
     private var undoBar: some View {
-        SerreBanner(.note, title: french ? "\(ProductFormat.items(lastMovedItems, french: true)) dans la Corbeille." : "\(ProductFormat.items(lastMovedItems, french: false)) in the Trash.") {
+        SerreBanner(.note, title: french ? "\(ProductFormat.items(lastMovedItems, french: true)), \(ProductFormat.bytes(lastMovedBytes, french: true)) dans la Corbeille." : "\(ProductFormat.items(lastMovedItems, french: false)), \(ProductFormat.bytes(lastMovedBytes, french: false)) in the Trash.") {
             Button(copy("clean.undo")) { undo() }.padding(.top, 6).disabled(busy)
         }
     }
@@ -239,6 +241,7 @@ struct CleanView: View {
                 navigation.cleanupReport = found
                 navigation.cleanupReportDate = .now
                 adopt(found)
+                CompletionSound.play()
             } catch is CancellationError {
             } catch {
                 phase = .failed
@@ -307,12 +310,12 @@ struct CleanView: View {
             do { batch = try pending.service.confirm(pending.review, accepted: true) } catch {
                 notice = PageNotice(kind: .error, title: copy("clean.reviewFailed"), nearActions: true); return
             }
-            flight.landed = 0; failures = [:]; notice = nil; lastMoved = []; lastMovedItems = 0
-            let itemURLs = Set(allItems.map(\.url))
+            flight.landed = 0; failures = [:]; notice = nil; lastMoved = []; lastMovedItems = 0; lastMovedBytes = 0
+            let itemBytes = Dictionary(uniqueKeysWithValues: allItems.map { ($0.url, $0.bytes) })
             let result = await executeShowingEachItem(pending.service, batch, reduceMotion: reduceMotion) { item in
                 if case .movedToTrash(let original, let trash) = item.outcome {
                     lastMoved.append((URL(fileURLWithPath: trash), URL(fileURLWithPath: original)))
-                    if itemURLs.contains(item.targetURL) { lastMovedItems += 1 }
+                    if let bytes = itemBytes[item.targetURL] { lastMovedItems += 1; lastMovedBytes += bytes }
                     flight.send(item.targetURL, reduceMotion: reduceMotion)
                     remove(item.targetURL)
                 } else {
@@ -321,6 +324,7 @@ struct CleanView: View {
                 }
             }
             if result.movedCount < result.items.count { notice = .moveOutcome(result, french: french) }
+            CompletionSound.play()
         }
     }
 

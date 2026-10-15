@@ -79,6 +79,17 @@ public struct CoreTendPreferences {
         return defaults.bool(forKey: "coretend.menuBar.enabled")
     }
 
+    /// A short sound when a scan or a clean ends. Off by default.
+    public var soundsEnabled: Bool {
+        if !usesPersistentStorage { return environment["CORETEND_TEST_SOUNDS_ENABLED"] == "1" }
+        return defaults.bool(forKey: "coretend.sounds.enabled")
+    }
+
+    public func saveSoundsEnabled(_ value: Bool) {
+        guard usesPersistentStorage else { return }
+        defaults.set(value, forKey: "coretend.sounds.enabled")
+    }
+
     public func saveLastDestination(_ value: String) {
         guard usesPersistentStorage else { return }
         defaults.set(value, forKey: "coretend.lastDestination")

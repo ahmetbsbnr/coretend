@@ -76,6 +76,19 @@ final class AppShellTests: XCTestCase {
         XCTAssertTrue(ProductCopy.value(for: "settings.menubar.help", french: true).contains("Désactivé par défaut"))
     }
 
+    func testSoundsAreOffByDefaultAndFixturesNeverTouchStoredPreferences() {
+        let defaults = UserDefaults(suiteName: "coretend-sounds-\(UUID())")!
+        XCTAssertFalse(CoreTendPreferences(environment: [:], defaults: defaults).soundsEnabled)
+        let fixture = CoreTendPreferences(environment: ["CORETEND_TEST_MODE": "1", "CORETEND_TEST_SOUNDS_ENABLED": "1"], defaults: defaults)
+        XCTAssertTrue(fixture.soundsEnabled)
+        fixture.saveSoundsEnabled(false)
+        XCTAssertNil(defaults.object(forKey: "coretend.sounds.enabled"))
+        for key in ["settings.sound.title", "settings.sound.toggle", "settings.sound.help", "metrics.purgeable"] {
+            XCTAssertNotEqual(ProductCopy.value(for: key, french: false), key)
+            XCTAssertNotEqual(ProductCopy.value(for: key, french: true), key)
+        }
+    }
+
     func testMenuBarMetricsAndLatestActivityCopyExistsInBothLanguages() {
         for key in ["menubar.metrics.title", "menubar.metrics.help", "menubar.metrics.updated", "menubar.activity.title", "menubar.activity.empty", "menubar.activity.unavailable", "menubar.open"] {
             XCTAssertNotEqual(ProductCopy.value(for: key, french: false), key)

@@ -26,6 +26,7 @@ struct SettingsView: View {
     @State private var ownSignature: CodeSignatureReport?
     @State private var status: String?
     @AppStorage("coretend.livingGreenhouse") private var livingGreenhouse = true
+    @State private var soundsEnabled = CoreTendPreferences().soundsEnabled
     @Environment(AppUpdater.self) private var updater
     @State private var tab = "general"
 
@@ -82,6 +83,11 @@ struct SettingsView: View {
                         Button(ProductCopy.value(for: "updates.check", french: french)) { updater.checkForUpdates() }
                             .buttonStyle(.serre(.secondary))
                     }
+                    }
+                    section(ProductCopy.value(for: "settings.sound.title", french: french), help: ProductCopy.value(for: "settings.sound.help", french: french)) {
+                        Toggle(ProductCopy.value(for: "settings.sound.toggle", french: french), isOn: $soundsEnabled)
+                            .font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
+                            .onChange(of: soundsEnabled) { _, value in CoreTendPreferences().saveSoundsEnabled(value) }
                     }
                     section(french ? "Barre des menus" : "Menu bar") {
                         Toggle(ProductCopy.value(for: "settings.menubar.title", french: french), isOn: $menuBarEnabled)

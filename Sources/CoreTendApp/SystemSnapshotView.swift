@@ -121,6 +121,11 @@ struct SystemSnapshotView: View {
                         .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
                 }
                 Text(copy("metrics.trashNote")).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+                if case .known(let purgeable) = value.purgeableBytes, purgeable > 0 {
+                    Text(String(format: copy("metrics.purgeable"), ProductFormat.bytes(purgeable, french: french)))
+                        .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
                 measurementSource(copy("metrics.source.volume"), at: value.measuredAt)
             }
             .frame(maxHeight: .infinity, alignment: .topLeading)

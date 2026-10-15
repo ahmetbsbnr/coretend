@@ -14,14 +14,26 @@ public struct SystemSnapshot: Sendable, Equatable {
     public let uptimeSeconds: TimeInterval
     public let thermalState: ThermalState
     public let loadAverage1m: ProductMeasurement<Double>
+    /// Space macOS counts as available for important use beyond the free space: purgeable data it
+    /// removes on its own when room is needed (local snapshots, caches it manages).
+    public let purgeableBytes: ProductMeasurement<Int64>
 
     public init(measuredAt: Date, availableBytes: ProductMeasurement<Int64>, totalBytes: ProductMeasurement<Int64>,
                 activeProcessorCount: Int, physicalMemoryBytes: Int64, uptimeSeconds: TimeInterval, thermalState: ThermalState,
-                loadAverage1m: ProductMeasurement<Double> = .unknown(reason: "not_measured")) {
+                loadAverage1m: ProductMeasurement<Double> = .unknown(reason: "not_measured"),
+                purgeableBytes: ProductMeasurement<Int64> = .unknown(reason: "not_measured")) {
         self.measuredAt = measuredAt; self.availableBytes = availableBytes; self.totalBytes = totalBytes
         self.activeProcessorCount = activeProcessorCount; self.physicalMemoryBytes = physicalMemoryBytes
         self.uptimeSeconds = uptimeSeconds; self.thermalState = thermalState
         self.loadAverage1m = loadAverage1m
+        self.purgeableBytes = purgeableBytes
+    }
+
+    /// Purgeable space from two measurements macOS gives: what it would make available for
+    /// important use, minus what is free right now. Unknown when either is unknown; never negative.
+    public static func purgeable(free: ProductMeasurement<Int64>, importantAvailable: ProductMeasurement<Int64>) -> ProductMeasurement<Int64> {
+        guard case .known(let free) = free, case .known(let important) = importantAvailable else { return .unknown(reason: "volume_measurement_unavailable") }
+        return .known(max(important - free, 0))
     }
 
     public var performanceSample: PerformanceSample {
@@ -61,10 +73,13 @@ public struct MacOSSystemSnapshotReader: SystemSnapshotReading {
         case .critical: thermal = .critical
         @unknown default: thermal = .unknown
         }
+        let important = (try? URL(fileURLWithPath: "/").resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]))?
+            .volumeAvailableCapacityForImportantUsage.map { ProductMeasurement.known($0) } ?? .unknown(reason: "volume_measurement_unavailable")
         return SystemSnapshot(measuredAt: now, availableBytes: available, totalBytes: total,
                               activeProcessorCount: process.activeProcessorCount,
                               physicalMemoryBytes: Int64(min(UInt64(Int64.max), process.physicalMemory)),
-                              uptimeSeconds: process.systemUptime, thermalState: thermal, loadAverage1m: load)
+                              uptimeSeconds: process.systemUptime, thermalState: thermal, loadAverage1m: load,
+                              purgeableBytes: SystemSnapshot.purgeable(free: available, importantAvailable: important))
     }
 }
 
