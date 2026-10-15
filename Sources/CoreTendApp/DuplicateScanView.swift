@@ -126,8 +126,8 @@ struct DuplicateScanView: View {
             releasePreviewScope()
             if actionReview != nil { cancelAction() }
         }
-        .confirmationDialog(french ? "Déplacer vers la Corbeille macOS ?" : "Move to macOS Trash?", isPresented: $actionDialogPresented, titleVisibility: .visible) {
-            Button(french ? "Déplacer les copies" : "Move copies to Trash", role: .destructive) { beginExecution() }
+        .confirmationDialog(ProductCopy.inline("Déplacer vers la Corbeille macOS ?", "Move to macOS Trash?", french: french), isPresented: $actionDialogPresented, titleVisibility: .visible) {
+            Button(ProductCopy.inline("Déplacer les copies", "Move copies to Trash", french: french), role: .destructive) { beginExecution() }
             Button(copy("common.cancel"), role: .cancel) { cancelAction() }
                 // Return cancels: a move to the Trash is only ever a deliberate click.
                 .keyboardShortcut(.defaultAction)
@@ -238,11 +238,11 @@ struct DuplicateScanView: View {
                         .font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
                     let total = groups.compactMap { DuplicateSpace.recoverable(fileSize: groupSizes[$0.digest], copies: (standing($0) ?? $0.files).count) }.reduce(0, +)
                     if total > 0 {
-                        Text(french ? "· \(ProductFormat.bytes(total, french: true)) récupérables en ne gardant qu’un exemplaire" : "· \(ProductFormat.bytes(total, french: false)) recoverable keeping one copy")
+                        Text(ProductCopy.inline("· %1$@ récupérables en ne gardant qu’un exemplaire", "· %1$@ recoverable keeping one copy", french: french, "\(ProductFormat.bytes(total, french: french))"))
                             .font(CoreTendTypography.caption).foregroundStyle(Palette.accent.color)
                     }
                     Spacer()
-                    Text(french ? "Aucune sélection automatique" : "Nothing selected automatically")
+                    Text(ProductCopy.inline("Aucune sélection automatique", "Nothing selected automatically", french: french))
                         .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                 }
                 // Lazy: hundreds of groups are laid out as they scroll into view, not all at once.
@@ -259,12 +259,11 @@ struct DuplicateScanView: View {
                     TrashIndicator(landed: flight.landed, moving: moving, french: french)
                     Spacer()
                     Button { Task { await prepareAction() } } label: {
-                        Text(french ? "Examiner \(ProductFormat.items(selectedCopies.count, french: true))"
-                                    : "Review \(ProductFormat.items(selectedCopies.count, french: false))")
+                        Text(ProductCopy.inline("Examiner %1$@", "Review %1$@", french: french, "\(ProductFormat.items(selectedCopies.count, french: french))"))
                     }
                     .buttonStyle(.serre(.primary))
                     .disabled(selectedCopies.isEmpty || locked)
-                    .accessibilityHint(french ? "Les copies choisies seront revérifiées avant déplacement vers la Corbeille." : "Chosen copies are revalidated before moving to Trash.")
+                    .accessibilityHint(ProductCopy.inline("Les copies choisies seront revérifiées avant déplacement vers la Corbeille.", "Chosen copies are revalidated before moving to Trash.", french: french))
                 }
                 if let notice, notice.nearActions { banner(notice) }
                 if !report.issues.isEmpty {
@@ -283,7 +282,7 @@ struct DuplicateScanView: View {
                         .font(CoreTendTypography.caption.weight(.semibold)).foregroundStyle(Palette.secondaryInk.color)
                     Spacer()
                     if let freed = DuplicateSpace.recoverable(fileSize: groupSizes[group.digest], copies: (standing(group) ?? group.files).count) {
-                        Text(french ? "\(ProductFormat.bytes(freed, french: true)) récupérables" : "\(ProductFormat.bytes(freed, french: false)) recoverable")
+                        Text(ProductCopy.inline("%1$@ récupérables", "%1$@ recoverable", french: french, "\(ProductFormat.bytes(freed, french: french))"))
                             .font(CoreTendTypography.caption.weight(.semibold)).foregroundStyle(Palette.accent.color)
                     }
                 }
@@ -294,7 +293,7 @@ struct DuplicateScanView: View {
                     shoot(file, group: group, kept: file == kept)
                 }
                 if shown.count < files.count {
-                    Button(french ? "Afficher les \(files.count - shown.count) autres copies" : "Show \(files.count - shown.count) more copies") {
+                    Button(ProductCopy.inline("Afficher les %1$@ autres copies", "Show %1$@ more copies", french: french, "\(files.count - shown.count)")) {
                         expandedGroups.insert(group.digest)
                     }
                     .buttonStyle(.serre(.icon))
@@ -387,7 +386,7 @@ struct DuplicateScanView: View {
             SerreEmptyState(title: copy("duplicates.similar.none"), message: copy("duplicates.similar.none.help"))
         } else {
             VStack(alignment: .leading, spacing: 14) {
-                Text(french ? "\(ProductFormat.count(report.candidates.count, french: true)) paires proches" : "\(ProductFormat.count(report.candidates.count, french: false)) close pairs")
+                Text(ProductCopy.inline("%1$@ paires proches", "%1$@ close pairs", french: french, "\(ProductFormat.count(report.candidates.count, french: french))"))
                     .font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
                 ForEach(Array(report.candidates.enumerated()), id: \.element.id) { index, pair in
                     SerreParcel {
@@ -397,7 +396,7 @@ struct DuplicateScanView: View {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(pair.first.lastPathComponent).font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
                                 Text(pair.second.lastPathComponent).font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
-                                Text(french ? "Écart perceptuel : \(pair.differingBits)/64" : "Perceptual distance: \(pair.differingBits)/64")
+                                Text(ProductCopy.inline("Écart perceptuel : %1$@/64", "Perceptual distance: %1$@/64", french: french, "\(pair.differingBits)"))
                                     .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                             }
                             Spacer(minLength: 0)
@@ -409,7 +408,7 @@ struct DuplicateScanView: View {
             }
         }
         if report.skippedCount > 0 {
-            SerreBanner(.partial, title: french ? "\(report.skippedCount) fichiers ignorés (format ou limite)." : "\(report.skippedCount) files skipped (format or limit).")
+            SerreBanner(.partial, title: ProductCopy.inline("%1$@ fichiers ignorés (format ou limite).", "%1$@ files skipped (format or limit).", french: french, "\(report.skippedCount)"))
         }
     }
 
@@ -417,7 +416,7 @@ struct DuplicateScanView: View {
         Button { showPreview(url) } label: { imagePreview(url) }
             .buttonStyle(.serre(.tile))
             .accessibilityLabel(previewLabel(for: url))
-            .accessibilityHint(french ? "Ouvre l’aperçu Quick Look." : "Opens the Quick Look preview.")
+            .accessibilityHint(ProductCopy.inline("Ouvre l’aperçu Quick Look.", "Opens the Quick Look preview.", french: french))
     }
 
     /// The allocated size of one file (every copy of a group has the same content).
@@ -540,9 +539,9 @@ struct DuplicateScanView: View {
     private var progressTitle: String {
         guard let analysisProgress else { return copy("scan.progress") }
         switch analysisProgress {
-        case .duplicateHashing: return french ? "Hachage des doublons" : "Hashing duplicates"
-        case .imageCandidates: return french ? "Analyse des images" : "Checking images"
-        case .imageComparisons: return french ? "Comparaison des images" : "Comparing images"
+        case .duplicateHashing: return ProductCopy.inline("Hachage des doublons", "Hashing duplicates", french: french)
+        case .imageCandidates: return ProductCopy.inline("Analyse des images", "Checking images", french: french)
+        case .imageComparisons: return ProductCopy.inline("Comparaison des images", "Comparing images", french: french)
         }
     }
 
@@ -662,13 +661,13 @@ struct DuplicateScanView: View {
             let review = try service.prepareReview(selections, protectedKeepers: protectedKeepers,
                                                    expectedProtectedKeepers: expectedKeepers)
             guard await service.recordProposal(review) else {
-                notice = PageNotice(kind: .error, title: french ? "Journal indisponible; action bloquée." : "History unavailable; action blocked.", nearActions: true)
+                notice = PageNotice(kind: .error, title: ProductCopy.inline("Journal indisponible; action bloquée.", "History unavailable; action blocked.", french: french), nearActions: true)
                 return
             }
             actionReview = review
             actionService = service
             actionDialogPresented = true
-        } catch { notice = PageNotice(kind: .error, title: french ? "Revue impossible; aucune copie déplacée." : "Review failed; no copies moved.", nearActions: true) }
+        } catch { notice = PageNotice(kind: .error, title: ProductCopy.inline("Revue impossible; aucune copie déplacée.", "Review failed; no copies moved.", french: french), nearActions: true) }
     }
 
     /// The identity must still describe the exact bytes hashed by the engine, including
@@ -699,7 +698,7 @@ struct DuplicateScanView: View {
         defer { moving = false; actionBusy = false; releaseActionScope() }
         let batch: ConfirmedActionBatch
         do { batch = try service.confirm(review, accepted: true) } catch {
-            notice = PageNotice(kind: .error, title: french ? "Action refusée; aucune copie déplacée." : "Action refused; no copies moved.", nearActions: true)
+            notice = PageNotice(kind: .error, title: ProductCopy.inline("Action refusée; aucune copie déplacée.", "Action refused; no copies moved.", french: french), nearActions: true)
             return
         }
         failures = [:]; flight.landed = 0; notice = nil
@@ -726,7 +725,7 @@ struct DuplicateScanView: View {
         actionReview = nil; actionService = nil
         Task { @MainActor in
             let saved = await service.recordCancellation(review)
-            notice = PageNotice(kind: .note, title: saved ? (french ? "Action annulée; annulation journalisée." : "Action cancelled; cancellation recorded.") : (french ? "Action annulée; journal indisponible." : "Action history unavailable."), nearActions: true)
+            notice = PageNotice(kind: .note, title: saved ? (ProductCopy.inline("Action annulée; annulation journalisée.", "Action cancelled; cancellation recorded.", french: french)) : (ProductCopy.inline("Action annulée; journal indisponible.", "Action history unavailable.", french: french)), nearActions: true)
             releaseActionScope()
             actionBusy = false
         }
@@ -736,8 +735,8 @@ struct DuplicateScanView: View {
         let names = actionReview?.items.prefix(5).map { $0.url.lastPathComponent }.joined(separator: "\n") ?? ""
         let count = actionReview?.items.count ?? 0
         let extra = max(0, count - 5)
-        let suffix = extra > 0 ? (french ? "\n… et \(extra) autres" : "\n… and \(extra) more") : ""
-        return french ? "\(count) copies sélectionnées :\n\(names)\(suffix)\nCopies gardées exclues. Aucun effacement définitif." : "\(count) copies selected:\n\(names)\(suffix)\nSuggested keepers excluded. No permanent deletion."
+        let suffix = extra > 0 ? (ProductCopy.inline("\n… et %1$@ autres", "\n… and %1$@ more", french: french, "\(extra)")) : ""
+        return ProductCopy.inline("%1$@ copies sélectionnées :\n%2$@%3$@\nCopies gardées exclues. Aucun effacement définitif.", "%1$@ copies selected:\n%2$@%3$@\nSuggested keepers excluded. No permanent deletion.", french: french, "\(count)", "\(names)", "\(suffix)")
     }
 
     private func releaseActionScope() {
@@ -747,12 +746,12 @@ struct DuplicateScanView: View {
     }
 
     private func copy(_ key: String, count: Int? = nil) -> String {
-        if key == "duplicates.count", let count { return french ? "\(count) groupes de doublons exacts" : "\(count) exact duplicate groups" }
+        if key == "duplicates.count", let count { return ProductCopy.inline("%1$@ groupes de doublons exacts", "%1$@ exact duplicate groups", french: french, "\(count)") }
         return ProductCopy.value(for: key, french: french)
     }
 
     private func previewLabel(for url: URL) -> String {
-        french ? "Aperçu de \(url.lastPathComponent)" : "Preview \(url.lastPathComponent)"
+        ProductCopy.inline("Aperçu de %1$@", "Preview %1$@", french: french, "\(url.lastPathComponent)")
     }
 
     private func imagePreview(_ url: URL) -> some View {

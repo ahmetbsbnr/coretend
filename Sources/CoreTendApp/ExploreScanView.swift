@@ -129,8 +129,7 @@ struct ExploreScanView: View {
                 map
                 list
                 if let notice, notice.nearActions { banner(notice) }
-                Text(french ? "Somme des octets locaux connus : \(ProductFormat.bytes(treemapInputs.reduce(0) { $0 + $1.bytes }, french: true)). Le nuage et les tailles inconnues ne sont pas estimés."
-                            : "Known local bytes total: \(ProductFormat.bytes(treemapInputs.reduce(0) { $0 + $1.bytes }, french: false)). Cloud-backed and unknown sizes are not estimated.")
+                Text(ProductCopy.inline("Somme des octets locaux connus : %1$@. Le nuage et les tailles inconnues ne sont pas estimés.", "Known local bytes total: %1$@. Cloud-backed and unknown sizes are not estimated.", french: french, "\(ProductFormat.bytes(treemapInputs.reduce(0) { $0 + $1.bytes }, french: french))"))
                     .font(CoreTendTypography.caption).foregroundStyle(Palette.tertiaryInk.color)
             }
         }
@@ -231,8 +230,7 @@ struct ExploreScanView: View {
                 HStack(alignment: .firstTextBaseline) {
                     Text(copy("explore.filters")).font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
                     Spacer()
-                    Text(french ? "\(ProductFormat.items(visibleResults.count, french: true)) sur \(ProductFormat.count(results.count, french: true))"
-                                : "\(ProductFormat.items(visibleResults.count, french: false)) of \(ProductFormat.count(results.count, french: false))")
+                    Text(ProductCopy.inline("%1$@ sur %2$@", "%1$@ of %2$@", french: french, "\(ProductFormat.items(visibleResults.count, french: french))", "\(ProductFormat.count(results.count, french: french))"))
                         .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                         .contentTransition(.numericText(value: Double(visibleResults.count)))
                 }
@@ -250,15 +248,15 @@ struct ExploreScanView: View {
                         Text(copy("explore.oldest")).tag("oldest")
                         Text(copy("explore.name")).tag("name")
                     }
-                    Picker(french ? "Catégorie" : "Category", selection: $category) {
+                    Picker(ProductCopy.inline("Catégorie", "Category", french: french), selection: $category) {
                         ForEach(ExploreFileCategory.allCases, id: \.self) { value in
                             Text(categoryName(value)).tag(value)
                         }
                     }
-                    Picker(french ? "Filtre" : "Filter", selection: $preset) {
-                        Text(french ? "Tous" : "All files").tag(ExplorePreset.all)
-                        Text(french ? "≥ 1 Gio local" : "≥ 1 GiB local").tag(ExplorePreset.largeLocal)
-                        Text(french ? "Anciens · 365 jours" : "Older · 365 days").tag(ExplorePreset.olderThan365Days)
+                    Picker(ProductCopy.inline("Filtre", "Filter", french: french), selection: $preset) {
+                        Text(ProductCopy.inline("Tous", "All files", french: french)).tag(ExplorePreset.all)
+                        Text(ProductCopy.inline("≥ 1 Gio local", "≥ 1 GiB local", french: french)).tag(ExplorePreset.largeLocal)
+                        Text(ProductCopy.inline("Anciens · 365 jours", "Older · 365 days", french: french)).tag(ExplorePreset.olderThan365Days)
                     }
                     .onChange(of: preset) { _, _ in presetEvaluationDate = .now }
                 }
@@ -285,7 +283,7 @@ struct ExploreScanView: View {
             HStack(alignment: .firstTextBaseline) {
                 Text(copy("explore.map")).font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
                 Spacer()
-                Text(hoveredLabel ?? (french ? "\(treemapInputs.count) allocations connues" : "\(treemapInputs.count) known allocations"))
+                Text(hoveredLabel ?? (ProductCopy.inline("%1$@ allocations connues", "%1$@ known allocations", french: french, "\(treemapInputs.count)")))
                     .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                     .lineLimit(1).truncationMode(.middle)
             }
@@ -379,7 +377,7 @@ struct ExploreScanView: View {
         // Hover and click stay inside the plot: `position` below would stretch them over the map.
         .onHover { inside in hoveredTile = inside ? tile.id : (hoveredTile == tile.id ? nil : hoveredTile) }
         .accessibilityLabel("\(URL(fileURLWithPath: tile.id).lastPathComponent), \(ProductFormat.bytes(tile.bytes, french: french))")
-        .accessibilityHint(folder ? (french ? "Entre dans ce dossier." : "Opens this folder.") : (french ? "Montre ce fichier dans la liste." : "Shows this file in the list."))
+        .accessibilityHint(folder ? (ProductCopy.inline("Entre dans ce dossier.", "Opens this folder.", french: french)) : (ProductCopy.inline("Montre ce fichier dans la liste.", "Shows this file in the list.", french: french)))
         .serreRise(rank)
         .position(x: tile.frame.midX, y: tile.frame.midY)
     }
@@ -390,7 +388,7 @@ struct ExploreScanView: View {
             HStack(alignment: .firstTextBaseline) {
                 Text(copy("explore.results")).font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
                 Spacer()
-                Text(french ? "Aucune sélection automatique" : "Nothing selected automatically")
+                Text(ProductCopy.inline("Aucune sélection automatique", "Nothing selected automatically", french: french))
                     .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                 Button(copy("cleanup.selectNone")) { selectedExploreFiles = [] }
                     .buttonStyle(.serre(.icon)).disabled(locked || selectedExploreFiles.isEmpty)
@@ -422,12 +420,11 @@ struct ExploreScanView: View {
                 TrashIndicator(landed: flight.landed, moving: moving, french: french)
                 Spacer()
                 Button { Task { await prepareDeleteReview() } } label: {
-                    Text(french ? "Examiner \(ProductFormat.items(selectedExploreFiles.count, french: true))"
-                                : "Review \(ProductFormat.items(selectedExploreFiles.count, french: false))")
+                    Text(ProductCopy.inline("Examiner %1$@", "Review %1$@", french: french, "\(ProductFormat.items(selectedExploreFiles.count, french: french))"))
                 }
                 .buttonStyle(.serre(.primary))
                 .disabled(selectedExploreFiles.isEmpty || locked)
-                .accessibilityHint(french ? "Aucun élément n’est déplacé avant confirmation." : "No item moves before confirmation.")
+                .accessibilityHint(ProductCopy.inline("Aucun élément n’est déplacé avant confirmation.", "No item moves before confirmation.", french: french))
             }
         }
     }
@@ -448,8 +445,8 @@ struct ExploreScanView: View {
             .disabled(locked || !selectable)
             .accessibilityLabel(ProductCopy.scanResultAccessibilitySummary(
                 name: result.url.lastPathComponent,
-                source: french ? "Explorer" : "Explore",
-                state: french ? "Résultat mesuré" : "Measured result",
+                source: ProductCopy.inline("Explorer", "Explore", french: french),
+                state: ProductCopy.inline("Résultat mesuré", "Measured result", french: french),
                 allocated: size(result.allocatedBytes), logical: size(result.logicalBytes),
                 modified: modified(result), french: french
             ))
@@ -471,7 +468,7 @@ struct ExploreScanView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(result.url.lastPathComponent).font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
                     .lineLimit(1).truncationMode(.middle)
-                Text(relativeFolder(result.url) + " · " + (french ? "modifié \(modified(result))" : "modified \(modified(result))"))
+                Text(relativeFolder(result.url) + " · " + (ProductCopy.inline("modifié %1$@", "modified %1$@", french: french, "\(modified(result))")))
                     .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                     .lineLimit(1).truncationMode(.middle)
                 if let failure {
@@ -482,7 +479,7 @@ struct ExploreScanView: View {
             Spacer(minLength: 8)
             VStack(alignment: .trailing, spacing: 2) {
                 Text(size(result.allocatedBytes)).font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
-                Text(french ? "logique \(size(result.logicalBytes))" : "logical \(size(result.logicalBytes))")
+                Text(ProductCopy.inline("logique %1$@", "logical %1$@", french: french, "\(size(result.logicalBytes))"))
                     .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
             }
             .monospacedDigit()
@@ -498,15 +495,15 @@ struct ExploreScanView: View {
             .buttonStyle(.serre(.icon))
             .help(copy(favorite ? "explore.favorite.remove" : "explore.favorite.add"))
             .accessibilityLabel(favorite
-                ? (french ? "Retirer \(result.url.lastPathComponent) des favoris" : "Remove \(result.url.lastPathComponent) from favorites")
-                : (french ? "Ajouter \(result.url.lastPathComponent) aux favoris" : "Add \(result.url.lastPathComponent) to favorites"))
+                ? (ProductCopy.inline("Retirer %1$@ des favoris", "Remove %1$@ from favorites", french: french, "\(result.url.lastPathComponent)"))
+                : (ProductCopy.inline("Ajouter %1$@ aux favoris", "Add %1$@ to favorites", french: french, "\(result.url.lastPathComponent)")))
             Button { showPreview(result.url) } label: {
                 Image(systemName: "eye").foregroundStyle(Palette.secondaryInk.color)
             }
             .buttonStyle(.serre(.icon))
             .help(copy("explore.preview"))
             .accessibilityLabel(previewLabel(for: result.url))
-            .accessibilityHint(french ? "Ouvre l’aperçu Quick Look." : "Opens the Quick Look preview.")
+            .accessibilityHint(ProductCopy.inline("Ouvre l’aperçu Quick Look.", "Opens the Quick Look preview.", french: french))
         }
     }
 
@@ -650,7 +647,7 @@ struct ExploreScanView: View {
         guard !chosen.isEmpty, chosen.count == selectedExploreFiles.count,
               (try? FileIdentity(url: root)) == rootIdentity,
               chosen.allSatisfy({ isRegularFileInsideSelectedRoot($0.url, root: root) }) else {
-            notice = PageNotice(kind: .error, title: french ? "La sélection a changé; aucune action proposée." : "The selection changed; no action was proposed.", nearActions: true)
+            notice = PageNotice(kind: .error, title: ProductCopy.inline("La sélection a changé; aucune action proposée.", "The selection changed; no action was proposed.", french: french), nearActions: true)
             return
         }
 
@@ -677,7 +674,7 @@ struct ExploreScanView: View {
             actionService = service
             actionDialogPresented = true
         } catch {
-            notice = PageNotice(kind: .error, title: french ? "Impossible d’examiner la sélection; aucun fichier déplacé." : "Review failed; no files moved.", nearActions: true)
+            notice = PageNotice(kind: .error, title: ProductCopy.inline("Impossible d’examiner la sélection; aucun fichier déplacé.", "Review failed; no files moved.", french: french), nearActions: true)
         }
     }
 
@@ -695,7 +692,7 @@ struct ExploreScanView: View {
         defer { moving = false; actionBusy = false; releaseDeleteScope() }
         let batch: ConfirmedActionBatch
         do { batch = try service.confirm(review, accepted: true) } catch {
-            notice = PageNotice(kind: .error, title: french ? "Action refusée; aucun fichier déplacé." : "Action refused; no files moved.", nearActions: true)
+            notice = PageNotice(kind: .error, title: ProductCopy.inline("Action refusée; aucun fichier déplacé.", "Action refused; no files moved.", french: french), nearActions: true)
             return
         }
         failures = [:]; flight.landed = 0; notice = nil
@@ -735,8 +732,8 @@ struct ExploreScanView: View {
         let items = actionReview?.items ?? []
         let paths = items.prefix(10).map { "\($0.url.lastPathComponent)\n\($0.url.path)" }.joined(separator: "\n\n")
         let remaining = max(0, items.count - 10)
-        let suffix = remaining > 0 ? (french ? "\n\n… et \(remaining) autres" : "\n\n… and \(remaining) more") : ""
-        return "\(paths)\(suffix)\n\n\(french ? "Seuls les fichiers sélectionnés seront déplacés vers la Corbeille." : "Only the selected files will be moved to Trash.")"
+        let suffix = remaining > 0 ? (ProductCopy.inline("\n\n… et %1$@ autres", "\n\n… and %1$@ more", french: french, "\(remaining)")) : ""
+        return "\(paths)\(suffix)\n\n\(ProductCopy.inline("Seuls les fichiers sélectionnés seront déplacés vers la Corbeille.", "Only the selected files will be moved to Trash.", french: french))"
     }
 
     private func isSelectableExploreResult(_ result: ScanResult) -> Bool {
@@ -794,7 +791,7 @@ struct ExploreScanView: View {
             let isFavorite = !favoritePaths.contains(result.url.path)
             try await store.setFavorite(path: result.url.path, isFavorite: isFavorite)
             if isFavorite { favoritePaths.insert(result.url.path) } else { favoritePaths.remove(result.url.path) }
-        } catch { notice = PageNotice(kind: .error, title: french ? "Favori non enregistré." : "Favorite was not saved.", nearActions: true) }
+        } catch { notice = PageNotice(kind: .error, title: ProductCopy.inline("Favori non enregistré.", "Favorite was not saved.", french: french), nearActions: true) }
     }
 
     @MainActor private func loadFavorites() async {
@@ -811,7 +808,7 @@ struct ExploreScanView: View {
 
     private func modified(_ result: ScanResult) -> String {
         guard let date = result.modifiedAt else { return copy("metrics.unknown") }
-        return date.formatted(.dateTime.year().month().day().hour().minute().locale(Locale(identifier: french ? "fr_FR" : "en_US")))
+        return date.formatted(.dateTime.year().month().day().hour().minute().locale(Locale(identifier: ProductCopy.inline("fr_FR", "en_US", french: french))))
     }
 
     private func allocated(_ result: ScanResult) -> Int64? {
@@ -820,45 +817,45 @@ struct ExploreScanView: View {
     }
 
     private func copy(_ key: String, count: Int? = nil) -> String {
-        if key == "scan.count", let count { return french ? "\(count) fichiers mesurés" : "\(count) measured files" }
+        if key == "scan.count", let count { return ProductCopy.inline("%1$@ fichiers mesurés", "%1$@ measured files", french: french, "\(count)") }
         return ProductCopy.value(for: key, french: french)
     }
 
     private func previewLabel(for url: URL) -> String {
-        french ? "Aperçu de \(url.lastPathComponent)" : "Preview \(url.lastPathComponent)"
+        ProductCopy.inline("Aperçu de %1$@", "Preview %1$@", french: french, "\(url.lastPathComponent)")
     }
 
     private var presetDescription: String {
         switch preset {
         case .all:
-            return french ? "Aucun filtre de taille ou de date." : "No size or date filter."
+            return ProductCopy.inline("Aucun filtre de taille ou de date.", "No size or date filter.", french: french)
         case .largeLocal:
-            return french ? "Octets locaux alloués connus ≥ 1 Gio; tailles nuage/inconnues exclues." : "Known allocated local bytes ≥ 1 GiB; cloud/unknown sizes excluded."
+            return ProductCopy.inline("Octets locaux alloués connus ≥ 1 Gio; tailles nuage/inconnues exclues.", "Known allocated local bytes ≥ 1 GiB; cloud/unknown sizes excluded.", french: french)
         case .olderThan365Days:
             let cutoff = presetEvaluationDate.addingTimeInterval(-ExplorePreset.ageWindow)
             let formatter = DateFormatter()
             formatter.locale = Locale(identifier: "en_US_POSIX")
             formatter.dateFormat = "yyyy-MM-dd HH:mm:ss ZZZZZ"
             let date = formatter.string(from: cutoff)
-            return french ? "Date de modification au plus tard le \(date) (365 jours); dates inconnues exclues." : "Modification date on or before \(date) (365 days); unknown dates excluded."
+            return ProductCopy.inline("Date de modification au plus tard le %1$@ (365 jours); dates inconnues exclues.", "Modification date on or before %1$@ (365 days); unknown dates excluded.", french: french, "\(date)")
         }
     }
 
     private func categoryName(_ value: ExploreFileCategory) -> String {
         switch value {
-        case .all: french ? "Toutes les catégories" : "All categories"
-        case .images: french ? "Images" : "Images"
-        case .videos: french ? "Vidéos" : "Videos"
-        case .audio: french ? "Audio" : "Audio"
-        case .documents: french ? "Documents" : "Documents"
-        case .archives: french ? "Archives" : "Archives"
-        case .other: french ? "Autres extensions" : "Other extensions"
+        case .all: ProductCopy.inline("Toutes les catégories", "All categories", french: french)
+        case .images: ProductCopy.inline("Images", "Images", french: french)
+        case .videos: ProductCopy.inline("Vidéos", "Videos", french: french)
+        case .audio: ProductCopy.inline("Audio", "Audio", french: french)
+        case .documents: ProductCopy.inline("Documents", "Documents", french: french)
+        case .archives: ProductCopy.inline("Archives", "Archives", french: french)
+        case .other: ProductCopy.inline("Autres extensions", "Other extensions", french: french)
         }
     }
 
     private var categoryDescription: String {
         guard category != .all else {
-            return french ? "Aucun filtre de type; fichiers avec ou sans extension inclus." : "No file-type filter; files with or without extensions are included."
+            return ProductCopy.inline("Aucun filtre de type; fichiers avec ou sans extension inclus.", "No file-type filter; files with or without extensions are included.", french: french)
         }
         guard category != .other else {
             return french
@@ -866,7 +863,7 @@ struct ExploreScanView: View {
                 : "Extensions outside Images, Videos, Audio, Documents, and Archives; files without an extension included."
         }
         let extensions = category.fileExtensions.map { ".\($0)" }.joined(separator: ", ")
-        return french ? "Extensions incluses : \(extensions)." : "Included extensions: \(extensions)."
+        return ProductCopy.inline("Extensions incluses : %1$@.", "Included extensions: %1$@.", french: french, "\(extensions)")
     }
 }
 

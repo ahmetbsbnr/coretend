@@ -48,7 +48,7 @@ struct CommandPaletteView: View {
             }
             Palette.separator.color.frame(height: 1)
             HStack {
-                Text(french ? "↑ ↓ pour choisir · Retour ouvre · esc ou clic dehors ferme" : "↑ ↓ to select · Return to open · esc or click outside to close")
+                Text(ProductCopy.inline("↑ ↓ pour choisir · Retour ouvre · esc ou clic dehors ferme", "↑ ↓ to select · Return to open · esc or click outside to close", french: french))
                     .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
                 Spacer()
             }
@@ -117,7 +117,7 @@ struct CommandPaletteView: View {
                 .frame(minHeight: 22)
         }
         .buttonStyle(.serre(.row(selected: selectedID == command.id)))
-        .accessibilityValue(selectedID == command.id ? (french ? "Sélectionné" : "Selected") : "")
+        .accessibilityValue(selectedID == command.id ? (ProductCopy.inline("Sélectionné", "Selected", french: french)) : "")
     }
 
     private func moveSelection(_ direction: CommandMoveDirection) -> KeyPress.Result {
@@ -180,7 +180,7 @@ struct SearchLayer: View {
             SerreScrim()
                 .onTapGesture(perform: close)
                 .accessibilityElement()
-                .accessibilityLabel(french ? "Fermer la recherche" : "Close search")
+                .accessibilityLabel(ProductCopy.inline("Fermer la recherche", "Close search", french: french))
                 .accessibilityAddTraits(.isButton)
                 .accessibilityAction { close() }
             CommandPaletteView(french: french, select: select, close: close)

@@ -104,8 +104,7 @@ struct IntegrityView: View {
                         if let team = report.teamIdentifier { fact(copy("integrity.team"), team) }
                         if report.statusCode != 0 { fact(copy("integrity.status"), String(report.statusCode)) }
                         if report.state == .unavailable {
-                            note(french ? "Vérifiez que le bundle choisi est accessible, puis choisissez-le à nouveau."
-                                        : "Check that the chosen bundle is accessible, then choose it again.")
+                            note(ProductCopy.inline("Vérifiez que le bundle choisi est accessible, puis choisissez-le à nouveau.", "Check that the chosen bundle is accessible, then choose it again.", french: french))
                         }
                         source(french
                             ? "Source : validation de signature macOS pour le bundle choisi. Le résultat ne prouve ni l’identité de l’éditeur, ni l’absence de malware, ni la sûreté."
@@ -117,10 +116,9 @@ struct IntegrityView: View {
             if let quarantine {
                 SerreSignalTag(quarantineTone(quarantine.state), title: "\(copy("integrity.quarantine")) · \(quarantineText(quarantine.state))", order: 1) {
                     VStack(alignment: .leading, spacing: 4) {
-                        if let errorCode = quarantine.errorCode { fact(french ? "Code système" : "System code", String(errorCode)) }
+                        if let errorCode = quarantine.errorCode { fact(ProductCopy.inline("Code système", "System code", french: french), String(errorCode)) }
                         if quarantine.state == .unavailable {
-                            note(french ? "Vérifiez que le bundle existe et que macOS autorise sa lecture, puis relancez l’examen."
-                                        : "Check that the bundle exists and macOS allows it to be read, then inspect it again.")
+                            note(ProductCopy.inline("Vérifiez que le bundle existe et que macOS autorise sa lecture, puis relancez l’examen.", "Check that the bundle exists and macOS allows it to be read, then inspect it again.", french: french))
                         }
                         source(copy("integrity.quarantine.limit"))
                         source(french
@@ -159,22 +157,21 @@ struct IntegrityView: View {
     private var survey: some View {
         SerreParcel {
             VStack(alignment: .leading, spacing: 12) {
-                Text(french ? "Toutes les apps d’un dossier" : "Every app in a folder").font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
+                Text(ProductCopy.inline("Toutes les apps d’un dossier", "Every app in a folder", french: french)).font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
                     .accessibilityAddTraits(.isHeader)
-                Text(french ? "Étiquette toutes les apps d’un dossier en une passe : signature et marqueur de quarantaine, sans rien modifier."
-                            : "Labels every app of a folder in one pass: signature and quarantine marker, changing nothing.")
+                Text(ProductCopy.inline("Étiquette toutes les apps d’un dossier en une passe : signature et marqueur de quarantaine, sans rien modifier.", "Labels every app of a folder in one pass: signature and quarantine marker, changing nothing.", french: french))
                     .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                     .fixedSize(horizontal: false, vertical: true)
                 HStack(spacing: 10) {
                     ForEach(ApplicationFolders.candidates(home: HomeFolder.url), id: \.path) { folder in
-                        Button(folder.path == "/Applications" ? "Applications" : (french ? "Applications (les vôtres)" : "Applications (yours)")) {
+                        Button(folder.path == "/Applications" ? "Applications" : (ProductCopy.inline("Applications (les vôtres)", "Applications (yours)", french: french))) {
                             runSurvey(folder)
                         }
                         .buttonStyle(.serre(surveyFolder == folder ? .primary : .secondary))
                         .disabled(surveying)
                     }
                     if surveying {
-                        Text(french ? "Étiquetage de \(surveyRows.count) apps…" : "Labelling \(surveyRows.count) apps…")
+                        Text(ProductCopy.inline("Étiquetage de %1$@ apps…", "Labelling %1$@ apps…", french: french, "\(surveyRows.count)"))
                             .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                     }
                 }
@@ -183,10 +180,10 @@ struct IntegrityView: View {
                     let unreadable = surveyRows.filter { $0.signature == .unavailable }.count
                     let marked = surveyRows.filter { $0.quarantine == .present }.count
                     HStack(spacing: 10) {
-                        SerreRiskBadge(.low, label: french ? "\(surveyRows.count - refused - unreadable) validées" : "\(surveyRows.count - refused - unreadable) validated")
-                        if refused > 0 { SerreRiskBadge(.high, label: french ? "\(refused) refusées" : "\(refused) refused") }
-                        if unreadable > 0 { SerreRiskBadge(.medium, label: french ? "\(unreadable) illisibles" : "\(unreadable) unreadable") }
-                        Text(french ? "· \(marked) avec marqueur de quarantaine" : "· \(marked) with a quarantine marker")
+                        SerreRiskBadge(.low, label: ProductCopy.inline("%1$@ validées", "%1$@ validated", french: french, "\(surveyRows.count - refused - unreadable)"))
+                        if refused > 0 { SerreRiskBadge(.high, label: ProductCopy.inline("%1$@ refusées", "%1$@ refused", french: french, "\(refused)")) }
+                        if unreadable > 0 { SerreRiskBadge(.medium, label: ProductCopy.inline("%1$@ illisibles", "%1$@ unreadable", french: french, "\(unreadable)")) }
+                        Text(ProductCopy.inline("· %1$@ avec marqueur de quarantaine", "· %1$@ with a quarantine marker", french: french, "\(marked)"))
                             .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                     }
                     VStack(spacing: 2) {
@@ -199,8 +196,8 @@ struct IntegrityView: View {
                                 Spacer()
                                 SerreRiskBadge(row.signature == .valid ? .low : (row.signature == .invalid ? .high : .medium),
                                                label: signatureText(row.signature))
-                                Text(row.quarantine == .present ? (french ? "quarantaine" : "quarantine")
-                                     : (row.quarantine == .absent ? "—" : (french ? "illisible" : "unreadable")))
+                                Text(row.quarantine == .present ? (ProductCopy.inline("quarantaine", "quarantine", french: french))
+                                     : (row.quarantine == .absent ? "—" : (ProductCopy.inline("illisible", "unreadable", french: french))))
                                     .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                                     .frame(width: 80, alignment: .trailing)
                                     .help(quarantineText(row.quarantine))
@@ -304,8 +301,8 @@ struct IntegrityView: View {
 
     private func folderName(_ folder: URL) -> String {
         folder.path == "/Library/LaunchAgents"
-            ? (french ? "LaunchAgents partagés" : "Shared LaunchAgents")
-            : (french ? "Vos LaunchAgents" : "Your LaunchAgents")
+            ? (ProductCopy.inline("LaunchAgents partagés", "Shared LaunchAgents", french: french))
+            : (ProductCopy.inline("Vos LaunchAgents", "Your LaunchAgents", french: french))
     }
 
     private func candidateRow(_ candidate: LaunchAgentCandidate) -> some View {
@@ -410,15 +407,15 @@ struct IntegrityView: View {
     private func loginAgentNextStep(_ reason: LaunchAgentIssueReason) -> String {
         switch reason {
         case .directoryUnreadable:
-            french ? "Vérifiez l’accès au dossier, ou choisissez un dossier lisible." : "Check folder access, or choose a readable folder."
+            ProductCopy.inline("Vérifiez l’accès au dossier, ou choisissez un dossier lisible.", "Check folder access, or choose a readable folder.", french: french)
         case .plistUnreadable:
-            french ? "Vérifiez que ce fichier reste présent et lisible." : "Check that this file is still present and readable."
+            ProductCopy.inline("Vérifiez que ce fichier reste présent et lisible.", "Check that this file is still present and readable.", french: french)
         case .malformedPlist:
-            french ? "Le fichier est ignoré; vérifiez son format plist avec son éditeur habituel." : "File was skipped; check its plist format with its usual editor."
+            ProductCopy.inline("Le fichier est ignoré; vérifiez son format plist avec son éditeur habituel.", "File was skipped; check its plist format with its usual editor.", french: french)
         case .plistTooLarge:
-            french ? "Ce fichier dépasse la limite de lecture et reste ignoré." : "File exceeds the read limit and remains uninspected."
+            ProductCopy.inline("Ce fichier dépasse la limite de lecture et reste ignoré.", "File exceeds the read limit and remains uninspected.", french: french)
         case .candidateLimitReached:
-            french ? "Choisissez un dossier plus ciblé pour examiner moins de 500 fichiers." : "Choose a narrower folder to inspect fewer than 500 files."
+            ProductCopy.inline("Choisissez un dossier plus ciblé pour examiner moins de 500 fichiers.", "Choose a narrower folder to inspect fewer than 500 files.", french: french)
         }
     }
 

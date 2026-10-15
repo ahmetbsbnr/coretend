@@ -23,54 +23,46 @@ struct SystemToolsView<Section: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             if let message { SerreBanner(.note, title: message) }
-            section(t("Fonctions système", "System features"),
-                    t("Un petit assistant signé, installé seulement si vous l’activez, lit et range ce que macOS réserve à l’administrateur : les caches de /Library/Caches et les services qui démarrent avec le Mac. Tout part à la Corbeille ; rien n’est effacé. Le désactiver le retire.",
-                      "A small signed helper, installed only if you turn it on, reads and tidies what macOS keeps for the administrator: the caches in /Library/Caches and the services that start with the Mac. Everything goes to the Trash; nothing is erased. Turning it off removes it."),
+            section(ProductCopy.inline("Fonctions système", "System features", french: french),
+                    ProductCopy.inline("Un petit assistant signé, installé seulement si vous l’activez, lit et range ce que macOS réserve à l’administrateur : les caches de /Library/Caches et les services qui démarrent avec le Mac. Tout part à la Corbeille ; rien n’est effacé. Le désactiver le retire.", "A small signed helper, installed only if you turn it on, reads and tidies what macOS keeps for the administrator: the caches in /Library/Caches and the services that start with the Mac. Everything goes to the Trash; nothing is erased. Turning it off removes it.", french: french),
                     AnyView(helperControls))
             if helper.state == .on {
-                section(t("Caches système", "System caches"),
-                        t("Les caches des apps Apple restent hors liste. Une app recrée son cache au besoin.",
-                          "Apple's own caches are left out. An app rebuilds its cache when it needs it."),
+                section(ProductCopy.inline("Caches système", "System caches", french: french),
+                        ProductCopy.inline("Les caches des apps Apple restent hors liste. Une app recrée son cache au besoin.", "Apple's own caches are left out. An app rebuilds its cache when it needs it.", french: french),
                         AnyView(cacheList))
-                section(t("Instantanés Time Machine locaux", "Local Time Machine snapshots"),
-                        t("macOS garde des instantanés locaux et les réduit seul quand la place manque. En supprimer un libère sa place tout de suite, mais c’est la seule action de CoreTend qui efface pour de bon. Vos sauvegardes sur disque externe ne sont pas touchées.",
-                          "macOS keeps local snapshots and thins them on its own when room is needed. Deleting one frees its space now, but it is the one CoreTend action that erases for good. Your backups on an external disk are not touched."),
+                section(ProductCopy.inline("Instantanés Time Machine locaux", "Local Time Machine snapshots", french: french),
+                        ProductCopy.inline("macOS garde des instantanés locaux et les réduit seul quand la place manque. En supprimer un libère sa place tout de suite, mais c’est la seule action de CoreTend qui efface pour de bon. Vos sauvegardes sur disque externe ne sont pas touchées.", "macOS keeps local snapshots and thins them on its own when room is needed. Deleting one frees its space now, but it is the one CoreTend action that erases for good. Your backups on an external disk are not touched.", french: french),
                         AnyView(snapshotList))
-                section(t("Spotlight", "Spotlight"),
-                        t("Si la recherche ne trouve plus vos fichiers, Spotlight peut reconstruire son index. Aucun fichier n’est touché ; la recherche reste incomplète le temps de l’indexation.",
-                          "If search no longer finds your files, Spotlight can rebuild its index. No file is touched; search stays incomplete while it indexes."),
-                        AnyView(Button(t("Réindexer Spotlight…", "Reindex Spotlight…")) { confirmReindex = true }.disabled(working)))
-                section(t("Services du système", "System services"),
-                        t("Désactiver un service l’empêche de démarrer au prochain démarrage du Mac ; son fichier reste en place et vous pouvez le réactiver ici.",
-                          "Turning a service off stops it from starting at the Mac's next startup; its file stays in place and you can turn it back on here."),
+                section(ProductCopy.inline("Spotlight", "Spotlight", french: french),
+                        ProductCopy.inline("Si la recherche ne trouve plus vos fichiers, Spotlight peut reconstruire son index. Aucun fichier n’est touché ; la recherche reste incomplète le temps de l’indexation.", "If search no longer finds your files, Spotlight can rebuild its index. No file is touched; search stays incomplete while it indexes.", french: french),
+                        AnyView(Button(ProductCopy.inline("Réindexer Spotlight…", "Reindex Spotlight…", french: french)) { confirmReindex = true }.disabled(working)))
+                section(ProductCopy.inline("Services du système", "System services", french: french),
+                        ProductCopy.inline("Désactiver un service l’empêche de démarrer au prochain démarrage du Mac ; son fichier reste en place et vous pouvez le réactiver ici.", "Turning a service off stops it from starting at the Mac's next startup; its file stays in place and you can turn it back on here.", french: french),
                         AnyView(daemonList))
             }
-            section(t("Finder, widget et Raccourcis", "Finder, widget and Shortcuts"), nil, AnyView(integrations))
+            section(ProductCopy.inline("Finder, widget et Raccourcis", "Finder, widget and Shortcuts", french: french), nil, AnyView(integrations))
         }
         .task { helper.refresh() }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in helper.refresh() }
-        .confirmationDialog(t("Supprimer cet instantané définitivement ?", "Delete this snapshot for good?"),
+        .confirmationDialog(ProductCopy.inline("Supprimer cet instantané définitivement ?", "Delete this snapshot for good?", french: french),
                             isPresented: Binding(get: { pendingSnapshot != nil }, set: { if !$0 { pendingSnapshot = nil } }), titleVisibility: .visible) {
-            Button(t("Supprimer définitivement", "Delete for good"), role: .destructive) { if let date = pendingSnapshot { Task { await deleteSnapshot(date) } } }
+            Button(ProductCopy.inline("Supprimer définitivement", "Delete for good", french: french), role: .destructive) { if let date = pendingSnapshot { Task { await deleteSnapshot(date) } } }
             Button(ProductCopy.value(for: "common.cancel", french: french), role: .cancel) { pendingSnapshot = nil }.keyboardShortcut(.defaultAction)
         } message: {
-            Text(pendingSnapshot.map { t("L’instantané du \(snapshotLabel($0)) sera effacé et ne pourra pas être remis en place. C’est la seule suppression définitive de CoreTend.",
-                                         "The snapshot of \(snapshotLabel($0)) will be erased and cannot be put back. This is CoreTend's only permanent deletion.") } ?? "")
+            Text(pendingSnapshot.map { ProductCopy.inline("L’instantané du %1$@ sera effacé et ne pourra pas être remis en place. C’est la seule suppression définitive de CoreTend.", "The snapshot of %1$@ will be erased and cannot be put back. This is CoreTend's only permanent deletion.", french: french, "\(snapshotLabel($0))") } ?? "")
         }
-        .confirmationDialog(t("Réindexer Spotlight ?", "Reindex Spotlight?"), isPresented: $confirmReindex, titleVisibility: .visible) {
-            Button(t("Réindexer", "Reindex")) { Task { await reindex() } }
+        .confirmationDialog(ProductCopy.inline("Réindexer Spotlight ?", "Reindex Spotlight?", french: french), isPresented: $confirmReindex, titleVisibility: .visible) {
+            Button(ProductCopy.inline("Réindexer", "Reindex", french: french)) { Task { await reindex() } }
             Button(ProductCopy.value(for: "common.cancel", french: french), role: .cancel) {}.keyboardShortcut(.defaultAction)
         } message: {
-            Text(t("Spotlight efface son index du disque de démarrage et le reconstruit. Cela peut prendre de quelques minutes à quelques heures.",
-                   "Spotlight erases the startup disk's index and rebuilds it. It can take from a few minutes to a few hours."))
+            Text(ProductCopy.inline("Spotlight efface son index du disque de démarrage et le reconstruit. Cela peut prendre de quelques minutes à quelques heures.", "Spotlight erases the startup disk's index and rebuilds it. It can take from a few minutes to a few hours.", french: french))
         }
-        .confirmationDialog(t("Mettre ce cache à la Corbeille ?", "Move this cache to the Trash?"),
+        .confirmationDialog(ProductCopy.inline("Mettre ce cache à la Corbeille ?", "Move this cache to the Trash?", french: french),
                             isPresented: Binding(get: { pending != nil }, set: { if !$0 { pending = nil } }), titleVisibility: .visible) {
-            Button(t("Mettre à la Corbeille", "Move to Trash"), role: .destructive) { if let item = pending { Task { await trash(item) } } }
+            Button(ProductCopy.inline("Mettre à la Corbeille", "Move to Trash", french: french), role: .destructive) { if let item = pending { Task { await trash(item) } } }
             Button(ProductCopy.value(for: "common.cancel", french: french), role: .cancel) { pending = nil }.keyboardShortcut(.defaultAction)
         } message: {
-            Text(pending.map { t("\($0.path) (\(bytes($0.bytes))) ira dans votre Corbeille. Vider la Corbeille demandera le mot de passe administrateur.",
-                                 "\($0.path) (\(bytes($0.bytes))) goes to your Trash. Emptying the Trash will ask for an administrator password.") } ?? "")
+            Text(pending.map { ProductCopy.inline("%1$@ (%2$@) ira dans votre Corbeille. Vider la Corbeille demandera le mot de passe administrateur.", "%1$@ (%2$@) goes to your Trash. Emptying the Trash will ask for an administrator password.", french: french, "\($0.path)", "\(bytes($0.bytes))") } ?? "")
         }
     }
 
@@ -79,31 +71,29 @@ struct SystemToolsView<Section: View>: View {
     @ViewBuilder private var helperControls: some View {
         switch helper.state {
         case .unavailable:
-            note(t("Disponible dans la version publiée de CoreTend (signée et notarisée).", "Available in the released, signed and notarized CoreTend."))
+            note(ProductCopy.inline("Disponible dans la version publiée de CoreTend (signée et notarisée).", "Available in the released, signed and notarized CoreTend.", french: french))
         case .off:
-            Button(t("Activer les fonctions système…", "Turn on system features…")) { turnOn() }.buttonStyle(.serre(.primary))
+            Button(ProductCopy.inline("Activer les fonctions système…", "Turn on system features…", french: french)) { turnOn() }.buttonStyle(.serre(.primary))
         case .needsApproval:
-            note(t("macOS attend votre accord : Réglages Système › Général › Ouverture et extensions, autorisez « CoreTend ».",
-                   "macOS is waiting for you: System Settings › General › Login Items & Extensions, allow « CoreTend »."))
+            note(ProductCopy.inline("macOS attend votre accord : Réglages Système › Général › Ouverture et extensions, autorisez « CoreTend ».", "macOS is waiting for you: System Settings › General › Login Items & Extensions, allow « CoreTend ».", french: french))
             HStack(spacing: 8) {
-                Button(t("Ouvrir Réglages Système", "Open System Settings")) { helper.openApproval() }.buttonStyle(.serre(.primary))
-                Button(t("Annuler l’installation", "Cancel installation")) { turnOff() }
+                Button(ProductCopy.inline("Ouvrir Réglages Système", "Open System Settings", french: french)) { helper.openApproval() }.buttonStyle(.serre(.primary))
+                Button(ProductCopy.inline("Annuler l’installation", "Cancel installation", french: french)) { turnOff() }
             }
         case .on:
-            SerreSignalTag(.good, title: t("Activées", "On"))
-            Button(t("Désactiver et retirer l’assistant", "Turn off and remove the helper")) { turnOff() }
+            SerreSignalTag(.good, title: ProductCopy.inline("Activées", "On", french: french))
+            Button(ProductCopy.inline("Désactiver et retirer l’assistant", "Turn off and remove the helper", french: french)) { turnOff() }
         }
     }
 
     @ViewBuilder private var cacheList: some View {
         if let undo {
-            SerreBanner(.note, title: t("\(URL(fileURLWithPath: undo.item.path).lastPathComponent) est dans la Corbeille.",
-                                        "\(URL(fileURLWithPath: undo.item.path).lastPathComponent) is in the Trash.")) {
-                Button(t("Annuler", "Undo")) { Task { await restore() } }.disabled(working)
+            SerreBanner(.note, title: ProductCopy.inline("%1$@ est dans la Corbeille.", "%1$@ is in the Trash.", french: french, "\(URL(fileURLWithPath: undo.item.path).lastPathComponent)")) {
+                Button(ProductCopy.inline("Annuler", "Undo", french: french)) { Task { await restore() } }.disabled(working)
             }
         }
         if let caches {
-            if caches.isEmpty { note(t("Aucun cache système à ranger.", "No system cache to tidy.")) }
+            if caches.isEmpty { note(ProductCopy.inline("Aucun cache système à ranger.", "No system cache to tidy.", french: french)) }
             ForEach(caches) { item in
                 HStack(spacing: 10) {
                     VStack(alignment: .leading, spacing: 1) {
@@ -111,18 +101,18 @@ struct SystemToolsView<Section: View>: View {
                         Text(bytes(item.bytes)).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                     }
                     Spacer()
-                    Button(t("Corbeille…", "Trash…")) { pending = item }.disabled(working)
-                        .accessibilityLabel(t("Mettre \(item.path) à la Corbeille", "Move \(item.path) to the Trash"))
+                    Button(ProductCopy.inline("Corbeille…", "Trash…", french: french)) { pending = item }.disabled(working)
+                        .accessibilityLabel(ProductCopy.inline("Mettre %1$@ à la Corbeille", "Move %1$@ to the Trash", french: french, "\(item.path)"))
                 }
             }
         }
-        Button(caches == nil ? t("Lire les caches système", "Read system caches") : t("Relire", "Read again")) { Task { await loadCaches() } }
+        Button(caches == nil ? ProductCopy.inline("Lire les caches système", "Read system caches", french: french) : ProductCopy.inline("Relire", "Read again", french: french)) { Task { await loadCaches() } }
             .disabled(working)
     }
 
     @ViewBuilder private var daemonList: some View {
         if let daemons {
-            if daemons.isEmpty { note(t("Aucun service tiers.", "No third-party service.")) }
+            if daemons.isEmpty { note(ProductCopy.inline("Aucun service tiers.", "No third-party service.", french: french)) }
             ForEach(daemons) { daemon in
                 Toggle(isOn: Binding(get: { !daemon.disabled }, set: { value in Task { await setDaemon(daemon, enabled: value) } })) {
                     VStack(alignment: .leading, spacing: 1) {
@@ -136,23 +126,23 @@ struct SystemToolsView<Section: View>: View {
                 .accessibilityHint(daemon.program)
             }
         }
-        Button(daemons == nil ? t("Lire les services", "Read services") : t("Relire", "Read again")) { Task { await loadDaemons() } }
+        Button(daemons == nil ? ProductCopy.inline("Lire les services", "Read services", french: french) : ProductCopy.inline("Relire", "Read again", french: french)) { Task { await loadDaemons() } }
             .disabled(working)
     }
 
     @ViewBuilder private var snapshotList: some View {
         if let snapshots {
-            if snapshots.isEmpty { note(t("Aucun instantané local.", "No local snapshot.")) }
+            if snapshots.isEmpty { note(ProductCopy.inline("Aucun instantané local.", "No local snapshot.", french: french)) }
             ForEach(snapshots, id: \.self) { date in
                 HStack(spacing: 10) {
                     Text(snapshotLabel(date)).font(CoreTendTypography.body.monospacedDigit()).foregroundStyle(Palette.ink.color)
                     Spacer()
-                    Button(t("Supprimer…", "Delete…")) { pendingSnapshot = date }.disabled(working)
-                        .accessibilityLabel(t("Supprimer l’instantané du \(snapshotLabel(date))", "Delete the snapshot of \(snapshotLabel(date))"))
+                    Button(ProductCopy.inline("Supprimer…", "Delete…", french: french)) { pendingSnapshot = date }.disabled(working)
+                        .accessibilityLabel(ProductCopy.inline("Supprimer l’instantané du %1$@", "Delete the snapshot of %1$@", french: french, "\(snapshotLabel(date))"))
                 }
             }
         }
-        Button(snapshots == nil ? t("Lire les instantanés", "Read snapshots") : t("Relire", "Read again")) { Task { await loadSnapshots() } }
+        Button(snapshots == nil ? ProductCopy.inline("Lire les instantanés", "Read snapshots", french: french) : ProductCopy.inline("Relire", "Read again", french: french)) { Task { await loadSnapshots() } }
             .disabled(working)
     }
 
@@ -167,30 +157,26 @@ struct SystemToolsView<Section: View>: View {
 
     private var integrations: some View {
         VStack(alignment: .leading, spacing: 8) {
-            note(t("Finder : clic droit sur un dossier › « Analyser avec CoreTend ». À activer une fois dans Réglages Système › Général › Ouverture et extensions › Extensions du Finder.",
-                   "Finder: right-click a folder › « Analyze with CoreTend ». Turn it on once in System Settings › General › Login Items & Extensions › Finder extensions."))
-            Button(t("Ouvrir les extensions", "Open extensions")) {
+            note(ProductCopy.inline("Finder : clic droit sur un dossier › « Analyser avec CoreTend ». À activer une fois dans Réglages Système › Général › Ouverture et extensions › Extensions du Finder.", "Finder: right-click a folder › « Analyze with CoreTend ». Turn it on once in System Settings › General › Login Items & Extensions › Finder extensions.", french: french))
+            Button(ProductCopy.inline("Ouvrir les extensions", "Open extensions", french: french)) {
                 if let url = URL(string: "x-apple.systempreferences:com.apple.LoginItems-Settings.extension") { NSWorkspace.shared.open(url) }
             }
-            note(t("Widget : clic droit sur le bureau › « Modifier les widgets », puis CoreTend.",
-                   "Widget: right-click the desktop › « Edit Widgets », then CoreTend."))
-            note(t("Raccourcis et Siri : « Obtenir l’espace libre », « Obtenir l’espace à libérer », « Ouvrir CoreTend ». Aucune action ne déplace de fichier.",
-                   "Shortcuts and Siri: « Get Free Space », « Get Space to Clear », « Open CoreTend ». No action moves a file."))
-            note(t("Dock : déposez un dossier sur l’icône de CoreTend pour l’analyser.",
-                   "Dock: drop a folder on CoreTend's icon to map it."))
+            note(ProductCopy.inline("Widget : clic droit sur le bureau › « Modifier les widgets », puis CoreTend.", "Widget: right-click the desktop › « Edit Widgets », then CoreTend.", french: french))
+            note(ProductCopy.inline("Raccourcis et Siri : « Obtenir l’espace libre », « Obtenir l’espace à libérer », « Ouvrir CoreTend ». Aucune action ne déplace de fichier.", "Shortcuts and Siri: « Get Free Space », « Get Space to Clear », « Open CoreTend ». No action moves a file.", french: french))
+            note(ProductCopy.inline("Dock : déposez un dossier sur l’icône de CoreTend pour l’analyser.", "Dock: drop a folder on CoreTend's icon to map it.", french: french))
         }
     }
 
     // MARK: - Actions
 
     private func turnOn() {
-        do { try helper.turnOn() } catch { message = t("macOS a refusé l’installation de l’assistant.", "macOS refused to install the helper.") }
+        do { try helper.turnOn() } catch { message = ProductCopy.inline("macOS a refusé l’installation de l’assistant.", "macOS refused to install the helper.", french: french) }
     }
 
     private func turnOff() {
         Task {
             do { try await helper.turnOff(); caches = nil; daemons = nil; undo = nil; snapshots = nil }
-            catch { message = t("macOS n’a pas retiré l’assistant.", "macOS did not remove the helper.") }
+            catch { message = ProductCopy.inline("macOS n’a pas retiré l’assistant.", "macOS did not remove the helper.", french: french) }
         }
     }
 
@@ -238,12 +224,12 @@ struct SystemToolsView<Section: View>: View {
             try await helper.deleteLocalSnapshot(date)
             snapshots = try await helper.localSnapshots()
             if let before, let after = Self.freeBytes(), after > before {
-                message = t("Instantané supprimé ; \(bytes(after - before)) libérés (mesuré).", "Snapshot deleted; \(bytes(after - before)) freed (measured).")
+                message = ProductCopy.inline("Instantané supprimé ; %1$@ libérés (mesuré).", "Snapshot deleted; %1$@ freed (measured).", french: french, "\(bytes(after - before))")
             } else {
-                message = t("Instantané supprimé.", "Snapshot deleted.")
+                message = ProductCopy.inline("Instantané supprimé.", "Snapshot deleted.", french: french)
             }
         } catch {
-            message = t("L’assistant n’a pas supprimé l’instantané.", "The helper did not delete the snapshot.")
+            message = ProductCopy.inline("L’assistant n’a pas supprimé l’instantané.", "The helper did not delete the snapshot.", french: french)
         }
     }
 
@@ -251,8 +237,8 @@ struct SystemToolsView<Section: View>: View {
         working = true; defer { working = false }
         do {
             try await helper.reindexSpotlight()
-            message = t("Spotlight reconstruit son index.", "Spotlight is rebuilding its index.")
-        } catch { message = t("L’assistant n’a pas relancé l’indexation.", "The helper did not start indexing.") }
+            message = ProductCopy.inline("Spotlight reconstruit son index.", "Spotlight is rebuilding its index.", french: french)
+        } catch { message = ProductCopy.inline("L’assistant n’a pas relancé l’indexation.", "The helper did not start indexing.", french: french) }
     }
 
     private static func freeBytes() -> Int64? {
@@ -265,7 +251,7 @@ struct SystemToolsView<Section: View>: View {
     }
 
     private func report(_ error: Error) {
-        message = t("L’assistant n’a pas répondu ou a refusé. Rien n’a été déplacé.", "The helper did not answer or refused. Nothing was moved.")
+        message = ProductCopy.inline("L’assistant n’a pas répondu ou a refusé. Rien n’a été déplacé.", "The helper did not answer or refused. Nothing was moved.", french: french)
     }
 
     private func note(_ text: String) -> some View {
@@ -273,5 +259,5 @@ struct SystemToolsView<Section: View>: View {
     }
 
     private func bytes(_ value: Int64) -> String { ByteCountFormatter.string(fromByteCount: value, countStyle: .file) }
-    private func t(_ fr: String, _ en: String) -> String { french ? fr : en }
+    private func t(_ fr: String, _ en: String) -> String { ProductCopy.inline(fr, en, french: french) }
 }

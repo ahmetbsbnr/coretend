@@ -606,16 +606,19 @@ public enum ProductCopy {
         "onboarding.start": "Commencer"
     ]
     public static func value(for key: String, french isFrench: Bool) -> String {
-        (isFrench ? french : english)[key] ?? key
+        switch language(french: isFrench) {
+        case .fr: return french[key] ?? key
+        case .en: return english[key] ?? key
+        case let other: return keyedTranslations[other]?[key] ?? english[key] ?? key
+        }
     }
 
     public static func scanResultAccessibilitySummary(name: String, source: String, state: String,
                                                        allocated: String, logical: String, modified: String,
                                                        french isFrench: Bool) -> String {
-        if isFrench {
-            return "\(name). Source : \(source). État : \(state). Allouée localement : \(allocated). Taille logique : \(logical). Modifié : \(modified). Candidat à examiner avant toute action."
-        }
-        return "\(name). Source: \(source). State: \(state). Allocated locally: \(allocated). Logical size: \(logical). Modified: \(modified). Candidate to review before action."
+        inline("%1$@. Source : %2$@. État : %3$@. Allouée localement : %4$@. Taille logique : %5$@. Modifié : %6$@. Candidat à examiner avant toute action.",
+               "%1$@. Source: %2$@. State: %3$@. Allocated locally: %4$@. Logical size: %5$@. Modified: %6$@. Candidate to review before action.",
+               french: isFrench, name, source, state, allocated, logical, modified)
     }
 
     public static func activityDetail(_ detail: String, failureCode: String?, french isFrench: Bool) -> String {
@@ -626,10 +629,8 @@ public enum ProductCopy {
     }
 
     public static func savedFileAvailability(isPresent: Bool, french isFrench: Bool) -> String {
-        if isFrench {
-            return isPresent ? "Présent (accès actuel non garanti)" : "Absent ou inaccessible"
-        }
-        return isPresent ? "Present (current access not verified)" : "Missing or inaccessible"
+        isPresent ? inline("Présent (accès actuel non garanti)", "Present (current access not verified)", french: isFrench)
+                  : inline("Absent ou inaccessible", "Missing or inaccessible", french: isFrench)
     }
 
     public static func scanRootFailure(reason: String, french isFrench: Bool) -> String {
@@ -652,38 +653,31 @@ public enum ProductCopy {
         let denied = reasons.contains("permission_denied")
         let missing = reasons.contains("missing")
         let other = reasons.contains(where: { !["permission_denied", "missing"].contains($0) })
-        if isFrench {
-            if denied && other { return "macOS a refusé l’accès à certains éléments; les détails d’autres éléments n’ont pas pu être lus." }
-            if denied { return "macOS a refusé l’accès à certains éléments du dossier choisi." }
-            if missing && other { return "Certains éléments ont disparu pendant l’analyse; d’autres détails n’ont pas pu être lus." }
-            if missing { return "Certains éléments ont disparu pendant l’analyse." }
-            return "Les détails de certains éléments n’ont pas pu être lus."
-        }
-        if denied && other { return "macOS denied access to some items; details for other items could not be read." }
-        if denied { return "macOS denied access to some items in the chosen folder." }
-        if missing && other { return "Some items disappeared during the scan; details for others could not be read." }
-        if missing { return "Some items disappeared during the scan." }
-        return "Details for some items could not be read."
+        if denied && other { return inline("macOS a refusé l’accès à certains éléments; les détails d’autres éléments n’ont pas pu être lus.", "macOS denied access to some items; details for other items could not be read.", french: isFrench) }
+        if denied { return inline("macOS a refusé l’accès à certains éléments du dossier choisi.", "macOS denied access to some items in the chosen folder.", french: isFrench) }
+        if missing && other { return inline("Certains éléments ont disparu pendant l’analyse; d’autres détails n’ont pas pu être lus.", "Some items disappeared during the scan; details for others could not be read.", french: isFrench) }
+        if missing { return inline("Certains éléments ont disparu pendant l’analyse.", "Some items disappeared during the scan.", french: isFrench) }
+        return inline("Les détails de certains éléments n’ont pas pu être lus.", "Details for some items could not be read.", french: isFrench)
     }
 
     public static func scanProgress(completedFiles: Int, french isFrench: Bool) -> String {
         let count = max(0, completedFiles)
         if isFrench { return count == 1 ? "1 fichier examiné" : "\(count) fichiers examinés" }
-        return "\(count) files examined"
+        return inline("", "%1$@ files examined", french: false, "\(count)")
     }
 
     public static func duplicateHashProgress(completed: Int, total: Int, french isFrench: Bool) -> String {
         let total = max(0, total)
         let done = min(max(0, completed), total)
-        return isFrench ? "Hachage des candidats : \(done)/\(total)" : "Hashing candidates: \(done)/\(total)"
+        return ProductCopy.inline("Hachage des candidats : %1$@/%2$@", "Hashing candidates: %1$@/%2$@", french: isFrench, "\(done)", "\(total)")
     }
 
     public static func similarImageProgress(completed: Int, total: Int, comparingPairs: Bool, french isFrench: Bool) -> String {
         let total = max(0, total)
         let done = min(max(0, completed), total)
         if comparingPairs {
-            return isFrench ? "Comparaison des paires : \(done)/\(total)" : "Comparing pairs: \(done)/\(total)"
+            return ProductCopy.inline("Comparaison des paires : %1$@/%2$@", "Comparing pairs: %1$@/%2$@", french: isFrench, "\(done)", "\(total)")
         }
-        return isFrench ? "Analyse des images : \(done)/\(total)" : "Checking images: \(done)/\(total)"
+        return ProductCopy.inline("Analyse des images : %1$@/%2$@", "Checking images: %1$@/%2$@", french: isFrench, "\(done)", "\(total)")
     }
 }

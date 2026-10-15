@@ -633,3 +633,67 @@ private actor SamplingCounter {
     func currentCount() -> Int { count }
 
 }
+
+final class LocalizationTests: XCTestCase {
+    func testTheInterfaceLanguageIsTheFirstSupportedOneMacOSPrefers() {
+        XCTAssertEqual(UILanguage.resolve(setting: "system", preferred: ["de-DE", "fr-FR"]), .de)
+        XCTAssertEqual(UILanguage.resolve(setting: "system", preferred: ["pt-BR", "ja-JP"]), .ja)
+        XCTAssertEqual(UILanguage.resolve(setting: "system", preferred: ["pt-BR"]), .en)
+        XCTAssertEqual(UILanguage.resolve(setting: "fr", preferred: ["de-DE"]), .fr, "a fixture may force a language")
+    }
+
+    func testEveryKeyedTextExistsInEveryLanguageWithTheSamePlaceholders() {
+        for language in [UILanguage.de, .es, .it, .ja] {
+            let table = ProductCopy.keyedTranslations[language] ?? [:]
+            for (key, english) in ProductCopy.english {
+                guard let text = table[key] else { XCTFail("\(language) misses \(key)"); continue }
+                XCTAssertEqual(Self.placeholders(text), Self.placeholders(english), "\(language) \(key)")
+            }
+        }
+    }
+
+    /// Every French/English pair written in the code has its four translations, so a new string
+    /// cannot ship in English to German, Spanish, Italian and Japanese readers unnoticed.
+    func testEveryInlineTextInTheSourcesIsTranslated() throws {
+        let sources = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .deletingLastPathComponent().appendingPathComponent("Sources")
+        let files = FileManager.default.enumerator(at: sources, includingPropertiesForKeys: nil)?
+            .compactMap { $0 as? URL }.filter { $0.pathExtension == "swift" && !$0.lastPathComponent.hasPrefix("ProductCopy+") } ?? []
+        XCTAssertFalse(files.isEmpty)
+        let pair = try NSRegularExpression(pattern: #"inline\(\s*"((?:[^"\\]|\\.)*)"\s*,\s*"((?:[^"\\]|\\.)*)""#)
+        var checked = 0
+        for file in files {
+            let text = try String(contentsOf: file, encoding: .utf8)
+            for match in pair.matches(in: text, range: NSRange(text.startIndex..., in: text)) {
+                guard let range = Range(match.range(at: 2), in: text) else { continue }
+                let english = String(text[range]).replacingOccurrences(of: "\\n", with: "\n")
+                guard !english.isEmpty else { continue }
+                checked += 1
+                for language in [UILanguage.de, .es, .it, .ja] {
+                    XCTAssertNotNil(ProductCopy.inlineTranslations[language]?[english], "\(language) misses “\(english)” (\(file.lastPathComponent))")
+                }
+            }
+        }
+        XCTAssertGreaterThan(checked, 200)
+    }
+
+    func testInlineTextFollowsTheCurrentLanguageAndKeepsFrenchAndEnglish() {
+        let saved = ProductCopy.current
+        defer { ProductCopy.current = saved }
+        ProductCopy.current = .de
+        XCTAssertEqual(ProductCopy.inline("Annuler", "Undo", french: false), "Widerrufen")
+        XCTAssertEqual(ProductCopy.inline("Annuler", "Undo", french: true), "Annuler")
+        XCTAssertEqual(ProductCopy.inline("%1$@ sur %2$@", "%1$@ of %2$@", french: false, "3", "5"), "3 von 5")
+        XCTAssertEqual(ProductCopy.value(for: "clean.undo", french: false), "Widerrufen")
+        XCTAssertEqual(ProductFormat.items(2, french: false), "2 Elemente")
+        ProductCopy.current = .ja
+        XCTAssertEqual(ProductCopy.inline("%1$@ sur %2$@", "%1$@ of %2$@", french: false, "3", "5"), "5件中3件", "positions follow the translation")
+        ProductCopy.current = .en
+        XCTAssertEqual(ProductCopy.value(for: "clean.undo", french: false), "Undo")
+    }
+
+    private static func placeholders(_ text: String) -> [String] {
+        let regex = try! NSRegularExpression(pattern: #"%(?:\d+\$)?@"#)
+        return regex.matches(in: text, range: NSRange(text.startIndex..., in: text)).compactMap { Range($0.range, in: text).map { String(text[$0]) } }.sorted()
+    }
+}

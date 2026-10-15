@@ -64,7 +64,7 @@ History of every scan and move stays at the sidebar's foot.
 - **Homebrew:** `brew install --cask ahmetbsbnr/coretend/coretend` (also links `coretend` in your PATH)
 - **Terminal and AI assistants:** [`coretend` on npm](https://www.npmjs.com/package/coretend) — `npx coretend clean` · `npx -y coretend mcp`; see [CLI.md](Documentation/CLI.md).
 
-macOS 14 Sonoma or later, Apple silicon or Intel. English and French (follows macOS). CoreTend asks for Full
+macOS 14 Sonoma or later, Apple silicon or Intel. English, French, German, Spanish, Italian and Japanese (follows macOS). CoreTend asks for Full
 Disk Access once, to read Mail, Safari and app data; without it, it reads what macOS allows.
 
 ## Build from source

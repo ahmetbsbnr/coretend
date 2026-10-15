@@ -16,9 +16,12 @@ final class CoreTendFinderSync: FIFinderSync {
     override func menu(for menuKind: FIMenuKind) -> NSMenu? {
         guard menuKind == .contextualMenuForItems || menuKind == .contextualMenuForContainer else { return nil }
         guard target(for: menuKind) != nil else { return nil }
-        let french = Locale.preferredLanguages.first?.hasPrefix("fr") == true
+        let titles = ["fr": "Analyser avec CoreTend", "de": "Mit CoreTend analysieren", "es": "Analizar con CoreTend",
+                      "it": "Analizza con CoreTend", "ja": "CoreTendで解析"]
+        let title = Locale.preferredLanguages.lazy.compactMap { titles[String($0.prefix(2))] ?? ($0.hasPrefix("en") ? "Analyze with CoreTend" : nil) }.first
+            ?? "Analyze with CoreTend"
         let menu = NSMenu(title: "")
-        let item = NSMenuItem(title: french ? "Analyser avec CoreTend" : "Analyze with CoreTend",
+        let item = NSMenuItem(title: title,
                               action: #selector(analyze(_:)), keyEquivalent: "")
         item.image = NSImage(systemSymbolName: "externaldrive", accessibilityDescription: nil)
         menu.addItem(item)

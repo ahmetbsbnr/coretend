@@ -226,7 +226,7 @@ struct SystemSnapshotView: View {
     }
 
     private func timestamp(_ date: Date) -> String {
-        date.formatted(.dateTime.day().month().hour().minute().locale(Locale(identifier: french ? "fr_FR" : "en_US")))
+        date.formatted(.dateTime.day().month().hour().minute().locale(Locale(identifier: ProductCopy.inline("fr_FR", "en_US", french: french))))
     }
 
     /// The measurements of now, one parcel each, figures in Iowan.
@@ -273,7 +273,7 @@ struct SystemSnapshotView: View {
                     if let selectedHistoryDate,
                        let selected = PerformanceHistorySelection.nearestKnownSample(to: selectedHistoryDate, in: known),
                        let load = selected.loadAverage1m {
-                        Text("\(copy("metrics.loadAverage")) : \(load.formatted(.number.precision(.fractionLength(2)).locale(Locale(identifier: french ? "fr_FR" : "en_US")))) · \(timestamp(selected.measuredAt))")
+                        Text("\(copy("metrics.loadAverage")) : \(load.formatted(.number.precision(.fractionLength(2)).locale(Locale(identifier: ProductCopy.inline("fr_FR", "en_US", french: french))))) · \(timestamp(selected.measuredAt))")
                             .font(CoreTendTypography.secondary.monospacedDigit()).foregroundStyle(Palette.ink.color)
                             .accessibilityAddTraits(.updatesFrequently)
                     }
@@ -281,7 +281,7 @@ struct SystemSnapshotView: View {
                         Text(copy("metrics.latest")).font(CoreTendTypography.caption.weight(.semibold)).foregroundStyle(Palette.secondaryInk.color)
                         ForEach(known.suffix(5).reversed()) { sample in
                             if let load = sample.loadAverage1m {
-                                Text("\(timestamp(sample.measuredAt)) · \(load.formatted(.number.precision(.fractionLength(2)).locale(Locale(identifier: french ? "fr_FR" : "en_US"))))")
+                                Text("\(timestamp(sample.measuredAt)) · \(load.formatted(.number.precision(.fractionLength(2)).locale(Locale(identifier: ProductCopy.inline("fr_FR", "en_US", french: french)))))")
                                     .font(CoreTendTypography.caption.monospacedDigit()).foregroundStyle(Palette.secondaryInk.color)
                             }
                         }
@@ -318,7 +318,7 @@ struct SystemSnapshotView: View {
         .chartXAxis {
             AxisMarks(values: .automatic(desiredCount: 4)) { _ in
                 AxisGridLine().foregroundStyle(Palette.separator.color)
-                AxisValueLabel(format: .dateTime.day().month().hour().minute().locale(Locale(identifier: french ? "fr_FR" : "en_US")))
+                AxisValueLabel(format: .dateTime.day().month().hour().minute().locale(Locale(identifier: ProductCopy.inline("fr_FR", "en_US", french: french))))
                     .foregroundStyle(Palette.secondaryInk.color)
             }
         }
@@ -370,7 +370,7 @@ struct SystemSnapshotView: View {
         let used = MemoryUsage.usedBytes()
         let share = MemoryUsage.fraction(used: used, physical: value.physicalMemoryBytes)
         return VStack(alignment: .leading, spacing: 6) {
-            Text(french ? "Mémoire utilisée" : "Memory in use").font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+            Text(ProductCopy.inline("Mémoire utilisée", "Memory in use", french: french)).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
             Text({ if case .known(let bytes) = used { return ProductFormat.memory(bytes, french: french) }; return copy("metrics.unknown") }())
                 .font(CoreTendTypography.figure).foregroundStyle(Palette.ink.color)
             if let share {
@@ -383,7 +383,7 @@ struct SystemSnapshotView: View {
                 }
                 .frame(height: 8)
             }
-            Text(french ? "Source : host_statistics64 (actives + câblées + compressées)" : "Source: host_statistics64 (active + wired + compressed)")
+            Text(ProductCopy.inline("Source : host_statistics64 (actives + câblées + compressées)", "Source: host_statistics64 (active + wired + compressed)", french: french))
                 .font(CoreTendTypography.caption).foregroundStyle(Palette.tertiaryInk.color)
         }
         .padding(16)
@@ -423,12 +423,12 @@ struct SystemSnapshotView: View {
         let hours = max(0, Int(seconds / 3600))
         let days = hours / 24
         let remainder = hours % 24
-        return french ? "\(days) j \(remainder) h" : "\(days)d \(remainder)h"
+        return ProductCopy.inline("%1$@ j %2$@ h", "%1$@d %2$@h", french: french, "\(days)", "\(remainder)")
     }
 
     private func load(_ value: ProductMeasurement<Double>) -> String {
         switch value {
-        case .known(let number): number.formatted(.number.precision(.fractionLength(2)).locale(Locale(identifier: french ? "fr_FR" : "en_US")))
+        case .known(let number): number.formatted(.number.precision(.fractionLength(2)).locale(Locale(identifier: ProductCopy.inline("fr_FR", "en_US", french: french))))
         case .unknown: copy("metrics.unknown")
         }
     }

@@ -43,11 +43,11 @@ struct SettingsView: View {
             }
             .padding(.horizontal, 24).padding(.top, 22).padding(.bottom, 12)
             HStack(spacing: 8) {
-                ForEach([("general", french ? "Général" : "General", SerreGlyph.settings),
-                         ("access", french ? "Accès" : "Access", SerreGlyph.explore),
-                         ("privacy", french ? "Confidentialité" : "Privacy", SerreGlyph.integrity),
-                         ("data", french ? "Données" : "Data", SerreGlyph.record),
-                         ("system", french ? "Système" : "System", SerreGlyph.cleanup)], id: \.0) { item in
+                ForEach([("general", ProductCopy.inline("Général", "General", french: french), SerreGlyph.settings),
+                         ("access", ProductCopy.inline("Accès", "Access", french: french), SerreGlyph.explore),
+                         ("privacy", ProductCopy.inline("Confidentialité", "Privacy", french: french), SerreGlyph.integrity),
+                         ("data", ProductCopy.inline("Données", "Data", french: french), SerreGlyph.record),
+                         ("system", ProductCopy.inline("Système", "System", french: french), SerreGlyph.cleanup)], id: \.0) { item in
                     Button {
                         withAnimation(MotionToken.standard.animation(reduceMotion: false)) { tab = item.0 }
                     } label: {
@@ -65,17 +65,17 @@ struct SettingsView: View {
                 VStack(alignment: .leading, spacing: 14) {
                     if let status { SerreBanner(.note, title: status) }
                     if tab == "general" {
-                    section(french ? "Apparence" : "Appearance") {
-                        choices([(AppearancePreference.system, french ? "Système" : "System"),
-                                 (AppearancePreference.light, french ? "Clair" : "Light"),
-                                 (AppearancePreference.dark, french ? "Sombre" : "Dark")], selection: $appearance)
+                    section(ProductCopy.inline("Apparence", "Appearance", french: french)) {
+                        choices([(AppearancePreference.system, ProductCopy.inline("Système", "System", french: french)),
+                                 (AppearancePreference.light, ProductCopy.inline("Clair", "Light", french: french)),
+                                 (AppearancePreference.dark, ProductCopy.inline("Sombre", "Dark", french: french))], selection: $appearance)
                             .disabled(!CoreTendPreferences().usesPersistentStorage)
                     }
-                    section(french ? "Serre vivante" : "Living greenhouse",
-                            help: french ? "Les feuilles bougent doucement quand la fenêtre est active. Tout s’arrête fenêtre inactive ou cachée, en mode économie d’énergie et avec « Réduire les animations »." : "Leaves move gently while the window is active. Everything stops when the window is inactive or hidden, in Low Power Mode and with Reduce Motion.") {
-                        Toggle(french ? "Laisser la serre vivre" : "Let the greenhouse live", isOn: $livingGreenhouse)
+                    section(ProductCopy.inline("Serre vivante", "Living greenhouse", french: french),
+                            help: ProductCopy.inline("Les feuilles bougent doucement quand la fenêtre est active. Tout s’arrête fenêtre inactive ou cachée, en mode économie d’énergie et avec « Réduire les animations ».", "Leaves move gently while the window is active. Everything stops when the window is inactive or hidden, in Low Power Mode and with Reduce Motion.", french: french)) {
+                        Toggle(ProductCopy.inline("Laisser la serre vivre", "Let the greenhouse live", french: french), isOn: $livingGreenhouse)
                             .font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
-                            .accessibilityLabel(french ? "Laisser la serre vivre" : "Let the greenhouse live")
+                            .accessibilityLabel(ProductCopy.inline("Laisser la serre vivre", "Let the greenhouse live", french: french))
                     }
                     if updater.isAvailable {
                     section(ProductCopy.value(for: "updates.title", french: french), help: ProductCopy.value(for: "updates.help", french: french)) {
@@ -107,7 +107,7 @@ struct SettingsView: View {
                             }
                         if alertsDenied { note(ProductCopy.value(for: "settings.alerts.denied", french: french)) }
                     }
-                    section(french ? "Barre des menus" : "Menu bar") {
+                    section(ProductCopy.inline("Barre des menus", "Menu bar", french: french)) {
                         Toggle(ProductCopy.value(for: "settings.menubar.title", french: french), isOn: $menuBarEnabled)
                             .font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
                             .accessibilityLabel(ProductCopy.value(for: "settings.menubar.title", french: french))
@@ -115,8 +115,8 @@ struct SettingsView: View {
                     }
                     }
                     if tab == "access" {
-                    section(french ? "Exclusions locales" : "Local exclusions",
-                            help: french ? "Les analyses ignoreront ces dossiers lors des prochains parcours. Rien n’est supprimé." : "Scans will skip these folders in future scans. Nothing is deleted.") {
+                    section(ProductCopy.inline("Exclusions locales", "Local exclusions", french: french),
+                            help: ProductCopy.inline("Les analyses ignoreront ces dossiers lors des prochains parcours. Rien n’est supprimé.", "Scans will skip these folders in future scans. Nothing is deleted.", french: french)) {
                         ForEach(exclusions, id: \.self) { path in
                             HStack(spacing: 10) {
                                 SerreIcon(.explore, size: 14).foregroundStyle(Palette.secondaryInk.color)
@@ -130,13 +130,13 @@ struct SettingsView: View {
                                     Image(systemName: "minus.circle").foregroundStyle(Palette.secondaryInk.color)
                                 }
                                 .buttonStyle(.serre(.icon))
-                                .accessibilityLabel(french ? "Retirer \(path) des exclusions" : "Remove \(path) from exclusions")
+                                .accessibilityLabel(ProductCopy.inline("Retirer %1$@ des exclusions", "Remove %1$@ from exclusions", french: french, "\(path)"))
                             }
                         }
-                        Button(french ? "Ajouter un dossier exclu…" : "Add excluded folder…") { chooseExclusion = true }
+                        Button(ProductCopy.inline("Ajouter un dossier exclu…", "Add excluded folder…", french: french)) { chooseExclusion = true }
                             .buttonStyle(.serre(.secondary))
                     }
-                    section(french ? "Accès aux dossiers" : "Folder access") {
+                    section(ProductCopy.inline("Accès aux dossiers", "Folder access", french: french)) {
                         note(ProductCopy.value(for: "settings.folderaccess.help", french: french))
                         note(ProductCopy.value(for: "settings.fulldiskaccess.help", french: french))
                     }
@@ -156,9 +156,9 @@ struct SettingsView: View {
                             }
                         }
                     }
-                    section(french ? "Diagnostic privé" : "Private diagnostics",
-                            help: french ? "L’aperçu contient version, schéma et compteurs d’événements. Aucun chemin, nom de fichier ni détail d’événement." : "Preview includes app version, schema and event counts. No paths, file names or event details.") {
-                        Button(french ? "Prévisualiser l’export…" : "Preview export…") { Task { await buildDiagnosticPreview() } }
+                    section(ProductCopy.inline("Diagnostic privé", "Private diagnostics", french: french),
+                            help: ProductCopy.inline("L’aperçu contient version, schéma et compteurs d’événements. Aucun chemin, nom de fichier ni détail d’événement.", "Preview includes app version, schema and event counts. No paths, file names or event details.", french: french)) {
+                        Button(ProductCopy.inline("Prévisualiser l’export…", "Preview export…", french: french)) { Task { await buildDiagnosticPreview() } }
                             .buttonStyle(.serre(.secondary))
                     }
                     }
@@ -166,17 +166,17 @@ struct SettingsView: View {
                         SystemToolsView(french: french) { title, help, content in section(title, help: help) { content } }
                     }
                     if tab == "data" {
-                    section(french ? "Conservation des données" : "Data retention") {
-                        note(french ? "L’activité reste dans la base locale jusqu’à son effacement explicite dans Historique. Les préférences et exclusions restent jusqu’à leur modification ou au retrait de la base." : "Activity stays in the local database until you explicitly clear it in Record. Preferences and exclusions remain until changed or the database is removed.")
-                        note(french ? "Les relevés Performances sont conservés 30 jours et limités à 500. Vous pouvez les effacer dans Performances ; une nouvelle ouverture de cette vue créera un nouveau relevé." : "Performance readings are kept for 30 days and capped at 500. You can clear them in Performance; reopening that view creates a new reading.")
-                        Toggle(french ? "Enregistrer les fichiers récents dans Explorer" : "Save recent files from Explore", isOn: $recentFilesEnabled)
+                    section(ProductCopy.inline("Conservation des données", "Data retention", french: french)) {
+                        note(ProductCopy.inline("L’activité reste dans la base locale jusqu’à son effacement explicite dans Historique. Les préférences et exclusions restent jusqu’à leur modification ou au retrait de la base.", "Activity stays in the local database until you explicitly clear it in Record. Preferences and exclusions remain until changed or the database is removed.", french: french))
+                        note(ProductCopy.inline("Les relevés Performances sont conservés 30 jours et limités à 500. Vous pouvez les effacer dans Performances ; une nouvelle ouverture de cette vue créera un nouveau relevé.", "Performance readings are kept for 30 days and capped at 500. You can clear them in Performance; reopening that view creates a new reading.", french: french))
+                        Toggle(ProductCopy.inline("Enregistrer les fichiers récents dans Explorer", "Save recent files from Explore", french: french), isOn: $recentFilesEnabled)
                             .font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
-                            .accessibilityLabel(french ? "Enregistrer les fichiers récents dans Explorer" : "Save recent files from Explore")
-                        note(french ? "Désactivé par défaut. Activé, la dernière analyse Explorer mémorise jusqu’à 100 chemins locaux et leur dernière taille connue. Désactivez-le pour arrêter cet enregistrement ; effacez les éléments dans Vue d’ensemble." : "Off by default. When enabled, the latest Explore scan stores up to 100 local paths and their last known size. Turn it off to stop recording; remove entries in Overview.")
+                            .accessibilityLabel(ProductCopy.inline("Enregistrer les fichiers récents dans Explorer", "Save recent files from Explore", french: french))
+                        note(ProductCopy.inline("Désactivé par défaut. Activé, la dernière analyse Explorer mémorise jusqu’à 100 chemins locaux et leur dernière taille connue. Désactivez-le pour arrêter cet enregistrement ; effacez les éléments dans Vue d’ensemble.", "Off by default. When enabled, the latest Explore scan stores up to 100 local paths and their last known size. Turn it off to stop recording; remove entries in Overview.", french: french))
                     }
-                    section(french ? "Données héritées" : "Legacy data",
-                            help: french ? "Copie SQLite 1.x : exclusions uniquement. JSON v1 : exclusions et langue. Le fichier source reste intact." : "SQLite 1.x copy: exclusions only. JSON v1: exclusions and language. The source file remains unchanged.") {
-                        Button(readingLegacy ? (french ? "Lecture…" : "Reading…") : importing ? (french ? "Import…" : "Importing…") : (french ? "Choisir une copie 1.x…" : "Choose a 1.x copy…")) { chooseLegacy = true }
+                    section(ProductCopy.inline("Données héritées", "Legacy data", french: french),
+                            help: ProductCopy.inline("Copie SQLite 1.x : exclusions uniquement. JSON v1 : exclusions et langue. Le fichier source reste intact.", "SQLite 1.x copy: exclusions only. JSON v1: exclusions and language. The source file remains unchanged.", french: french)) {
+                        Button(readingLegacy ? (ProductCopy.inline("Lecture…", "Reading…", french: french)) : importing ? (ProductCopy.inline("Import…", "Importing…", french: french)) : (ProductCopy.inline("Choisir une copie 1.x…", "Choose a 1.x copy…", french: french))) { chooseLegacy = true }
                             .buttonStyle(.serre(.secondary))
                             .disabled(importing || readingLegacy)
                     }
@@ -190,7 +190,7 @@ struct SettingsView: View {
             // Settings is a sheet with no window close control; this is its visible exit.
             HStack {
                 Spacer()
-                Button(french ? "Terminé" : "Done") { close() }.buttonStyle(.serre(.primary))
+                Button(ProductCopy.inline("Terminé", "Done", french: french)) { close() }.buttonStyle(.serre(.primary))
                     .keyboardShortcut(.cancelAction)
             }
             .padding(12)
@@ -216,13 +216,12 @@ struct SettingsView: View {
                         try LegacyPreferencesImporter().preview(sourceURL: url)
                     }.value
                 } catch {
-                    status = french ? "Copie non reconnue ou incomplète ; aucune donnée importée."
-                                    : "Unrecognized or incomplete copy; no data imported."
+                    status = ProductCopy.inline("Copie non reconnue ou incomplète ; aucune donnée importée.", "Unrecognized or incomplete copy; no data imported.", french: french)
                 }
             }
         }
-        .confirmationDialog(french ? "Importer ces préférences ?" : "Import these preferences?", isPresented: Binding(get: { legacyPreview != nil }, set: { if !$0 { legacyPreview = nil } }), titleVisibility: .visible) {
-            Button(french ? "Importer les préférences" : "Import preferences") { Task { await importLegacy() } }
+        .confirmationDialog(ProductCopy.inline("Importer ces préférences ?", "Import these preferences?", french: french), isPresented: Binding(get: { legacyPreview != nil }, set: { if !$0 { legacyPreview = nil } }), titleVisibility: .visible) {
+            Button(ProductCopy.inline("Importer les préférences", "Import preferences", french: french)) { Task { await importLegacy() } }
             Button(ProductCopy.value(for: "common.cancel", french: french), role: .cancel) { legacyPreview = nil }
         } message: {
             Text(legacyMessage)
@@ -233,9 +232,9 @@ struct SettingsView: View {
             exporting = true
         }) {
             VStack(alignment: .leading, spacing: 14) {
-                Text(french ? "Aperçu exact du diagnostic" : "Exact diagnostic preview")
+                Text(ProductCopy.inline("Aperçu exact du diagnostic", "Exact diagnostic preview", french: french))
                     .font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
-                Text(diagnosticSummary + " · " + (french ? "Aucun chemin personnel ni détail d’événement." : "No personal paths or event details."))
+                Text(diagnosticSummary + " · " + (ProductCopy.inline("Aucun chemin personnel ni détail d’événement.", "No personal paths or event details.", french: french)))
                     .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
                 ScrollView {
                     // The exact bytes that would be written, as they are.
@@ -254,7 +253,7 @@ struct SettingsView: View {
                         diagnosticPreview = false
                     }
                     .buttonStyle(.serre(.secondary))
-                    Button(french ? "Choisir la destination…" : "Choose destination…") {
+                    Button(ProductCopy.inline("Choisir la destination…", "Choose destination…", french: french)) {
                         exportAfterPreview = true
                         diagnosticPreview = false
                     }
@@ -268,7 +267,7 @@ struct SettingsView: View {
         }
         .fileExporter(isPresented: $exporting, document: diagnosticDocument, contentType: .json,
                       defaultFilename: "coretend-diagnostic") { result in
-            if case .failure = result { status = french ? "Export impossible." : "Export failed." }
+            if case .failure = result { status = ProductCopy.inline("Export impossible.", "Export failed.", french: french) }
         }
     }
 
@@ -326,10 +325,11 @@ struct SettingsView: View {
     private var legacyMessage: String {
         guard let legacyPreview else { return "" }
         let count = legacyPreview.excludedPaths.count
-        let lang = legacyPreview.language ?? (french ? "langue absente" : "language absent")
+        let lang = legacyPreview.language ?? (ProductCopy.inline("langue absente", "language absent", french: french))
         let number = ProductFormat.count(count, french: french)
-        let noun = french ? "exclusion\(ProductFormat.frenchPlural(count))" : (count == 1 ? "exclusion" : "exclusions")
-        return french ? "\(number) \(noun), langue \(lang). Source conservée ; import réessayable." : "\(number) \(noun), language \(lang). Source preserved; import can be retried."
+        return count == 1 || (french && count == 0)
+            ? ProductCopy.inline("%1$@ exclusion, langue %2$@. Source conservée ; import réessayable.", "%1$@ exclusion, language %2$@. Source preserved; import can be retried.", french: french, number, lang)
+            : ProductCopy.inline("%1$@ exclusions, langue %2$@. Source conservée ; import réessayable.", "%1$@ exclusions, language %2$@. Source preserved; import can be retried.", french: french, number, lang)
     }
 
     private var diagnosticPreviewText: String {
@@ -351,7 +351,7 @@ struct SettingsView: View {
         do {
             let local = try await LocalStoreAccess.open()
             store = local; exclusions = try await local.exclusions()
-        } catch { status = french ? "Réglages locaux indisponibles." : "Local settings unavailable." }
+        } catch { status = ProductCopy.inline("Réglages locaux indisponibles.", "Local settings unavailable.", french: french) }
     }
 
     @MainActor private func resolvedStore() async throws -> SQLiteStore {
@@ -367,7 +367,7 @@ struct SettingsView: View {
             guard !exclusions.contains(path) else { return }
             let next = (exclusions + [path]).sorted()
             try await local.saveExclusions(next); exclusions = next
-        } catch { status = french ? "Exclusion non enregistrée." : "Exclusion was not saved." }
+        } catch { status = ProductCopy.inline("Exclusion non enregistrée.", "Exclusion was not saved.", french: french) }
     }
 
     @MainActor private func removeExclusion(_ path: String) async {
@@ -375,7 +375,7 @@ struct SettingsView: View {
         do {
             let next = exclusions.filter { $0 != path }
             try await store.saveExclusions(next); exclusions = next
-        } catch { status = french ? "Exclusion non retirée." : "Exclusion was not removed." }
+        } catch { status = ProductCopy.inline("Exclusion non retirée.", "Exclusion was not removed.", french: french) }
     }
 
     @MainActor private func importLegacy() async {
@@ -387,8 +387,9 @@ struct SettingsView: View {
             store = local
             let outcome = try await LegacyPreferencesImporter().importCopy(preview, into: local)
             exclusions = try await local.exclusions()
-            status = french ? (outcome == .imported ? "Préférences importées; source conservée." : "Déjà importées; aucune copie répétée.") : (outcome == .imported ? "Preferences imported; source preserved." : "Already imported; no duplicate copy.")
-        } catch { status = french ? "Import échoué; source conservée." : "Import failed; source preserved." }
+            status = outcome == .imported ? ProductCopy.inline("Préférences importées; source conservée.", "Preferences imported; source preserved.", french: french)
+                                          : ProductCopy.inline("Déjà importées; aucune copie répétée.", "Already imported; no duplicate copy.", french: french)
+        } catch { status = ProductCopy.inline("Import échoué; source conservée.", "Import failed; source preserved.", french: french) }
     }
 
     @MainActor private func buildDiagnosticPreview() async {
@@ -401,9 +402,11 @@ struct SettingsView: View {
             diagnosticDocument = SettingsJSONDocument(data: data)
             let version = ProductFormat.count(schema, french: french)
             let count = ProductFormat.count(events.count, french: french)
-            diagnosticSummary = french ? "Schéma \(version) ; \(count) événement\(ProductFormat.frenchPlural(events.count))." : "Schema \(version); \(count) \(events.count == 1 ? "event" : "events")."
+            diagnosticSummary = events.count == 1
+                ? ProductCopy.inline("Schéma %1$@ ; %2$@ événement.", "Schema %1$@; %2$@ event.", french: french, "\(version)", "\(count)")
+                : ProductCopy.inline("Schéma %1$@ ; %2$@ événements.", "Schema %1$@; %2$@ events.", french: french, "\(version)", "\(count)")
             diagnosticPreview = true
-        } catch { status = french ? "Diagnostic indisponible." : "Diagnostic unavailable." }
+        } catch { status = ProductCopy.inline("Diagnostic indisponible.", "Diagnostic unavailable.", french: french) }
     }
 }
 

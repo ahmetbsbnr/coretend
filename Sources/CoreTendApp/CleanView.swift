@@ -128,8 +128,7 @@ struct CleanView: View {
         case .ready:
             if groups.isEmpty { copy("clean.empty.title") }
             else if selected.isEmpty { copy("clean.noneSelected") }
-            else { french ? "sélectionnés sur \(ProductFormat.bytes(report?.bytes ?? 0, french: true)) trouvés · tout part à la Corbeille"
-                          : "selected of \(ProductFormat.bytes(report?.bytes ?? 0, french: false)) found · everything goes to the Trash" }
+            else { ProductCopy.inline("sélectionnés sur %1$@ trouvés · tout part à la Corbeille", "selected of %1$@ found · everything goes to the Trash", french: french, "\(ProductFormat.bytes(report?.bytes ?? 0, french: french))") }
         }
     }
 
@@ -137,7 +136,7 @@ struct CleanView: View {
         SerreParcel {
             HStack(spacing: 14) {
                 ProgressView().controlSize(.small)
-                Text(french ? "\(ProductFormat.count(filesRead, french: true)) fichiers lus…" : "\(ProductFormat.count(filesRead, french: false)) files read…")
+                Text(ProductCopy.inline("%1$@ fichiers lus…", "%1$@ files read…", french: french, "\(ProductFormat.count(filesRead, french: french))"))
                     .font(CoreTendTypography.body.monospacedDigit()).foregroundStyle(Palette.secondaryInk.color)
                     .contentTransition(.numericText())
                 Spacer()
@@ -186,7 +185,7 @@ struct CleanView: View {
                 LazyVStack(spacing: 2) {
                     ForEach(group.items.prefix(200)) { item in itemRow(item) }
                     if group.items.count > 200 {
-                        Text(french ? "… et \(group.items.count - 200) autres" : "… and \(group.items.count - 200) more")
+                        Text(ProductCopy.inline("… et %1$@ autres", "… and %1$@ more", french: french, "\(group.items.count - 200)"))
                             .font(CoreTendTypography.caption).foregroundStyle(Palette.tertiaryInk.color).padding(8)
                     }
                 }
@@ -230,7 +229,7 @@ struct CleanView: View {
     }
 
     private var undoBar: some View {
-        SerreBanner(.note, title: french ? "\(ProductFormat.items(lastMovedItems, french: true)), \(ProductFormat.bytes(lastMovedBytes, french: true)) dans la Corbeille." : "\(ProductFormat.items(lastMovedItems, french: false)), \(ProductFormat.bytes(lastMovedBytes, french: false)) in the Trash.") {
+        SerreBanner(.note, title: ProductCopy.inline("%1$@, %2$@ dans la Corbeille.", "%1$@, %2$@ in the Trash.", french: french, "\(ProductFormat.items(lastMovedItems, french: french))", "\(ProductFormat.bytes(lastMovedBytes, french: french))")) {
             Button(copy("clean.undo")) { undo() }.padding(.top, 6).disabled(busy)
         }
     }
@@ -306,8 +305,7 @@ struct CleanView: View {
     private var confirmMessage: String {
         let count = pending == nil ? 0 : allItems.filter { selected.contains($0.url) }.count
         let size = ProductFormat.bytes(selectedBytes, french: french)
-        return french ? "\(ProductFormat.items(count, french: true)), \(size). Tout part à la Corbeille et peut être remis en place avec Annuler."
-                      : "\(ProductFormat.items(count, french: false)), \(size). Everything goes to the Trash and can be put back with Undo."
+        return ProductCopy.inline("%1$@, %2$@. Tout part à la Corbeille et peut être remis en place avec Annuler.", "%1$@, %2$@. Everything goes to the Trash and can be put back with Undo.", french: french, "\(ProductFormat.items(count, french: french))", "\(size)")
     }
 
     private func execute() {
@@ -374,10 +372,9 @@ struct CleanView: View {
             lastMoved = []
             flight.landed = 0
             notice = PageNotice(kind: putBack == moved.count ? .note : .partial,
-                                title: french ? "\(putBack) remis en place sur \(moved.count)." : "\(putBack) of \(moved.count) put back.",
+                                title: ProductCopy.inline("%1$@ remis en place sur %2$@.", "%1$@ of %2$@ put back.", french: french, "\(putBack)", "\(moved.count)"),
                                 message: putBack == moved.count ? nil
-                                    : (french ? "Les autres ont déjà été recréés par leur app ; leur copie reste dans la Corbeille, rien n’est écrasé."
-                                              : "The others were already recreated by their app; their copy stays in the Trash, nothing is overwritten."),
+                                    : (ProductCopy.inline("Les autres ont déjà été recréés par leur app ; leur copie reste dans la Corbeille, rien n’est écrasé.", "The others were already recreated by their app; their copy stays in the Trash, nothing is overwritten.", french: french)),
                                 nearActions: true)
             start()
         }

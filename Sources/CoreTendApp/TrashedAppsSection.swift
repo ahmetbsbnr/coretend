@@ -96,8 +96,7 @@ struct TrashedAppsSection: View {
             }
             let result = await executeShowingEachItem(pending.service, batch, reduceMotion: reduceMotion) { _ in }
             notice = result.movedCount == result.items.count
-                ? PageNotice(kind: .note, title: french ? "\(ProductFormat.items(result.movedCount, french: true)) dans la Corbeille."
-                                                        : "\(ProductFormat.items(result.movedCount, french: false)) in the Trash.")
+                ? PageNotice(kind: .note, title: ProductCopy.inline("%1$@ dans la Corbeille.", "%1$@ in the Trash.", french: french, "\(ProductFormat.items(result.movedCount, french: french))"))
                 : .moveOutcome(result, french: french)
             await load()
             CompletionSound.play()

@@ -35,7 +35,7 @@ public struct CoreTendPreferences {
 
     /// A language stored by an earlier version is ignored: there is no language choice any more.
     public func resolvedLanguage(storedValue: String?) -> String {
-        ["system", "en", "fr"].contains(language) ? language : "system"
+        (language == "system" || UILanguage(rawValue: language) != nil) ? language : "system"
     }
 
     public var onboardingCompleted: Bool {

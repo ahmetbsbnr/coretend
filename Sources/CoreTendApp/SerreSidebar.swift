@@ -64,7 +64,7 @@ struct SerreSidebar: View {
             SerreLogo(size: 32, germinates: true).ambientSway(degrees: 5)
             VStack(alignment: .leading, spacing: 0) {
                 Text("CoreTend").font(.custom("IowanOldStyle-Bold", size: 20, relativeTo: .title3)).foregroundStyle(Palette.ink.color)
-                Text(french ? "entretien local" : "local care").font(CoreTendTypography.caption).foregroundStyle(Palette.tertiaryInk.color)
+                Text(ProductCopy.inline("entretien local", "local care", french: french)).font(CoreTendTypography.caption).foregroundStyle(Palette.tertiaryInk.color)
             }
         }
         .padding(.horizontal, 10).padding(.top, 6).padding(.bottom, 6)
@@ -76,7 +76,7 @@ struct SerreSidebar: View {
         Button(action: openSearch) {
             HStack(spacing: 9) {
                 SerreIcon(.search, size: 16)
-                Text(french ? "Rechercher" : "Search").font(CoreTendTypography.body)
+                Text(ProductCopy.inline("Rechercher", "Search", french: french)).font(CoreTendTypography.body)
                 Spacer(minLength: 4)
                 Text("⌘K").font(CoreTendTypography.caption).foregroundStyle(Palette.tertiaryInk.color)
             }
@@ -87,7 +87,7 @@ struct SerreSidebar: View {
         .matchedGeometryEffect(id: "search.button", in: searchNamespace, properties: .frame, isSource: true)
         .keyboardShortcut("k", modifiers: [.command])
         .environment(\.serreFocusRing, false)
-        .help(french ? "Accéder à… (⌘K)" : "Go to or open… (⌘K)")
+        .help(ProductCopy.inline("Accéder à… (⌘K)", "Go to or open… (⌘K)", french: french))
         .accessibilityLabel(ProductCopy.value(for: "command.palette.title", french: french))
         .padding(.horizontal, 2).padding(.bottom, 4)
     }

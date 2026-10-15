@@ -26,14 +26,13 @@ struct PageNotice: Equatable {
         let stayed = report.items.count - moved
         if stayed > 0 {
             return PageNotice(kind: .error,
-                              title: french ? "\(moved) déplacé\(ProductFormat.frenchPlural(moved)) vers la Corbeille ; \(stayed) resté\(ProductFormat.frenchPlural(stayed)) en place."
-                                            : "\(moved) moved to Trash; \(stayed) left in place.",
-                              message: french ? "Chaque fichier resté en place dit pourquoi ; aucun n’a été effacé." : "Each file left in place says why; none was erased.",
+                              title: ProductCopy.inline("%1$@ déplacé%3$@ vers la Corbeille ; %2$@ resté%4$@ en place.", "%1$@ moved to Trash; %2$@ left in place.", french: french, "\(moved)", "\(stayed)", "\(ProductFormat.frenchPlural(moved))", "\(ProductFormat.frenchPlural(stayed))"),
+                              message: ProductCopy.inline("Chaque fichier resté en place dit pourquoi ; aucun n’a été effacé.", "Each file left in place says why; none was erased.", french: french),
                               nearActions: true)
         }
         return PageNotice(kind: .note,
-                          title: french ? "\(moved) déplacé\(ProductFormat.frenchPlural(moved)) vers la Corbeille." : "\(moved) moved to Trash.",
-                          message: french ? "Ils restent récupérables depuis la Corbeille de macOS." : "They can be restored from the macOS Trash.",
+                          title: ProductCopy.inline("%1$@ déplacé%2$@ vers la Corbeille.", "%1$@ moved to Trash.", french: french, "\(moved)", "\(ProductFormat.frenchPlural(moved))"),
+                          message: ProductCopy.inline("Ils restent récupérables depuis la Corbeille de macOS.", "They can be restored from the macOS Trash.", french: french),
                           nearActions: true)
     }
 

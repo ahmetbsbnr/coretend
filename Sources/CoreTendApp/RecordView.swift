@@ -33,7 +33,7 @@ struct RecordView: View {
             SerreBanner(.note, title: copy("record.localNotice"))
             tools
             if loading && events.isEmpty {
-                Text(french ? "Chargement de l’historique…" : "Loading history…")
+                Text(ProductCopy.inline("Chargement de l’historique…", "Loading history…", french: french))
                     .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
             }
             if let message = errorMessage {
@@ -102,8 +102,8 @@ struct RecordView: View {
                 .tint(Palette.accent.color)
                 HStack(spacing: 12) {
                     let count = filtered.count
-                    Text(french ? "\(ProductFormat.count(count, french: true)) événement\(ProductFormat.frenchPlural(count))"
-                                : "\(ProductFormat.count(count, french: false)) event\(count == 1 ? "" : "s")")
+                    Text(ProductCopy.inline(count > 1 ? "%1$@ événements" : "%1$@ événement", count == 1 ? "%1$@ event" : "%1$@ events",
+                                            french: french, ProductFormat.count(count, french: french)))
                         .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                         .contentTransition(.numericText(value: Double(count)))
                     Spacer()
@@ -129,7 +129,7 @@ struct RecordView: View {
     private func page(_ group: ActivityDayGroup, first: Int) -> some View {
         SerreParcel {
             VStack(alignment: .leading, spacing: 10) {
-                Text(group.day.formatted(.dateTime.weekday(.wide).day().month(.wide).year().locale(Locale(identifier: french ? "fr_FR" : "en_US"))))
+                Text(group.day.formatted(.dateTime.weekday(.wide).day().month(.wide).year().locale(Locale(identifier: ProductCopy.inline("fr_FR", "en_US", french: french)))))
                     .font(.custom("IowanOldStyle-Roman", size: 20, relativeTo: .title3))
                     .foregroundStyle(Palette.ink.color)
                     .accessibilityAddTraits(.isHeader)
@@ -152,7 +152,7 @@ struct RecordView: View {
                     .textSelection(.enabled)
             }
             Spacer(minLength: 8)
-            Text(event.occurredAt.formatted(.dateTime.hour().minute().locale(Locale(identifier: french ? "fr_FR" : "en_US"))))
+            Text(event.occurredAt.formatted(.dateTime.hour().minute().locale(Locale(identifier: ProductCopy.inline("fr_FR", "en_US", french: french)))))
                 .font(CoreTendTypography.caption.monospacedDigit()).foregroundStyle(Palette.tertiaryInk.color)
         }
         .accessibilityElement(children: .combine)

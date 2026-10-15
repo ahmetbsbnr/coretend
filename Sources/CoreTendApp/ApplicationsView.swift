@@ -155,9 +155,10 @@ struct ApplicationsView: View {
             else if let first = ApplicationFolders.candidates(home: HomeFolder.url).first { discover(first) }
         }
         .onDisappear { task?.cancel(); scanning = false; if removalReview != nil { cancelRemoval() } }
-        .confirmationDialog(french ? "Désinstaller \(removalApp?.displayName ?? "l’app") ?" : "Uninstall \(removalApp?.displayName ?? "the app")?",
+        .confirmationDialog(ProductCopy.inline("Désinstaller %1$@ ?", "Uninstall %1$@?", french: french,
+                                               removalApp?.displayName ?? ProductCopy.inline("l’app", "the app", french: french)),
                             isPresented: $removalDialogPresented, titleVisibility: .visible) {
-            Button(french ? "Placer dans la Corbeille" : "Move to Trash", role: .destructive) { beginRemoval() }
+            Button(ProductCopy.inline("Placer dans la Corbeille", "Move to Trash", french: french), role: .destructive) { beginRemoval() }
             Button(copy("common.cancel"), role: .cancel) { cancelRemoval() }
                 // Return cancels: a move to the Trash is only ever a deliberate click.
                 .keyboardShortcut(.defaultAction)
@@ -222,7 +223,7 @@ struct ApplicationsView: View {
 
     /// "Applications" for /Applications, "Applications (yours)" for the one in the home folder.
     private func folderName(_ folder: URL) -> String {
-        folder.path == "/Applications" ? "Applications" : (french ? "Applications (les vôtres)" : "Applications (yours)")
+        folder.path == "/Applications" ? "Applications" : (ProductCopy.inline("Applications (les vôtres)", "Applications (yours)", french: french))
     }
 
     private func banner(_ notice: PageNotice) -> some View {
@@ -235,19 +236,18 @@ struct ApplicationsView: View {
             HStack(alignment: .firstTextBaseline) {
                 Text(copy("apps.inventory")).font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
                 Spacer()
-                Text(french ? "\(ProductFormat.count(visibleRecords.count, french: true)) sur \(ProductFormat.count(records.count, french: true))"
-                            : "\(ProductFormat.count(visibleRecords.count, french: false)) of \(ProductFormat.count(records.count, french: false))")
+                Text(ProductCopy.inline("%1$@ sur %2$@", "%1$@ of %2$@", french: french, "\(ProductFormat.count(visibleRecords.count, french: french))", "\(ProductFormat.count(records.count, french: french))"))
                     .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                     .contentTransition(.numericText(value: Double(visibleRecords.count)))
             }
             HStack(spacing: 10) {
                 SerreIcon(.search, size: 15).foregroundStyle(Palette.accent.color).accessibilityHidden(true)
-                TextField(french ? "Rechercher par nom, identifiant, version ou chemin" : "Search name, identifier, version, or path", text: $searchText)
+                TextField(ProductCopy.inline("Rechercher par nom, identifiant, version ou chemin", "Search name, identifier, version, or path", french: french), text: $searchText)
                     .textFieldStyle(.plain).font(CoreTendTypography.body)
-                    .accessibilityLabel(french ? "Rechercher dans l’inventaire d’apps" : "Search app inventory")
+                    .accessibilityLabel(ProductCopy.inline("Rechercher dans l’inventaire d’apps", "Search app inventory", french: french))
                 if !searchText.isEmpty {
                     Button { searchText = "" } label: { Image(systemName: "xmark.circle.fill").foregroundStyle(Palette.secondaryInk.color) }
-                        .buttonStyle(.serre(.icon)).accessibilityLabel(french ? "Effacer la recherche" : "Clear search")
+                        .buttonStyle(.serre(.icon)).accessibilityLabel(ProductCopy.inline("Effacer la recherche", "Clear search", french: french))
                 }
             }
             .padding(.horizontal, 12).padding(.vertical, 9)
@@ -303,7 +303,7 @@ struct ApplicationsView: View {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Text(app.displayName).font(CoreTendTypography.body.weight(.semibold)).foregroundStyle(Palette.ink.color)
                         .textSelection(.enabled)
-                    Text(app.version ?? (french ? "version inconnue" : "version unknown"))
+                    Text(app.version ?? (ProductCopy.inline("version inconnue", "version unknown", french: french)))
                         .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                 }
                 Text(app.bundleIdentifier).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
@@ -358,7 +358,7 @@ struct ApplicationsView: View {
             }
             .buttonStyle(.serre(.secondary))
             .disabled(locked)
-            .accessibilityHint(french ? "L’app et les fichiers qu’elle a laissés vont à la Corbeille, après confirmation." : "The app and the files it left go to the Trash, after confirmation.")
+            .accessibilityHint(ProductCopy.inline("L’app et les fichiers qu’elle a laissés vont à la Corbeille, après confirmation.", "The app and the files it left go to the Trash, after confirmation.", french: french))
         }
         .padding(.leading, 54).padding(.bottom, 10)
     }
@@ -366,9 +366,9 @@ struct ApplicationsView: View {
     private func associations(_ app: ApplicationRecord) -> some View {
         SerreParcel {
             VStack(alignment: .leading, spacing: 8) {
-                Text(french ? "Fichiers autour de \(app.displayName)" : "Files around \(app.displayName)")
+                Text(ProductCopy.inline("Fichiers autour de %1$@", "Files around %1$@", french: french, "\(app.displayName)"))
                     .font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
-                Text(french ? "Correspondance de nom seulement ; appartenance non prouvée. Vérifiez avant toute action." : "Name match only; ownership is unverified. Inspect before taking any action.")
+                Text(ProductCopy.inline("Correspondance de nom seulement ; appartenance non prouvée. Vérifiez avant toute action.", "Name match only; ownership is unverified. Inspect before taking any action.", french: french))
                     .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                     .fixedSize(horizontal: false, vertical: true)
                 if let associationStatus {
@@ -385,7 +385,7 @@ struct ApplicationsView: View {
                     }
                 }
                 if associationResults.isEmpty && associationStatus == nil {
-                    Text(french ? "Aucun candidat trouvé." : "No candidates found.").font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+                    Text(ProductCopy.inline("Aucun candidat trouvé.", "No candidates found.", french: french)).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
                 }
             }
         }
@@ -415,7 +415,7 @@ struct ApplicationsView: View {
                 + leftovers.map { FileActionSelection(url: $0.url, ruleID: leftoverRule) })
             removalLeftovers = leftovers
             guard await service.recordProposal(review) else {
-                notice = PageNotice(kind: .error, title: french ? "Journal indisponible; déplacement bloqué." : "History unavailable; move blocked.", nearActions: true)
+                notice = PageNotice(kind: .error, title: ProductCopy.inline("Journal indisponible; déplacement bloqué.", "History unavailable; move blocked.", french: french), nearActions: true)
                 releaseRemovalScope()
                 return
             }
@@ -424,7 +424,7 @@ struct ApplicationsView: View {
             removalService = service
             removalDialogPresented = true
         } catch {
-            notice = PageNotice(kind: .error, title: french ? "Revue impossible; app inchangée." : "Review failed; app unchanged.", nearActions: true)
+            notice = PageNotice(kind: .error, title: ProductCopy.inline("Revue impossible; app inchangée.", "Review failed; app unchanged.", french: french), nearActions: true)
             releaseRemovalScope()
         }
     }
@@ -433,10 +433,9 @@ struct ApplicationsView: View {
         guard let app = removalApp else { return "" }
         let size = ProductFormat.bytes(removalLeftovers.reduce(0) { $0 + $1.bytes }, french: french)
         let names = removalLeftovers.prefix(6).map { "• " + HomeFolder.displayPath($0.url) }.joined(separator: "\n")
-        let more = removalLeftovers.count > 6 ? (french ? "\n… et \(removalLeftovers.count - 6) autres" : "\n… and \(removalLeftovers.count - 6) more") : ""
+        let more = removalLeftovers.count > 6 ? (ProductCopy.inline("\n… et %1$@ autres", "\n… and %1$@ more", french: french, "\(removalLeftovers.count - 6)")) : ""
         if removalLeftovers.isEmpty {
-            return french ? "\(app.url.path)\nAucun fichier laissé par l’app n’a été trouvé. L’app part à la Corbeille."
-                          : "\(app.url.path)\nNo file left by the app was found. The app goes to the Trash."
+            return ProductCopy.inline("%1$@\nAucun fichier laissé par l’app n’a été trouvé. L’app part à la Corbeille.", "%1$@\nNo file left by the app was found. The app goes to the Trash.", french: french, "\(app.url.path)")
         }
         return french
             ? "\(app.url.path)\net \(removalLeftovers.count) élément\(ProductFormat.frenchPlural(removalLeftovers.count)) laissé\(ProductFormat.frenchPlural(removalLeftovers.count)) par l’app (\(size)) :\n\(names)\(more)\nTout part à la Corbeille, rien n’est effacé."
@@ -456,7 +455,7 @@ struct ApplicationsView: View {
         defer { moving = false; removalBusy = false; releaseRemovalScope() }
         let batch: ConfirmedActionBatch
         do { batch = try service.confirm(review, accepted: true) } catch {
-            notice = PageNotice(kind: .error, title: french ? "Déplacement refusé; app inchangée." : "Move refused; app unchanged.", nearActions: true)
+            notice = PageNotice(kind: .error, title: ProductCopy.inline("Déplacement refusé; app inchangée.", "Move refused; app unchanged.", french: french), nearActions: true)
             return
         }
         failures = [:]; flight.landed = 0; notice = nil
@@ -475,9 +474,9 @@ struct ApplicationsView: View {
         }
         removalLeftovers = []
         notice = appMoved && result.movedCount == result.items.count
-            ? PageNotice(kind: .note, title: french ? "\(app.displayName) désinstallée : \(result.movedCount) élément\(ProductFormat.frenchPlural(result.movedCount)) dans la Corbeille."
-                                                    : "\(app.displayName) uninstalled: \(result.movedCount) item\(result.movedCount == 1 ? "" : "s") in the Trash.",
-                         message: french ? "Tout reste récupérable depuis la Corbeille de macOS." : "Everything can be restored from the macOS Trash.", nearActions: true)
+            ? PageNotice(kind: .note, title: ProductCopy.inline("%1$@ désinstallée : %2$@ dans la Corbeille.", "%1$@ uninstalled: %2$@ in the Trash.", french: french,
+                                                                app.displayName, ProductFormat.items(result.movedCount, french: french)),
+                         message: ProductCopy.inline("Tout reste récupérable depuis la Corbeille de macOS.", "Everything can be restored from the macOS Trash.", french: french), nearActions: true)
             : .moveOutcome(result, french: french)
     }
 
@@ -488,8 +487,8 @@ struct ApplicationsView: View {
         removalReview = nil; removalService = nil; removalApp = nil
         Task { @MainActor in
             let recorded = await service.recordCancellation(review)
-            notice = PageNotice(kind: .note, title: recorded ? (french ? "Action annulée et journalisée." : "Action cancelled and recorded.")
-                                                        : (french ? "Action annulée; journal indisponible." : "Action cancelled; history unavailable."), nearActions: true)
+            notice = PageNotice(kind: .note, title: recorded ? (ProductCopy.inline("Action annulée et journalisée.", "Action cancelled and recorded.", french: french))
+                                                        : (ProductCopy.inline("Action annulée; journal indisponible.", "Action cancelled; history unavailable.", french: french)), nearActions: true)
             releaseRemovalScope()
             removalBusy = false
         }
@@ -515,16 +514,17 @@ struct ApplicationsView: View {
         case (.declaredHTTPSFeed, .unavailable?):
             Text(copy("apps.updates.unreachable")).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
         case (.declaredHTTPSFeed(let url), nil):
-            Text(french ? "Flux HTTPS déclaré par l’app : \(url.host ?? "hôte inconnu") · version non vérifiée" : "App-declared HTTPS feed: \(url.host ?? "unknown host") · version not checked")
+            Text(ProductCopy.inline("Flux HTTPS déclaré par l’app : %1$@ · version non vérifiée", "App-declared HTTPS feed: %1$@ · version not checked", french: french,
+                                    url.host ?? ProductCopy.inline("hôte inconnu", "unknown host", french: french)))
                 .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
             Link(destination: url) {
-                Label { Text(french ? "Ouvrir le flux déclaré" : "Open declared feed") } icon: { Image(systemName: "arrow.up.right") }
+                Label { Text(ProductCopy.inline("Ouvrir le flux déclaré", "Open declared feed", french: french)) } icon: { Image(systemName: "arrow.up.right") }
                     .font(CoreTendTypography.caption)
             }
             .buttonStyle(.serre(.icon))
-                .accessibilityHint(french ? "Ouvre l’adresse HTTPS déclarée par cette app dans le navigateur. CoreTend ne vérifie aucune version." : "Opens this app’s declared HTTPS address in the browser. CoreTend does not compare versions.")
+                .accessibilityHint(ProductCopy.inline("Ouvre l’adresse HTTPS déclarée par cette app dans le navigateur. CoreTend ne vérifie aucune version.", "Opens this app’s declared HTTPS address in the browser. CoreTend does not compare versions.", french: french))
         case (.invalidDeclaredFeed, _):
-            Text(french ? "Adresse de mise à jour déclarée inutilisable." : "Declared update address is unusable.")
+            Text(ProductCopy.inline("Adresse de mise à jour déclarée inutilisable.", "Declared update address is unusable.", french: french))
                 .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
         case (.unknown, _):
             // Said once in the scope note ("updates are not checked"), not repeated on every row.
@@ -535,7 +535,7 @@ struct ApplicationsView: View {
     private func reviewAssociations(for app: ApplicationRecord, in root: URL) {
         task?.cancel()
         associationResults = []
-        associationStatus = french ? "Analyse du dossier choisi…" : "Scanning chosen folder…"
+        associationStatus = ProductCopy.inline("Analyse du dossier choisi…", "Scanning chosen folder…", french: french)
         scanning = true
         let acquiredScope = root.startAccessingSecurityScopedResource()
         task = Task {
@@ -558,12 +558,12 @@ struct ApplicationsView: View {
                 try Task.checkCancellation()
                 associationResults = matches.sorted { $0.path.localizedStandardCompare($1.path) == .orderedAscending }
                 associationStatus = matches.isEmpty
-                    ? (french ? "Aucun nom correspondant dans le dossier choisi." : "No matching names in chosen folder.")
-                    : (french ? "\(matches.count) candidats de nom; aucune attribution confirmée." : "\(matches.count) name candidates; none confirmed as app-owned.")
+                    ? (ProductCopy.inline("Aucun nom correspondant dans le dossier choisi.", "No matching names in chosen folder.", french: french))
+                    : (ProductCopy.inline("%1$@ candidats de nom; aucune attribution confirmée.", "%1$@ name candidates; none confirmed as app-owned.", french: french, "\(matches.count)"))
             } catch is CancellationError {
-                if !Task.isCancelled { associationStatus = french ? "Analyse annulée." : "Scan cancelled." }
+                if !Task.isCancelled { associationStatus = ProductCopy.inline("Analyse annulée.", "Scan cancelled.", french: french) }
             } catch {
-                if !Task.isCancelled { associationStatus = french ? "Analyse impossible." : "Scan failed." }
+                if !Task.isCancelled { associationStatus = ProductCopy.inline("Analyse impossible.", "Scan failed.", french: french) }
             }
         }
     }
@@ -609,10 +609,10 @@ struct ApplicationsView: View {
     }
 
     private func copy(_ key: String, count: Int? = nil) -> String {
-        if key == "apps.count", let count { return french ? "\(count) applications locales" : "\(count) local applications" }
+        if key == "apps.count", let count { return ProductCopy.inline("%1$@ applications locales", "%1$@ local applications", french: french, "\(count)") }
         if key == "apps.issueCount", let count {
             if french { return count == 1 ? "1 anomalie détectée" : "\(count) anomalies détectées" }
-            return count == 1 ? "1 issue found" : "\(count) issues found"
+            return ProductCopy.inline("", count == 1 ? "%1$@ issue found" : "%1$@ issues found", french: false, "\(count)")
         }
         return ProductCopy.value(for: key, french: french)
     }

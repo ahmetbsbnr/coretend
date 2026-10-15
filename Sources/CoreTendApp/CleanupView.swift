@@ -98,8 +98,8 @@ struct CleanupView: View {
             startScan(found, root: root)
         }
         .onDisappear { task?.cancel(); activeScanID = nil; scanning = false; if actionReview != nil { cancelAction() } }
-        .confirmationDialog(french ? "Déplacer vers la Corbeille macOS ?" : "Move to macOS Trash?", isPresented: $actionDialogPresented, titleVisibility: .visible) {
-            Button(french ? "Déplacer vers la Corbeille" : "Move to Trash", role: .destructive) { beginExecution() }
+        .confirmationDialog(ProductCopy.inline("Déplacer vers la Corbeille macOS ?", "Move to macOS Trash?", french: french), isPresented: $actionDialogPresented, titleVisibility: .visible) {
+            Button(ProductCopy.inline("Déplacer vers la Corbeille", "Move to Trash", french: french), role: .destructive) { beginExecution() }
             Button(copy("common.cancel"), role: .cancel) { cancelAction() }
                 // Return cancels: a move to the Trash is only ever a deliberate click.
                 .keyboardShortcut(.defaultAction)
@@ -202,16 +202,18 @@ struct CleanupView: View {
     private var resultsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .firstTextBaseline) {
-                Text(french ? "\(ProductFormat.items(results.count, french: true)) mesuré\(ProductFormat.frenchPlural(results.count))" : "\(ProductFormat.items(results.count, french: false)) measured")
+                Text(ProductCopy.inline("%1$@ mesuré%2$@", "%1$@ measured", french: french, "\(ProductFormat.items(results.count, french: french))", "\(ProductFormat.frenchPlural(results.count))"))
                     .font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
                 let found = results.reduce(Int64(0)) { $0 + allocated($1).clamped() }
                 let chosen = results.filter { selectedItems.contains($0.url) }.reduce(Int64(0)) { $0 + allocated($1).clamped() }
-                Text(french ? "· \(ProductFormat.bytes(found, french: true)) trouvés" + (chosen > 0 ? " · \(ProductFormat.bytes(chosen, french: true)) sélectionnés" : "")
-                            : "· \(ProductFormat.bytes(found, french: false)) found" + (chosen > 0 ? " · \(ProductFormat.bytes(chosen, french: false)) selected" : ""))
+                Text(chosen > 0
+                     ? ProductCopy.inline("· %1$@ trouvés · %2$@ sélectionnés", "· %1$@ found · %2$@ selected", french: french,
+                                          ProductFormat.bytes(found, french: french), ProductFormat.bytes(chosen, french: french))
+                     : ProductCopy.inline("· %1$@ trouvés", "· %1$@ found", french: french, ProductFormat.bytes(found, french: french)))
                     .font(CoreTendTypography.caption).foregroundStyle(Palette.accent.color)
                     .contentTransition(.numericText())
                 Spacer()
-                Text(french ? "Aucune sélection automatique" : "Nothing selected automatically")
+                Text(ProductCopy.inline("Aucune sélection automatique", "Nothing selected automatically", french: french))
                     .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                 if !selectedItems.isEmpty {
                     Button(copy("cleanup.selectNone")) { selectedItems = [] }
@@ -241,7 +243,7 @@ struct CleanupView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(item.url.lastPathComponent).font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
                         .lineLimit(1).truncationMode(.middle)
-                    Text(french ? "Modifié : \(modified(item))" : "Modified: \(modified(item))")
+                    Text(ProductCopy.inline("Modifié : %1$@", "Modified: %1$@", french: french, "\(modified(item))"))
                         .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                     if let failure {
                         Text(copy(failure)).font(CoreTendTypography.caption).foregroundStyle(Palette.danger.color)
@@ -251,7 +253,7 @@ struct CleanupView: View {
                 Spacer(minLength: 8)
                 VStack(alignment: .trailing, spacing: 2) {
                     Text(size(item.allocatedBytes)).font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
-                    Text(french ? "logique \(size(item.logicalBytes))" : "logical \(size(item.logicalBytes))")
+                    Text(ProductCopy.inline("logique %1$@", "logical %1$@", french: french, "\(size(item.logicalBytes))"))
                         .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                 }
                 .monospacedDigit()
@@ -282,11 +284,11 @@ struct CleanupView: View {
             TrashIndicator(landed: flight.landed, moving: moving, french: french)
             Spacer()
             Button { Task { await prepareAction() } } label: {
-                Text(french ? "Examiner \(ProductFormat.items(selectedItems.count, french: true))" : "Review \(ProductFormat.items(selectedItems.count, french: false))")
+                Text(ProductCopy.inline("Examiner %1$@", "Review %1$@", french: french, "\(ProductFormat.items(selectedItems.count, french: french))"))
             }
             .buttonStyle(.serre(.primary))
             .disabled(selectedItems.isEmpty || locked || selectedRoot == nil)
-            .accessibilityHint(french ? "Les éléments choisis seront revérifiés avant d’être déplacés vers la Corbeille." : "Chosen items are revalidated before moving to Trash.")
+            .accessibilityHint(ProductCopy.inline("Les éléments choisis seront revérifiés avant d’être déplacés vers la Corbeille.", "Chosen items are revalidated before moving to Trash.", french: french))
         }
     }
 
@@ -408,14 +410,14 @@ struct CleanupView: View {
             let selections = selectedItems.sorted { $0.path < $1.path }.map { FileActionSelection(url: $0, ruleID: ruleID) }
             let review = try service.prepareReview(selections)
             guard await service.recordProposal(review) else {
-                notice = PageNotice(kind: .error, title: french ? "Journal indisponible; action bloquée." : "History unavailable; action blocked.", nearActions: true)
+                notice = PageNotice(kind: .error, title: ProductCopy.inline("Journal indisponible; action bloquée.", "History unavailable; action blocked.", french: french), nearActions: true)
                 return
             }
             actionReview = review
             actionService = service
             actionDialogPresented = true
         } catch {
-            notice = PageNotice(kind: .error, title: french ? "Revue impossible; aucun fichier déplacé." : "Review failed; no files moved.", nearActions: true)
+            notice = PageNotice(kind: .error, title: ProductCopy.inline("Revue impossible; aucun fichier déplacé.", "Review failed; no files moved.", french: french), nearActions: true)
         }
     }
 
@@ -432,7 +434,7 @@ struct CleanupView: View {
         defer { moving = false; actionBusy = false; releaseActionScope() }
         let batch: ConfirmedActionBatch
         do { batch = try service.confirm(review, accepted: true) } catch {
-            notice = PageNotice(kind: .error, title: french ? "Action refusée; aucun fichier déplacé." : "Action refused; no files moved.", nearActions: true)
+            notice = PageNotice(kind: .error, title: ProductCopy.inline("Action refusée; aucun fichier déplacé.", "Action refused; no files moved.", french: french), nearActions: true)
             return
         }
         failures = [:]; flight.landed = 0; notice = nil
@@ -462,8 +464,8 @@ struct CleanupView: View {
         actionReview = nil; actionService = nil
         Task { @MainActor in
             let saved = await service.recordCancellation(review)
-            notice = PageNotice(kind: .note, title: saved ? (french ? "Action annulée; annulation journalisée." : "Action cancelled; cancellation recorded.")
-                                                            : (french ? "Action annulée; journal indisponible." : "Action cancelled; history unavailable."), nearActions: true)
+            notice = PageNotice(kind: .note, title: saved ? (ProductCopy.inline("Action annulée; annulation journalisée.", "Action cancelled; cancellation recorded.", french: french))
+                                                            : (ProductCopy.inline("Action annulée; journal indisponible.", "Action cancelled; history unavailable.", french: french)), nearActions: true)
             releaseActionScope()
             actionBusy = false
         }
@@ -473,8 +475,8 @@ struct CleanupView: View {
         let names = actionReview?.items.prefix(5).map { $0.url.lastPathComponent }.joined(separator: "\n") ?? ""
         let count = actionReview?.items.count ?? 0
         let extra = max(0, count - 5)
-        let suffix = extra > 0 ? (french ? "\n… et \(extra) autres" : "\n… and \(extra) more") : ""
-        return french ? "\(ProductFormat.items(count, french: true)) sélectionné\(ProductFormat.frenchPlural(count)) :\n\(names)\(suffix)\nAction journalisée puis revalidée. Aucun effacement définitif." : "\(ProductFormat.items(count, french: false)) selected:\n\(names)\(suffix)\nAction is logged and revalidated. No permanent deletion."
+        let suffix = extra > 0 ? (ProductCopy.inline("\n… et %1$@ autres", "\n… and %1$@ more", french: french, "\(extra)")) : ""
+        return ProductCopy.inline("%1$@ sélectionné%4$@ :\n%2$@%3$@\nAction journalisée puis revalidée. Aucun effacement définitif.", "%1$@ selected:\n%2$@%3$@\nAction is logged and revalidated. No permanent deletion.", french: french, "\(ProductFormat.items(count, french: french))", "\(names)", "\(suffix)", "\(ProductFormat.frenchPlural(count))")
     }
 
     private func releaseActionScope() {
@@ -507,7 +509,7 @@ struct CleanupView: View {
     }
     private func modified(_ result: ScanResult) -> String {
         guard let date = result.modifiedAt else { return copy("metrics.unknown") }
-        return date.formatted(.dateTime.year().month().day().hour().minute().locale(Locale(identifier: french ? "fr_FR" : "en_US")))
+        return date.formatted(.dateTime.year().month().day().hour().minute().locale(Locale(identifier: ProductCopy.inline("fr_FR", "en_US", french: french))))
     }
     private func allocated(_ result: ScanResult) -> Int64 {
         if case .known(let bytes) = result.allocatedBytes { return bytes }

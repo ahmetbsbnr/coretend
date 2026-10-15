@@ -40,14 +40,14 @@ struct DiskWidgetView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(french ? "Libre" : "Free")
+            Text(ProductCopy.inline("Libre", "Free", french: french))
                 .font(.caption).foregroundStyle(Palette.secondaryInk.color(for: scheme))
             Text(bytes(entry.freeBytes))
                 .font(.system(size: family == .systemSmall ? 26 : 30, weight: .semibold, design: .rounded))
                 .foregroundStyle(Palette.ink.color(for: scheme))
                 .minimumScaleFactor(0.6).lineLimit(1)
             usageBar
-            Text(french ? "sur \(bytes(entry.totalBytes))" : "of \(bytes(entry.totalBytes))")
+            Text(ProductCopy.inline("sur %1$@", "of %1$@", french: french, "\(bytes(entry.totalBytes))"))
                 .font(.caption2).foregroundStyle(Palette.secondaryInk.color(for: scheme))
             Spacer(minLength: 0)
             if family != .systemSmall || entry.snapshot != nil {
@@ -74,13 +74,13 @@ struct DiskWidgetView: View {
     @ViewBuilder private var reclaimable: some View {
         if let snapshot = entry.snapshot {
             VStack(alignment: .leading, spacing: 2) {
-                Text(french ? "À libérer : \(bytes(snapshot.reclaimableBytes))" : "To clear: \(bytes(snapshot.reclaimableBytes))")
+                Text(ProductCopy.inline("À libérer : %1$@", "To clear: %1$@", french: french, "\(bytes(snapshot.reclaimableBytes))"))
                     .font(.caption.weight(.semibold)).foregroundStyle(Palette.accent.color(for: scheme))
                 Text(snapshot.surveyedAt, format: .relative(presentation: .named))
                     .font(.caption2).foregroundStyle(Palette.tertiaryInk.color(for: scheme))
             }
         } else {
-            Text(french ? "Ouvrez Nettoyer pour voir ce qui peut partir." : "Open Clean to see what can go.")
+            Text(ProductCopy.inline("Ouvrez Nettoyer pour voir ce qui peut partir.", "Open Clean to see what can go.", french: french))
                 .font(.caption2).foregroundStyle(Palette.secondaryInk.color(for: scheme))
         }
     }
