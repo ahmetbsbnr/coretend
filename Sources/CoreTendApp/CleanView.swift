@@ -32,6 +32,8 @@ struct CleanView: View {
     @State private var failures: [URL: String] = [:]
     /// What the last move put in the Trash, so Undo can put it back.
     @State private var lastMoved: [(trash: URL, original: URL)] = []
+    /// Items (not files: a model's layers go with it) the last move put in the Trash.
+    @State private var lastMovedItems = 0
 
     private var groups: [CleanupGroup] { report?.groups ?? [] }
     private var allItems: [CleanupItem] { groups.flatMap(\.items) }
@@ -192,7 +194,7 @@ struct CleanView: View {
             HStack(spacing: 12) {
                 SerreCheck(isOn: isOn)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(item.url.lastPathComponent).font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
+                    Text(item.title).font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
                         .lineLimit(1).truncationMode(.middle)
                     if let failure = failures[item.url] {
                         Text(copy(failure)).font(CoreTendTypography.caption).foregroundStyle(Palette.danger.color)
@@ -215,7 +217,7 @@ struct CleanView: View {
     }
 
     private var undoBar: some View {
-        SerreBanner(.note, title: french ? "\(ProductFormat.items(lastMoved.count, french: true)) dans la Corbeille." : "\(ProductFormat.items(lastMoved.count, french: false)) in the Trash.") {
+        SerreBanner(.note, title: french ? "\(ProductFormat.items(lastMovedItems, french: true)) dans la Corbeille." : "\(ProductFormat.items(lastMovedItems, french: false)) in the Trash.") {
             Button(copy("clean.undo")) { undo() }.padding(.top, 6).disabled(busy)
         }
     }
@@ -275,7 +277,7 @@ struct CleanView: View {
             let rules = Set(items.map(\.ruleID.rawValue))
             let executor = SafeActionExecutor(allowedRoots: roots, allowedRules: rules, trash: AppTrashClient.make())
             let service = FileActionService(validator: .init(), executor: executor, store: store, allowedRoots: roots, allowedRuleIDs: rules)
-            let review = try service.prepareReview(items.map { FileActionSelection(url: $0.url, ruleID: $0.ruleID.rawValue) })
+            let review = try service.prepareReview(items.flatMap { item in item.targets.map { FileActionSelection(url: $0, ruleID: item.ruleID.rawValue) } })
             guard await service.recordProposal(review) else {
                 notice = PageNotice(kind: .error, title: copy("spacelens.delete.blocked"), nearActions: true)
                 return
@@ -288,7 +290,7 @@ struct CleanView: View {
     }
 
     private var confirmMessage: String {
-        let count = pending?.review.items.count ?? 0
+        let count = pending == nil ? 0 : allItems.filter { selected.contains($0.url) }.count
         let size = ProductFormat.bytes(selectedBytes, french: french)
         return french ? "\(ProductFormat.items(count, french: true)), \(size). Tout part à la Corbeille et peut être remis en place avec Annuler."
                       : "\(ProductFormat.items(count, french: false)), \(size). Everything goes to the Trash and can be put back with Undo."
@@ -305,10 +307,12 @@ struct CleanView: View {
             do { batch = try pending.service.confirm(pending.review, accepted: true) } catch {
                 notice = PageNotice(kind: .error, title: copy("clean.reviewFailed"), nearActions: true); return
             }
-            flight.landed = 0; failures = [:]; notice = nil; lastMoved = []
+            flight.landed = 0; failures = [:]; notice = nil; lastMoved = []; lastMovedItems = 0
+            let itemURLs = Set(allItems.map(\.url))
             let result = await executeShowingEachItem(pending.service, batch, reduceMotion: reduceMotion) { item in
                 if case .movedToTrash(let original, let trash) = item.outcome {
                     lastMoved.append((URL(fileURLWithPath: trash), URL(fileURLWithPath: original)))
+                    if itemURLs.contains(item.targetURL) { lastMovedItems += 1 }
                     flight.send(item.targetURL, reduceMotion: reduceMotion)
                     remove(item.targetURL)
                 } else {

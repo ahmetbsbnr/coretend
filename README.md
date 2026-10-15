@@ -34,7 +34,7 @@ Your whole Mac in one click, caches and developer files cleaned in one review, a
 |---|---|
 | **Home** | How is my Mac, and what can I do now? The space CoreTend can give back, one button away. |
 | **Space** | What takes the space? A map of your home folder, large files and exact duplicates. |
-| **Clean** | What can I remove safely? 14 rules read at once — caches, logs, Xcode, simulators, npm, pnpm, Gradle, Cargo, Mail — safe items ticked, one review, Undo. |
+| **Clean** | What can I remove safely? 30 rules read at once — caches, logs, Xcode, simulators, npm, pnpm, Gradle, Cargo, Mail, AI tools and local models (Ollama, LM Studio), broken login agents, disk images — safe items ticked, one review, Undo. |
 | **Apps** | Which apps take space or start on their own? Uninstall completely: the app and the files it left. |
 
 History of every scan and move stays at the sidebar's foot.

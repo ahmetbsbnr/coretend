@@ -27,10 +27,12 @@ struct CleanCommand {
             let rules = Set(chosen.map(\.ruleID.rawValue))
             let executor = SafeActionExecutor(allowedRoots: roots, allowedRules: rules, trash: trash)
             for item in chosen {
-                do {
-                    let approved = try PathValidator().approve(target: item.url, allowedRoots: roots, ruleID: item.ruleID.rawValue, allowedRuleIDs: rules)
-                    if case .movedToTrash = await executor.execute(approved) { moved.append(item.url.path) } else { failed[item.url.path] = "trash_failed" }
-                } catch { failed[item.url.path] = "revalidation_failed" }
+                for target in item.targets {
+                    do {
+                        let approved = try PathValidator().approve(target: target, allowedRoots: roots, ruleID: item.ruleID.rawValue, allowedRuleIDs: rules)
+                        if case .movedToTrash = await executor.execute(approved) { moved.append(target.path) } else { failed[target.path] = "trash_failed" }
+                    } catch { failed[target.path] = "revalidation_failed" }
+                }
             }
         }
         if format == .json {

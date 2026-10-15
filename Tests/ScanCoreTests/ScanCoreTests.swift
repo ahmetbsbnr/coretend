@@ -487,8 +487,8 @@ final class DuplicateEngineTests: XCTestCase {
 final class CleanupRuleCatalogTests: XCTestCase {
     func testEveryCleanupRuleStaysScopedUnderInjectedHome() throws {
         let home = URL(fileURLWithPath: "/tmp/coretend-fixture-home", isDirectory: true)
-        XCTAssertEqual(CleanupRuleCatalog.rules.count, 14)
-        XCTAssertEqual(Set(CleanupRuleCatalog.rules.map(\.id)).count, 14, "one descriptor per rule")
+        XCTAssertEqual(CleanupRuleCatalog.rules.count, 30)
+        XCTAssertEqual(Set(CleanupRuleCatalog.rules.map(\.id)).count, 30, "one descriptor per rule")
         for rule in CleanupRuleCatalog.rules {
             XCTAssertTrue(rule.root(homeDirectory: home).path.hasPrefix(home.path + "/"))
         }
@@ -606,5 +606,110 @@ final class BatchedScanEventTests: XCTestCase {
         XCTAssertNotNil(report.groups.first { $0.rule.id == .npmCache })
         XCTAssertNil(report.groups.first { $0.rule.id == .iosBackups }, "a missing folder is skipped, not reported")
         XCTAssertTrue(FileManager.default.fileExists(atPath: home.appendingPathComponent("Library/Caches/com.example.a/one").path), "read-only")
+    }
+}
+
+final class CleanupNewRuleTests: XCTestCase {
+    private var home: URL!
+
+    override func setUpWithError() throws {
+        home = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-rules-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: home, withIntermediateDirectories: true)
+    }
+
+    override func tearDownWithError() throws { try? FileManager.default.removeItem(at: home) }
+
+    private func write(_ path: String, bytes: Int = 4096, contents: Data? = nil) throws {
+        let url = home.appendingPathComponent(path)
+        try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try (contents ?? Data(repeating: 1, count: bytes)).write(to: url)
+    }
+
+    private func group(_ rule: ScanRule) async throws -> CleanupGroup? {
+        let survey = CleanupSurvey(home: home, rules: CleanupRuleCatalog.rules.filter { $0.id == rule })
+        return try await survey.run().groups.first
+    }
+
+    func testOlderClaudeCodeVersionsAreOfferedAndTheVersionInUseNever() async throws {
+        for version in ["2.1.294", "2.1.295", "2.1.296"] { try write(".local/share/claude/versions/\(version)") }
+        try FileManager.default.createDirectory(at: home.appendingPathComponent(".local/bin"), withIntermediateDirectories: true)
+        try FileManager.default.createSymbolicLink(atPath: home.appendingPathComponent(".local/bin/claude").path,
+                                                   withDestinationPath: home.appendingPathComponent(".local/share/claude/versions/2.1.296").path)
+        let found = try await group(.claudeCodeVersions)
+        let versions = try XCTUnwrap(found)
+        XCTAssertEqual(Set(versions.items.map(\.url.lastPathComponent)), ["2.1.294", "2.1.295"])
+    }
+
+    func testClaudeCodeVersionsAreNotOfferedWhenTheVersionInUseIsUnknown() async throws {
+        for version in ["2.1.294", "2.1.295"] { try write(".local/share/claude/versions/\(version)") }
+        let versions = try await group(.claudeCodeVersions)
+        XCTAssertNil(versions, "without ~/.local/bin/claude nothing is offered")
+    }
+
+    func testOllamaModelsCarryOnlyTheLayersNoOtherModelUses() async throws {
+        let shared = "sha256:" + String(repeating: "a", count: 64)
+        let ownA = "sha256:" + String(repeating: "b", count: 64)
+        let ownB = "sha256:" + String(repeating: "c", count: 64)
+        func manifest(_ digests: [String]) -> Data {
+            let layers = digests.dropFirst().map { #"{"digest":"\#($0)"}"# }.joined(separator: ",")
+            return Data(#"{"config":{"digest":"\#(digests[0])"},"layers":[\#(layers)]}"#.utf8)
+        }
+        try write(".ollama/models/manifests/registry.ollama.ai/library/llama3/latest", contents: manifest([shared, ownA]))
+        try write(".ollama/models/manifests/registry.ollama.ai/someone/coder/7b", contents: manifest([shared, ownB]))
+        for digest in [shared, ownA, ownB] {
+            try write(".ollama/models/blobs/" + digest.replacingOccurrences(of: ":", with: "-"), bytes: 8192)
+        }
+        let found = try await group(.ollamaModels)
+        let models = try XCTUnwrap(found)
+        XCTAssertEqual(Set(models.items.map(\.title)), ["llama3:latest", "someone/coder:7b"])
+        let llama = try XCTUnwrap(models.items.first { $0.title == "llama3:latest" })
+        XCTAssertEqual(llama.companions.map(\.lastPathComponent), ["sha256-" + String(repeating: "b", count: 64)])
+        XCTAssertEqual(llama.targets.first, llama.url, "the manifest leaves first")
+        XCTAssertEqual(llama.files, 2)
+        XCTAssertTrue(models.items.allSatisfy { !$0.companions.contains { $0.lastPathComponent.hasSuffix("aaaa") } }, "a shared layer stays")
+        XCTAssertEqual(models.rule.risk, .medium, "large and slow to get back: never ticked by default")
+    }
+
+    func testLMStudioModelsAreOfferedOnePerModelFolder() async throws {
+        try write(".lmstudio/models/lmstudio-community/Qwen-7B-GGUF/qwen-7b-q4.gguf")
+        try write(".lmstudio/models/lmstudio-community/Qwen-7B-GGUF/qwen-7b-q8.gguf")
+        try write(".lmstudio/models/other/Mistral-GGUF/mistral.gguf")
+        let found = try await group(.lmStudioModels)
+        let models = try XCTUnwrap(found)
+        XCTAssertEqual(Set(models.items.map(\.url.lastPathComponent)), ["Qwen-7B-GGUF", "Mistral-GGUF"])
+        XCTAssertEqual(models.items.first { $0.url.lastPathComponent == "Qwen-7B-GGUF" }?.files, 2)
+    }
+
+    func testAgentBrowserProfilesOfferTheirCacheFoldersOnly() async throws {
+        let profile = ".cache/chrome-devtools-mcp/chrome-profile"
+        try write("\(profile)/Default/Cache/Cache_Data/f_000001")
+        try write("\(profile)/Default/Code Cache/js/index")
+        try write("\(profile)/Default/Cookies")
+        try write("\(profile)/Local State")
+        let found = try await group(.devtoolsMCPBrowserCaches)
+        let caches = try XCTUnwrap(found)
+        XCTAssertEqual(Set(caches.items.map { $0.url.pathComponents.suffix(2).joined(separator: "/") }), ["Default/Cache", "Default/Code Cache"])
+    }
+
+    func testOnlyLaunchAgentsWhoseProgramIsGoneAreOffered() async throws {
+        func agent(_ program: String) throws -> Data {
+            try PropertyListSerialization.data(fromPropertyList: ["Label": "x", "ProgramArguments": [program, "--flag"]], format: .xml, options: 0)
+        }
+        try write("Library/LaunchAgents/com.example.gone.plist", contents: agent("/Applications/Gone.app/Contents/MacOS/helper-\(UUID())"))
+        try write("Library/LaunchAgents/com.example.present.plist", contents: agent("/bin/ls"))
+        try write("Library/LaunchAgents/com.example.relative.plist", contents: agent("helper"))
+        let found = try await group(.brokenLaunchAgents)
+        let agents = try XCTUnwrap(found)
+        XCTAssertEqual(agents.items.map(\.url.lastPathComponent), ["com.example.gone.plist"])
+    }
+
+    func testDiskImagesInDownloadsAreOfferedAndNothingElse() async throws {
+        try write("Downloads/Tool-1.2.dmg")
+        try write("Downloads/report.pdf")
+        try write("Downloads/folder/Nested.dmg")
+        let found = try await group(.diskImages)
+        let images = try XCTUnwrap(found)
+        XCTAssertEqual(Set(images.items.map(\.url.lastPathComponent)), ["Tool-1.2.dmg", "Nested.dmg"])
+        XCTAssertTrue(FileManager.default.fileExists(atPath: home.appendingPathComponent("Downloads/Tool-1.2.dmg").path), "read-only")
     }
 }

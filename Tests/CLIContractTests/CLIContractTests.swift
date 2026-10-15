@@ -143,6 +143,33 @@ final class CLIContractTests: XCTestCase {
         XCTAssertEqual(trash.moved.map(\.lastPathComponent), ["com.example"], "the medium-risk archive is not moved without --rule")
     }
 
+    func testCleanCommandMovesAnOllamaModelWithTheLayersOnlyItUses() async throws {
+        let home = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-ollama-\(UUID())", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: home) }
+        let shared = "sha256:" + String(repeating: "a", count: 64), own = "sha256:" + String(repeating: "b", count: 64)
+        let other = "sha256:" + String(repeating: "c", count: 64)
+        func write(_ path: String, _ data: Data) throws {
+            let url = home.appendingPathComponent(path)
+            try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try data.write(to: url)
+        }
+        try write(".ollama/models/manifests/registry.ollama.ai/library/llama3/latest",
+                  Data(#"{"config":{"digest":"\#(shared)"},"layers":[{"digest":"\#(own)"}]}"#.utf8))
+        try write(".ollama/models/manifests/registry.ollama.ai/library/qwen/7b",
+                  Data(#"{"config":{"digest":"\#(shared)"},"layers":[{"digest":"\#(other)"}]}"#.utf8))
+        for digest in [shared, own, other] {
+            try write(".ollama/models/blobs/" + digest.replacingOccurrences(of: ":", with: "-"), Data(repeating: 1, count: 4096))
+        }
+        let trash = RecordingTrash()
+        var command = CleanCommand(rule: .ollamaModels, confirm: true, format: .json, language: .en)
+        command.home = home; command.trash = trash
+        let exit = await command.run { _ in }
+        XCTAssertEqual(exit, 0)
+        let moved = Set(trash.moved.map(\.lastPathComponent))
+        XCTAssertEqual(moved, ["latest", "7b", own.replacingOccurrences(of: ":", with: "-"), other.replacingOccurrences(of: ":", with: "-")])
+        XCTAssertFalse(moved.contains(shared.replacingOccurrences(of: ":", with: "-")), "a layer two models use is never moved with either")
+    }
+
     func testMCPServerAnswersInitializeListsReadOnlyToolsAndIgnoresNotifications() async throws {
         let home = try cleanFixture()
         defer { try? FileManager.default.removeItem(at: home) }

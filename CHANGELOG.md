@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### New in Clean
+- **AI tools**: older Claude Code versions (the one in use is never offered), Claude app logs,
+  Claude Code telemetry, the Codex cache, OpenCode logs, and the caches of the browsers that
+  Chrome DevTools MCP and Antigravity drive (their sign-ins stay).
+- **Local AI models**: Ollama models, each with the layers only it uses (a layer another model
+  needs stays), and LM Studio models. Never ticked by default.
+- **More Xcode files**: Mac and Apple Watch device files, device logs, the documentation cache
+  and SwiftUI preview devices.
+- **Leftovers**: login agents whose program is no longer on the Mac, and disk images (.dmg) in
+  Downloads. Both are to check first, never ticked by default.
+
 ## 2.2.0 — 2026-10-07
 
 CoreTend reaches every Mac and the rest of macOS.

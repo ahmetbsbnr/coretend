@@ -19,6 +19,22 @@ public enum ScanRule: String, CaseIterable, Sendable {
     case xcodeArchives = "cleanup.xcodearchives"
     case simulatorCaches = "cleanup.simulatorcaches"
     case mailDownloads = "cleanup.maildownloads"
+    case claudeCodeVersions = "cleanup.claudecodeversions"
+    case claudeDesktopLogs = "cleanup.claudedesktoplogs"
+    case claudeCodeTelemetry = "cleanup.claudecodetelemetry"
+    case codexCache = "cleanup.codexcache"
+    case openCodeLogs = "cleanup.opencodelogs"
+    case devtoolsMCPBrowserCaches = "cleanup.devtoolsmcpbrowsercaches"
+    case antigravityBrowserCaches = "cleanup.antigravitybrowsercaches"
+    case ollamaModels = "cleanup.ollamamodels"
+    case lmStudioModels = "cleanup.lmstudiomodels"
+    case xcodeMacDeviceSupport = "cleanup.xcodemacdevicesupport"
+    case xcodeWatchDeviceSupport = "cleanup.xcodewatchdevicesupport"
+    case xcodeDeviceLogs = "cleanup.xcodedevicelogs"
+    case xcodeDocumentationCache = "cleanup.xcodedocumentationcache"
+    case xcodePreviews = "cleanup.xcodepreviews"
+    case brokenLaunchAgents = "cleanup.brokenlaunchagents"
+    case diskImages = "cleanup.diskimages"
 }
 
 public enum CandidateRisk: String, Sendable { case low, medium, high }

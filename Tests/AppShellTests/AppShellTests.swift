@@ -564,12 +564,22 @@ final class AppShellTests: XCTestCase {
 
     func testEveryCleanupRuleExplainsItselfInBothLanguages() {
         let rules = ["caches", "logs", "crashes", "derived", "downloads", "deviceSupport", "iosBackups", "simulatorCaches",
-                     "xcodeArchives", "npmCache", "pnpmStore", "gradleCaches", "cargoCache", "mailDownloads"]
+                     "xcodeArchives", "npmCache", "pnpmStore", "gradleCaches", "cargoCache", "mailDownloads",
+                     "deviceLogs", "documentationCache", "xcodePreviews", "claudeCodeVersions", "claudeCodeTelemetry",
+                     "ollamaModels", "lmStudioModels", "brokenLaunchAgents", "diskImages"]
         for rule in rules {
             for key in ["cleanup.\(rule)", "cleanup.\(rule).help"] {
                 XCTAssertNotEqual(ProductCopy.value(for: key, french: false), key, key)
                 XCTAssertNotEqual(ProductCopy.value(for: key, french: true), key, key)
             }
+        }
+        // Rules that share an explanation with others.
+        let titlesOnly = ["macDeviceSupport", "watchDeviceSupport", "claudeDesktopLogs", "codexCache", "openCodeLogs",
+                          "devtoolsMCPBrowserCaches", "antigravityBrowserCaches"]
+        let sharedHelp = ["toolLogs", "toolCache", "browserProfileCaches"]
+        for key in titlesOnly.map({ "cleanup.\($0)" }) + sharedHelp.map({ "cleanup.\($0).help" }) {
+            XCTAssertNotEqual(ProductCopy.value(for: key, french: false), key, key)
+            XCTAssertNotEqual(ProductCopy.value(for: key, french: true), key, key)
         }
     }
 
