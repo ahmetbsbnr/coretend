@@ -15,6 +15,9 @@ public enum SerreButtonKind: Equatable, Sendable {
     case icon
     /// A thumbnail or other content that is itself the button: outline on hover.
     case tile
+    /// Content that draws its own glass and glow (decision 0008): only press, focus and disabled
+    /// states are added.
+    case bare
 }
 
 public struct SerreButtonStyle: ButtonStyle {
@@ -111,6 +114,8 @@ public struct SerreButtonChrome<Label: View>: View {
     @ViewBuilder private var content: some View {
         let shape = LeafCorner.control.shape
         switch kind {
+        case .bare:
+            label
         case .primary:
             label.font(CoreTendTypography.body.weight(.semibold))
                 .foregroundStyle(Palette.onAccent.color)

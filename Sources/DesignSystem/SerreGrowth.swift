@@ -25,13 +25,13 @@ public extension View {
     func serreRise(_ order: Int) -> some View { modifier(SerreRise(order: order)) }
 }
 
-/// The soil band of the Overview (UI guide § 1, "strates du sol"): the used part of a volume as
-/// soil, the free part as open, green ground, with a sprout at the boundary. It only draws what
-/// was measured; the free part grows once when it appears.
+/// The capacity of a volume (decision 0008): the used part as a deep, slowly shimmering band, the
+/// free part as a glowing green that fills in when it appears. It only draws what was measured.
 public struct SoilBand: View {
     let used: Double
     let free: Double
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.serreAmbientAllowed) private var allowed
     @State private var grown = false
 
     public init(used: Double, free: Double) {
@@ -40,44 +40,37 @@ public struct SoilBand: View {
     }
 
     public var body: some View {
-        GeometryReader { proxy in
-            let width = proxy.size.width
-            let freeWidth = width * free * (grown ? 1 : 0)
-            ZStack(alignment: .leading) {
-                // The used part: soil with a few strata lines.
-                LeafCorner.control.shape.fill(Palette.deep.color)
-                Canvas { context, size in
-                    let usedWidth = size.width * used
-                    for (index, y) in [0.3, 0.55, 0.78].enumerated() {
-                        var line = Path()
-                        line.move(to: CGPoint(x: 6, y: size.height * y))
-                        line.addQuadCurve(to: CGPoint(x: max(usedWidth - 6, 6), y: size.height * y),
-                                          control: CGPoint(x: usedWidth / 2, y: size.height * y + (index.isMultiple(of: 2) ? 2 : -2)))
-                        context.stroke(line, with: .color(Palette.strongSeparator.color.opacity(0.55)), lineWidth: 1)
-                    }
+        TimelineView(.animation(minimumInterval: 1 / 30, paused: !allowed)) { timeline in
+            let t = allowed ? timeline.date.timeIntervalSinceReferenceDate : 0
+            GeometryReader { proxy in
+                let width = proxy.size.width
+                let usedWidth = width * used * (grown ? 1 : 0)
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Palette.accent.color.opacity(0.18))
+                        .overlay(Capsule().strokeBorder(Palette.accent.color.opacity(0.35), lineWidth: 1))
+                    Capsule()
+                        .fill(LinearGradient(colors: [Palette.ink.color.opacity(0.85), Palette.ink.color.opacity(0.55)], startPoint: .leading, endPoint: .trailing))
+                        .overlay {
+                            // A slow band of light travelling over the used part.
+                            let x = (t * 0.12).truncatingRemainder(dividingBy: 1.4) - 0.2
+                            LinearGradient(stops: [.init(color: .clear, location: max(0, x - 0.08)), .init(color: .white.opacity(0.22), location: max(0, x)),
+                                                   .init(color: .clear, location: min(1, x + 0.08))], startPoint: .leading, endPoint: .trailing)
+                        }
+                        .clipShape(Capsule())
+                        .frame(width: max(usedWidth, 0))
+                    Circle().fill(Palette.accent.color)
+                        .frame(width: 10, height: 10)
+                        .shadow(color: Palette.accent.color, radius: 8)
+                        .offset(x: max(usedWidth - 5, 0))
+                        .opacity(grown ? 1 : 0)
                 }
-                .clipShape(LeafCorner.control.shape)
-                // The free part, from the trailing edge.
-                HStack(spacing: 0) {
-                    Spacer(minLength: 0)
-                    LeafCorner.control.shape
-                        .fill(Palette.accent.color.opacity(0.85))
-                        .frame(width: freeWidth)
-                }
-                SerreIcon(.overview, size: 16)
-                    .foregroundStyle(Palette.accent.color)
-                    .offset(x: width - freeWidth - 8, y: -18)
-                    .opacity(grown ? 1 : 0)
             }
         }
-        .frame(height: 26)
-        .padding(.top, 18)
-        .accessibilityHidden(true)
+        .frame(height: 18)
         .onAppear {
-            if reduceMotion { grown = true } else {
-                withAnimation(MotionCurve.sap.animation(duration: MotionToken.grow.duration).delay(0.15)) { grown = true }
-            }
+            if reduceMotion { grown = true } else { withAnimation(.spring(response: 1.3, dampingFraction: 0.8).delay(0.15)) { grown = true } }
         }
+        .accessibilityHidden(true)
     }
 }
 

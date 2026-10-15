@@ -51,7 +51,7 @@ final class DesignSystemTests: XCTestCase {
     func testPaletteMatchesTheSerreGuide() {
         let guide: [(PaletteRole, UInt32, UInt32)] = [
             (Palette.canvas, 0xE7EFE4, 0x0F2019), (Palette.sidebar, 0xDCE7D8, 0x0B1913),
-            (Palette.surface, 0xF4F8F1, 0x14291F), (Palette.raisedSurface, 0xFFFFFF, 0x183126),
+            (Palette.surface, 0xE9F1E5, 0x14291F), (Palette.raisedSurface, 0xF0F6EC, 0x183126),
             (Palette.deep, 0xD3E0CF, 0x0A1510), (Palette.ink, 0x10261C, 0xEEF1E6),
             (Palette.secondaryInk, 0x35503F, 0xC3CDB9), (Palette.tertiaryInk, 0x4F6557, 0x8FA088),
             (Palette.separator, 0xBFD0C1, 0x2C4A37), (Palette.strongSeparator, 0x65826D, 0x5F8A6C),

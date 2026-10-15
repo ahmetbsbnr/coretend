@@ -62,8 +62,8 @@ public enum Palette {
     // Grounds.
     public static let canvas = PaletteRole(name: "coretend.canvas", light: RGB(hex: 0xE7EFE4), dark: RGB(hex: 0x0F2019))
     public static let sidebar = PaletteRole(name: "coretend.sidebar", light: RGB(hex: 0xDCE7D8), dark: RGB(hex: 0x0B1913))
-    public static let surface = PaletteRole(name: "coretend.surface", light: RGB(hex: 0xF4F8F1), dark: RGB(hex: 0x14291F))
-    public static let raisedSurface = PaletteRole(name: "coretend.raisedSurface", light: RGB(hex: 0xFFFFFF), dark: RGB(hex: 0x183126))
+    public static let surface = PaletteRole(name: "coretend.surface", light: RGB(hex: 0xE9F1E5), dark: RGB(hex: 0x14291F))
+    public static let raisedSurface = PaletteRole(name: "coretend.raisedSurface", light: RGB(hex: 0xF0F6EC), dark: RGB(hex: 0x183126))
     /// Soil behind visualisations (roots, strata).
     public static let deep = PaletteRole(name: "coretend.deep", light: RGB(hex: 0xD3E0CF), dark: RGB(hex: 0x0A1510))
     public static let separator = PaletteRole(name: "coretend.separator", light: RGB(hex: 0xBFD0C1), dark: RGB(hex: 0x2C4A37))
@@ -79,5 +79,7 @@ public enum Palette {
     public static let onAccent = PaletteRole(name: "coretend.onAccent", light: RGB(hex: 0xF4F8F1), dark: RGB(hex: 0x0B1913))
     public static let caution = PaletteRole(name: "coretend.caution", light: RGB(hex: 0x8A5A00), dark: RGB(hex: 0xE8B64A))
     public static let danger = PaletteRole(name: "coretend.danger", light: RGB(hex: 0xA9431C), dark: RGB(hex: 0xE98A63))
+    /// Folders on the map (decision 0008): a lagoon teal beside the chlorophyll of files.
+    public static let lagoon = PaletteRole(name: "coretend.lagoon", light: RGB(hex: 0x2E7F7C), dark: RGB(hex: 0x5FC8C0))
     public static let focus = PaletteRole(name: "coretend.focus", light: RGB(hex: 0x2C6E35), dark: RGB(hex: 0x9BE36D))
 }

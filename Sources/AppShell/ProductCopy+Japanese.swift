@@ -757,5 +757,13 @@ enum ProductCopyJapanese {
         "… and %1$@ more": "…ほか%1$@件",
         "↑ ↓ to select · Return to open · esc or click outside to close": "↑↓で選択・Returnで開く・Escまたは外側のクリックで閉じる",
         "≥ 1 GiB local": "ローカル1 GiB以上",
+        "%1$@ free": "空き%1$@",
+        "%1$@ to give back": "%1$@を取り戻せます",
+        "+ %1$@ purgeable": "＋パージ可能%1$@",
+        "Map, large files, duplicates": "マップ、大きなファイル、重複",
+        "Nothing to clean": "整理するものはありません",
+        "Uninstall, updates": "アンインストール、アップデート",
+        "Your Mac at a glance": "Macの状態をひと目で",
+        "free of %1$@": "（全%1$@中）空き",
     ]
 }

@@ -43,7 +43,8 @@ struct CoreTendApp: App {
                     }
                 }
         }
-        .defaultSize(width: 1120, height: 760)
+        .windowStyle(.hiddenTitleBar)
+        .defaultSize(width: 1240, height: 820)
         .commands {
             CommandGroup(after: .appInfo) {
                 if updater.isAvailable {
@@ -157,7 +158,8 @@ private struct CoreTendRootView: View {
             SerreSidebar(selection: $navigation.selection, french: french, searchNamespace: searchSpace,
                          openSearch: toggleSearch,
                          openSettings: { navigation.activeSheet = .settings })
-                .navigationSplitViewColumnWidth(min: 200, ideal: 232)
+                .navigationSplitViewColumnWidth(min: 248, ideal: 272)
+                .toolbar(removing: .sidebarToggle)
                 .navigationTitle("CoreTend")
         } detail: {
             GeometryReader { detail in
@@ -173,7 +175,7 @@ private struct CoreTendRootView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             }
-            .background(LivingBackdrop())
+            .background(AtmosphereBackdrop())
             // Every button in the content is a Serre button unless it says otherwise.
             .buttonStyle(.serre(.secondary))
         }
@@ -184,7 +186,9 @@ private struct CoreTendRootView: View {
         .environment(\.serreAmbientAllowed, livingGreenhouse && controlActiveState == .key && scenePhase == .active)
         .tint(Palette.accent.color)
         .preferredColorScheme(effectiveColorScheme)
-        .toolbarBackground(Palette.canvas.color, for: .windowToolbar)
+        // Decision 0008: the title bar melts into the app; the window buttons rest on the sidebar.
+        .toolbarBackground(.hidden, for: .windowToolbar)
+        .toolbar(removing: .sidebarToggle)
         .modifier(HiddenWindowTitle())
         .overlay {
             if navigation.searchOpen {
@@ -451,10 +455,10 @@ private struct DestinationView: View {
                 destinationContent
                     .serreRise(2)
             }
-            .padding(32)
-            .frame(maxWidth: 1280, alignment: .leading)
-            // The whole width scrolls, not only the reading column.
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 36).padding(.top, 28).padding(.bottom, 40)
+            .frame(maxWidth: 1440, alignment: .leading)
+            // The column stays centred in a wide window; the whole width scrolls.
+            .frame(maxWidth: .infinity, alignment: .center)
         }
         .onPreferenceChange(PlantActivityKey.self) { plantActivity = $0 }
                     .accessibilityIdentifier("destination-\(destination.rawValue)")

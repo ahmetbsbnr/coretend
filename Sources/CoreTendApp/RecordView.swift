@@ -82,7 +82,7 @@ struct RecordView: View {
                         .accessibilityLabel(copy("record.search"))
                 }
                 .padding(.horizontal, 12).padding(.vertical, 9)
-                .background(Palette.raisedSurface.color, in: LeafCorner.control.shape)
+                .serreGlass(cornerRadius: 12, glow: false)
                 .overlay(LeafCorner.control.shape.strokeBorder(query.isEmpty ? Palette.strongSeparator.color : Palette.accent.color, lineWidth: 1))
                 HStack(spacing: 12) {
                     Picker(copy("record.filter"), selection: $selectedKind) {

@@ -227,7 +227,7 @@ struct CleanupView: View {
                 .padding(8)
             }
             .frame(height: min(CGFloat(max(results.count, 1)) * 50 + 16, 340))
-            .background(Palette.surface.color, in: LeafCorner.parcel.shape)
+            .serreGlass(cornerRadius: 20)
             .overlay(LeafCorner.parcel.shape.strokeBorder(Palette.separator.color, lineWidth: 1))
             .leafFlightAnchor("list")
             actionBar

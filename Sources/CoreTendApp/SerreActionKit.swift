@@ -173,7 +173,7 @@ struct TrashIndicator: View {
                 }
             }
             .padding(.horizontal, 12).padding(.vertical, 8)
-            .background(Palette.raisedSurface.color, in: LeafCorner.control.shape)
+            .serreGlass(cornerRadius: 12, glow: false)
             .keyframeAnimator(initialValue: 1.0, trigger: reduceMotion ? 0 : landed) { content, scale in
                 content.scaleEffect(scale)
             } keyframes: { _ in

@@ -320,7 +320,7 @@ struct IntegrityView: View {
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Palette.raisedSurface.color, in: LeafCorner.control.shape)
+        .serreGlass(cornerRadius: 12, glow: false)
         .accessibilityElement(children: .combine)
     }
 

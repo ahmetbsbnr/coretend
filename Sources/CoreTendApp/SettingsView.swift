@@ -245,7 +245,7 @@ struct SettingsView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(12)
                 }
-                .background(Palette.raisedSurface.color, in: LeafCorner.parcel.shape)
+                .serreGlass(cornerRadius: 20)
                 HStack {
                     Spacer()
                     Button(ProductCopy.value(for: "common.cancel", french: french)) {
