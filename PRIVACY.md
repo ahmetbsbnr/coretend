@@ -32,6 +32,9 @@ CoreTend 2.0 runs entirely on your Mac.
 ## Moving files
 - Nothing moves without your selection, a review and a confirmation. CoreTend checks each file
   again just before moving it, and moves only to the macOS Trash, where you can put it back.
+- With the optional system helper, you can delete a local Time Machine snapshot you choose. This
+  is the one erasure CoreTend makes, after a confirmation that says so; it never touches a file of
+  yours or a backup on an external disk (decision 0007).
 
 ## Diagnostics
 - The optional diagnostic export shows you its exact content first and contains no paths, file

@@ -50,8 +50,9 @@ History of every scan and move stays at the sidebar's foot.
 
 ## What CoreTend will never do
 
-- **Erase anything for good.** Moves go to the macOS Trash after your review; CoreTend checks each
-  item again just before, and Undo puts it back.
+- **Erase your files for good.** Moves go to the macOS Trash after your review; CoreTend checks each
+  item again just before, and Undo puts it back. The one exception is a local Time Machine snapshot
+  you pick and confirm in Settings › System, which macOS cannot put back.
 - **Scare you.** No health score, no alarm, no invented figure.
 - **Watch you.** No account, no telemetry, nothing in the background. CoreTend asks this site
   whether an update exists (you can turn it off), and reads your apps' own update feeds only when

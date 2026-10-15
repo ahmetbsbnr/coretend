@@ -1,8 +1,9 @@
 import Foundation
 
-/// The optional system helper (decision 0006): a launchd daemon the person installs from Settings,
-/// reached over XPC. It answers only the requests below, only from CoreTend signed by its team.
-/// Every move goes to the asking person's Trash; nothing is ever erased.
+/// The optional system helper (decisions 0006 and 0007): a launchd daemon the person installs from
+/// Settings, reached over XPC. It answers only the requests below, only from CoreTend signed by its
+/// team. Every move goes to the asking person's Trash; the one erasure is a local Time Machine
+/// snapshot the person picked and confirmed (decision 0007), never a file of theirs.
 @objc public protocol CoreTendHelperProtocol {
     /// The helper's version, to tell an old helper from the app's own.
     func version(reply: @escaping (String) -> Void)
@@ -25,13 +26,24 @@ import Foundation
     /// `launchctl disable|enable system/<label>`, for a label listed by `launchDaemons`. Takes effect
     /// at the next start; the daemon's file is never moved.
     func setLaunchDaemon(label: String, enabled: Bool, reply: @escaping (String?) -> Void)
+
+    /// Dates of the local Time Machine snapshots of the startup volume, as JSON `[String]`
+    /// (`tmutil listlocalsnapshotdates /`).
+    func localSnapshots(reply: @escaping (Data?, String?) -> Void)
+
+    /// `tmutil deletelocalsnapshots <date>`, for a date listed by `localSnapshots`. Erases that
+    /// snapshot for good (decision 0007).
+    func deleteLocalSnapshot(date: String, reply: @escaping (String?) -> Void)
+
+    /// `mdutil -E /`: Spotlight rebuilds the startup volume's index. No file is touched.
+    func reindexSpotlight(reply: @escaping (String?) -> Void)
 }
 
 public enum HelperIdentity {
     public static let label = "com.ahmetbsbnr.coretend.helper"
     public static let machService = "com.ahmetbsbnr.coretend.helper"
     public static let plistName = "com.ahmetbsbnr.coretend.helper.plist"
-    public static let version = "1"
+    public static let version = "2"
     public static let teamIdentifier = "NSCUV5G738"
     /// Who may talk to the helper: CoreTend, signed by its team with a Developer ID.
     public static let clientRequirement =
@@ -75,5 +87,18 @@ public enum LaunchctlOutput {
             if state.hasSuffix("disabled") || state.hasSuffix("true") { labels.insert(String(parts[1])) }
         }
         return labels
+    }
+}
+
+/// Reading `tmutil listlocalsnapshotdates /`.
+public enum TmutilOutput {
+    /// Lines that are exactly a snapshot date (`2026-10-15-120000`); the header and anything else
+    /// is ignored.
+    public static func snapshotDates(_ output: String) -> [String] {
+        output.split(separator: "\n").map { $0.trimmingCharacters(in: .whitespaces) }.filter(isSnapshotDate)
+    }
+
+    public static func isSnapshotDate(_ value: String) -> Bool {
+        value.range(of: #"^\d{4}-\d{2}-\d{2}-\d{6}$"#, options: .regularExpression) != nil
     }
 }

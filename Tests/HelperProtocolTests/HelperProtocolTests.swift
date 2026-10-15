@@ -19,6 +19,16 @@ final class HelperProtocolTests: XCTestCase {
         XCTAssertTrue(LaunchctlOutput.disabledLabels("disabled services = {\n}\n").isEmpty)
     }
 
+    func testSnapshotDatesAreReadExactlyAndAnythingElseIsRefused() {
+        let output = "Snapshot dates for disk /:\n2026-10-15-120000\n 2026-10-14-083015 \n2026-10-15-12000\n../../etc\n"
+        XCTAssertEqual(TmutilOutput.snapshotDates(output), ["2026-10-15-120000", "2026-10-14-083015"])
+        XCTAssertTrue(TmutilOutput.snapshotDates("Snapshot dates for disk /:\n").isEmpty)
+        for refused in ["2026-10-15-120000 --all", "-a", "2026-10-15", "2026-10-15-120000\n2026-10-14-083015", ""] {
+            XCTAssertFalse(TmutilOutput.isSnapshotDate(refused), refused)
+        }
+        XCTAssertEqual(HelperIdentity.version, "2", "a helper without the snapshot and Spotlight requests is told apart")
+    }
+
     func testRequirementsNameTheTeamAndBothEnds() {
         XCTAssertTrue(HelperIdentity.clientRequirement.contains(#"identifier "com.ahmetbsbnr.coretend""#))
         XCTAssertTrue(HelperIdentity.helperRequirement.contains(#"identifier "com.ahmetbsbnr.coretend.helper""#))

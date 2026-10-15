@@ -92,7 +92,7 @@ network_patterns = (
  r'\b(?:connect|getaddrinfo|socket)\s*\(',
  r'\bProcess\s*\(',
 )
-# The system helper runs one program, launchctl, with arguments it builds itself (decision 0006).
+# The system helper runs fixed programs with arguments it builds itself (decisions 0006, 0007).
 LAUNCHCTL_RUNNER = 'Sources/CoreTendHelper/Launchctl.swift'
 # Decision 0007: one place reads apps' own HTTPS appcasts, on the person's click only.
 FEED_FETCHER = 'Sources/CoreTendApp/AppUpdateFeedFetcher.swift'
@@ -100,8 +100,11 @@ for file in (root/'Sources').rglob('*.swift'):
  text=file.read_text()
  if file.relative_to(root).as_posix() == LAUNCHCTL_RUNNER:
   executables = re.findall(r'executableURL\s*=\s*([^\n]+)', text)
-  if text.count('Process()') != 1 or executables != ['URL(fileURLWithPath: "/bin/launchctl")']:
-   errors.append('the helper may only run /bin/launchctl, from one place')
+  tools = set(re.findall(r'case\s+\w+\s*=\s*"([^"]+)"', text))
+  # Decision 0007 adds tmutil (local snapshots) and mdutil (Spotlight index) to launchctl.
+  if text.count('Process()') != 1 or executables != ['URL(fileURLWithPath: tool.rawValue)'] \
+     or tools != {'/bin/launchctl', '/usr/bin/tmutil', '/usr/bin/mdutil'}:
+   errors.append('the helper may only run launchctl, tmutil and mdutil at fixed paths, from one place')
   else:
    text = text.replace('Process()', '', 1)
  if file.relative_to(root).as_posix() == FEED_FETCHER:

@@ -1,12 +1,19 @@
 import Foundation
 import HelperProtocol
 
-/// The one program the helper runs, with arguments it builds itself.
+/// The programs the helper may run, at fixed paths (decisions 0006 and 0007).
+enum SystemTool: String {
+    case launchctl = "/bin/launchctl"
+    case tmutil = "/usr/bin/tmutil"
+    case mdutil = "/usr/bin/mdutil"
+}
+
+/// The one place the helper runs a program, with arguments it builds itself.
 enum Launchctl {
-    /// Runs `/bin/launchctl` and returns its exit status and standard output.
-    static func run(_ arguments: [String]) -> (status: Int32, output: String) {
+    /// Runs one of `SystemTool` and returns its exit status and standard output.
+    static func run(_ arguments: [String], tool: SystemTool = .launchctl) -> (status: Int32, output: String) {
         let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
+        process.executableURL = URL(fileURLWithPath: tool.rawValue)
         process.arguments = arguments
         let pipe = Pipe()
         process.standardOutput = pipe

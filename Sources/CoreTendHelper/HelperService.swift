@@ -47,7 +47,27 @@ final class HelperService: NSObject, CoreTendHelperProtocol, @unchecked Sendable
         reply(result.status == 0 ? nil : "launchctl-\(result.status)")
     }
 
+    func localSnapshots(reply: @escaping (Data?, String?) -> Void) {
+        reply(try? JSONEncoder().encode(snapshotDates()), nil)
+    }
+
+    func deleteLocalSnapshot(date: String, reply: @escaping (String?) -> Void) {
+        // Only a date the helper lists itself, in tmutil's exact format.
+        guard TmutilOutput.isSnapshotDate(date), snapshotDates().contains(date) else { return reply("unknown-snapshot") }
+        let result = Launchctl.run(["deletelocalsnapshots", date], tool: .tmutil)
+        reply(result.status == 0 ? nil : "tmutil-\(result.status)")
+    }
+
+    func reindexSpotlight(reply: @escaping (String?) -> Void) {
+        let result = Launchctl.run(["-E", "/"], tool: .mdutil)
+        reply(result.status == 0 ? nil : "mdutil-\(result.status)")
+    }
+
     // MARK: - What the helper lists
+
+    private func snapshotDates() -> [String] {
+        TmutilOutput.snapshotDates(Launchctl.run(["listlocalsnapshotdates", "/"], tool: .tmutil).output)
+    }
 
     private func cacheItems() -> [URL] {
         let names = (try? FileManager.default.contentsOfDirectory(atPath: trasher.cachesRoot.path)) ?? []

@@ -16,6 +16,9 @@ struct SystemToolsView<Section: View>: View {
     @State private var pending: SystemCacheItem?
     @State private var undo: (item: SystemCacheItem, trashPath: String)?
     @State private var message: String?
+    @State private var snapshots: [String]?
+    @State private var pendingSnapshot: String?
+    @State private var confirmReindex = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -29,6 +32,14 @@ struct SystemToolsView<Section: View>: View {
                         t("Les caches des apps Apple restent hors liste. Une app recrée son cache au besoin.",
                           "Apple's own caches are left out. An app rebuilds its cache when it needs it."),
                         AnyView(cacheList))
+                section(t("Instantanés Time Machine locaux", "Local Time Machine snapshots"),
+                        t("macOS garde des instantanés locaux et les réduit seul quand la place manque. En supprimer un libère sa place tout de suite, mais c’est la seule action de CoreTend qui efface pour de bon. Vos sauvegardes sur disque externe ne sont pas touchées.",
+                          "macOS keeps local snapshots and thins them on its own when room is needed. Deleting one frees its space now, but it is the one CoreTend action that erases for good. Your backups on an external disk are not touched."),
+                        AnyView(snapshotList))
+                section(t("Spotlight", "Spotlight"),
+                        t("Si la recherche ne trouve plus vos fichiers, Spotlight peut reconstruire son index. Aucun fichier n’est touché ; la recherche reste incomplète le temps de l’indexation.",
+                          "If search no longer finds your files, Spotlight can rebuild its index. No file is touched; search stays incomplete while it indexes."),
+                        AnyView(Button(t("Réindexer Spotlight…", "Reindex Spotlight…")) { confirmReindex = true }.disabled(working)))
                 section(t("Services du système", "System services"),
                         t("Désactiver un service l’empêche de démarrer au prochain démarrage du Mac ; son fichier reste en place et vous pouvez le réactiver ici.",
                           "Turning a service off stops it from starting at the Mac's next startup; its file stays in place and you can turn it back on here."),
@@ -38,6 +49,21 @@ struct SystemToolsView<Section: View>: View {
         }
         .task { helper.refresh() }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in helper.refresh() }
+        .confirmationDialog(t("Supprimer cet instantané définitivement ?", "Delete this snapshot for good?"),
+                            isPresented: Binding(get: { pendingSnapshot != nil }, set: { if !$0 { pendingSnapshot = nil } }), titleVisibility: .visible) {
+            Button(t("Supprimer définitivement", "Delete for good"), role: .destructive) { if let date = pendingSnapshot { Task { await deleteSnapshot(date) } } }
+            Button(ProductCopy.value(for: "common.cancel", french: french), role: .cancel) { pendingSnapshot = nil }.keyboardShortcut(.defaultAction)
+        } message: {
+            Text(pendingSnapshot.map { t("L’instantané du \(snapshotLabel($0)) sera effacé et ne pourra pas être remis en place. C’est la seule suppression définitive de CoreTend.",
+                                         "The snapshot of \(snapshotLabel($0)) will be erased and cannot be put back. This is CoreTend's only permanent deletion.") } ?? "")
+        }
+        .confirmationDialog(t("Réindexer Spotlight ?", "Reindex Spotlight?"), isPresented: $confirmReindex, titleVisibility: .visible) {
+            Button(t("Réindexer", "Reindex")) { Task { await reindex() } }
+            Button(ProductCopy.value(for: "common.cancel", french: french), role: .cancel) {}.keyboardShortcut(.defaultAction)
+        } message: {
+            Text(t("Spotlight efface son index du disque de démarrage et le reconstruit. Cela peut prendre de quelques minutes à quelques heures.",
+                   "Spotlight erases the startup disk's index and rebuilds it. It can take from a few minutes to a few hours."))
+        }
         .confirmationDialog(t("Mettre ce cache à la Corbeille ?", "Move this cache to the Trash?"),
                             isPresented: Binding(get: { pending != nil }, set: { if !$0 { pending = nil } }), titleVisibility: .visible) {
             Button(t("Mettre à la Corbeille", "Move to Trash"), role: .destructive) { if let item = pending { Task { await trash(item) } } }
@@ -114,6 +140,31 @@ struct SystemToolsView<Section: View>: View {
             .disabled(working)
     }
 
+    @ViewBuilder private var snapshotList: some View {
+        if let snapshots {
+            if snapshots.isEmpty { note(t("Aucun instantané local.", "No local snapshot.")) }
+            ForEach(snapshots, id: \.self) { date in
+                HStack(spacing: 10) {
+                    Text(snapshotLabel(date)).font(CoreTendTypography.body.monospacedDigit()).foregroundStyle(Palette.ink.color)
+                    Spacer()
+                    Button(t("Supprimer…", "Delete…")) { pendingSnapshot = date }.disabled(working)
+                        .accessibilityLabel(t("Supprimer l’instantané du \(snapshotLabel(date))", "Delete the snapshot of \(snapshotLabel(date))"))
+                }
+            }
+        }
+        Button(snapshots == nil ? t("Lire les instantanés", "Read snapshots") : t("Relire", "Read again")) { Task { await loadSnapshots() } }
+            .disabled(working)
+    }
+
+    /// `2026-10-15-120000` as the person reads a date and time.
+    private func snapshotLabel(_ date: String) -> String {
+        let parser = DateFormatter()
+        parser.locale = Locale(identifier: "en_US_POSIX")
+        parser.dateFormat = "yyyy-MM-dd-HHmmss"
+        guard let value = parser.date(from: date) else { return date }
+        return value.formatted(date: .abbreviated, time: .shortened)
+    }
+
     private var integrations: some View {
         VStack(alignment: .leading, spacing: 8) {
             note(t("Finder : clic droit sur un dossier › « Analyser avec CoreTend ». À activer une fois dans Réglages Système › Général › Ouverture et extensions › Extensions du Finder.",
@@ -138,7 +189,7 @@ struct SystemToolsView<Section: View>: View {
 
     private func turnOff() {
         Task {
-            do { try await helper.turnOff(); caches = nil; daemons = nil; undo = nil }
+            do { try await helper.turnOff(); caches = nil; daemons = nil; undo = nil; snapshots = nil }
             catch { message = t("macOS n’a pas retiré l’assistant.", "macOS did not remove the helper.") }
         }
     }
@@ -171,6 +222,41 @@ struct SystemToolsView<Section: View>: View {
             self.undo = nil
             await loadCaches()
         } catch { report(error) }
+    }
+
+    private func loadSnapshots() async {
+        working = true; defer { working = false }
+        do { snapshots = try await helper.localSnapshots() } catch { report(error) }
+    }
+
+    /// Deletes one snapshot and says the space it freed, measured before and after.
+    private func deleteSnapshot(_ date: String) async {
+        pendingSnapshot = nil
+        working = true; defer { working = false }
+        let before = Self.freeBytes()
+        do {
+            try await helper.deleteLocalSnapshot(date)
+            snapshots = try await helper.localSnapshots()
+            if let before, let after = Self.freeBytes(), after > before {
+                message = t("Instantané supprimé ; \(bytes(after - before)) libérés (mesuré).", "Snapshot deleted; \(bytes(after - before)) freed (measured).")
+            } else {
+                message = t("Instantané supprimé.", "Snapshot deleted.")
+            }
+        } catch {
+            message = t("L’assistant n’a pas supprimé l’instantané.", "The helper did not delete the snapshot.")
+        }
+    }
+
+    private func reindex() async {
+        working = true; defer { working = false }
+        do {
+            try await helper.reindexSpotlight()
+            message = t("Spotlight reconstruit son index.", "Spotlight is rebuilding its index.")
+        } catch { message = t("L’assistant n’a pas relancé l’indexation.", "The helper did not start indexing.") }
+    }
+
+    private static func freeBytes() -> Int64? {
+        (try? FileManager.default.attributesOfFileSystem(forPath: "/")[.systemFreeSize] as? NSNumber)?.int64Value
     }
 
     private func setDaemon(_ daemon: LaunchDaemonItem, enabled: Bool) async {

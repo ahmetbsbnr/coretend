@@ -89,6 +89,27 @@ final class SystemHelper {
         }
     }
 
+    func localSnapshots() async throws -> [String] {
+        let data: Data = try await call { proxy, done in
+            proxy.localSnapshots { data, failure in done(data.map { .success($0) } ?? .failure(HelperFailure.refused(failure ?? "no-data"))) }
+        }
+        return try JSONDecoder().decode([String].self, from: data).sorted(by: >)
+    }
+
+    func deleteLocalSnapshot(_ date: String) async throws {
+        try await call { proxy, done in
+            proxy.deleteLocalSnapshot(date: date) { failure in
+                done(failure.map { .failure(HelperFailure.refused($0)) } ?? .success(()))
+            }
+        }
+    }
+
+    func reindexSpotlight() async throws {
+        try await call { proxy, done in
+            proxy.reindexSpotlight { failure in done(failure.map { .failure(HelperFailure.refused($0)) } ?? .success(())) }
+        }
+    }
+
     /// One request on a fresh connection to the privileged Mach service, which must be the helper
     /// signed by CoreTend's team.
     private func call<Value: Sendable>(_ body: @escaping (CoreTendHelperProtocol, @escaping @Sendable (Result<Value, Error>) -> Void) -> Void) async throws -> Value {
