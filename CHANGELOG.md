@@ -12,6 +12,21 @@
   and SwiftUI preview devices.
 - **Leftovers**: login agents whose program is no longer on the Mac, and disk images (.dmg) in
   Downloads. Both are to check first, never ticked by default.
+- **What is this?**: on macOS 26 with Apple Intelligence, a Clean item explains what it is and
+  which app uses it, written on your Mac. What a move to the Trash means comes from CoreTend's rule.
+- **After a clean**: the Undo banner says the size moved; an optional short sound marks the end.
+
+### New elsewhere
+- **Home**: the space macOS can take back on its own (purgeable data), when it is known.
+- **Apps**: apps already in the Trash whose files stayed in your Library, with their leftovers to
+  move; and « Check for updates », which reads each app's own update feed only when you click.
+- **Alerts** (Settings, off by default): disk almost full, heavy Trash, trashed apps with leftovers;
+  local notifications, at most one per subject a day.
+- **System features**: delete a local Time Machine snapshot (the one permanent deletion, with its
+  own confirmation and the space freed measured) and rebuild the Spotlight index.
+- **Languages**: German, Spanish, Italian and Japanese join English and French, following macOS.
+- **Scans** skip a folder that does not answer within 20 seconds (a stalled network share) and say
+  so, instead of waiting.
 
 ## 2.2.0 — 2026-10-07
 
