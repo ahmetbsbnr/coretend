@@ -240,7 +240,7 @@ struct ExploreScanView: View {
                         .textFieldStyle(.plain).font(CoreTendTypography.body)
                 }
                 .padding(.horizontal, 12).padding(.vertical, 9)
-                .serreGlass(cornerRadius: 12, glow: false)
+                .background(Palette.raisedSurface.color, in: LeafCorner.control.shape)
                 .overlay(LeafCorner.control.shape.strokeBorder(query.isEmpty ? Palette.strongSeparator.color : Palette.accent.color, lineWidth: 1))
                 HStack(spacing: 12) {
                     Picker(copy("explore.sort"), selection: $sortMode) {
@@ -296,9 +296,9 @@ struct ExploreScanView: View {
                 }
                 .id(mapSeed)
             }
-            .frame(height: 420)
-            .padding(10)
-            .serreGlass(cornerRadius: 22, glow: false)
+            .frame(height: 240)
+            .padding(8)
+            .background(Palette.deep.color, in: LeafCorner.parcel.shape)
             .accessibilityElement(children: .contain)
             .accessibilityLabel(copy("explore.map"))
             Text(copy("explore.map.help")).font(CoreTendTypography.caption).foregroundStyle(Palette.tertiaryInk.color)
@@ -357,17 +357,9 @@ struct ExploreScanView: View {
                 scrollTarget = "explore.list"
             }
         } label: {
-            // Decision 0008: each plot is a pane of lit glass; folders lean teal, files green.
-            let hue = folder ? Palette.lagoon.color : Palette.accent.color
             shape
-                .fill(LinearGradient(colors: [hue.opacity(min(1, strength + (hovered || focused ? 0.35 : 0.15))), hue.opacity(strength * 0.75)],
-                                     startPoint: .topLeading, endPoint: .bottomTrailing))
-                .overlay(shape.fill(LinearGradient(colors: [Color.white.opacity(0.28), .clear], startPoint: .top, endPoint: .center)))
-                .overlay(shape.strokeBorder(focused ? Palette.ink.color : Color.white.opacity(0.35), lineWidth: focused ? 2 : 1))
-                .shadow(color: hue.opacity(hovered ? 0.55 : 0), radius: hovered ? 14 : 0, y: 4)
-                .scaleEffect(hovered && !reduceMotion ? 1.025 : 1)
-                .zIndex(hovered ? 1 : 0)
-                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: hovered)
+                .fill(Palette.accent.color.opacity(hovered || focused ? strength + 0.2 : strength))
+                .overlay(shape.strokeBorder(focused ? Palette.ink.color : Palette.deep.color.opacity(0.6), lineWidth: focused ? 2 : 1))
                 .overlay(alignment: .topLeading) {
                     if tile.frame.width > 90 && tile.frame.height > 38 {
                         VStack(alignment: .leading, spacing: 1) {
@@ -420,7 +412,7 @@ struct ExploreScanView: View {
                     }
                 }
                 .frame(height: min(CGFloat(visibleResults.count) * 52 + 16, 380))
-                .serreGlass(cornerRadius: 20)
+                .background(Palette.surface.color, in: LeafCorner.parcel.shape)
                 .overlay(LeafCorner.parcel.shape.strokeBorder(Palette.separator.color, lineWidth: 1))
                 .leafFlightAnchor("list")
             }

@@ -757,13 +757,5 @@ enum ProductCopySpanish {
         "… and %1$@ more": "… y %1$@ más",
         "↑ ↓ to select · Return to open · esc or click outside to close": "↑ ↓ para seleccionar · Retorno para abrir · Esc o clic fuera para cerrar",
         "≥ 1 GiB local": "≥ 1 GiB local",
-        "%1$@ free": "%1$@ libres",
-        "%1$@ to give back": "%1$@ por recuperar",
-        "+ %1$@ purgeable": "+ %1$@ purgables",
-        "Map, large files, duplicates": "Mapa, archivos grandes, duplicados",
-        "Nothing to clean": "Nada que limpiar",
-        "Uninstall, updates": "Desinstalar, actualizaciones",
-        "Your Mac at a glance": "Tu Mac de un vistazo",
-        "free of %1$@": "libres de %1$@",
     ]
 }

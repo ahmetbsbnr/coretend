@@ -34,10 +34,6 @@ struct CleanView: View {
     @State private var lastMoved: [(trash: URL, original: URL)] = []
     /// Items (not files: a model's layers go with it) the last move put in the Trash.
     @State private var lastMovedItems = 0
-    /// Bumped on each tick, so leaves burst from the box that was ticked.
-    @State private var bursts: [ScanRule: Int] = [:]
-    /// The selected total, counted toward its value.
-    @State private var shownSelected: Double = 0
     /// The item whose explanation sheet is open.
     @State private var explaining: CleanupItem?
     /// Bytes of those items, from the review.
@@ -60,9 +56,7 @@ struct CleanView: View {
                 if groups.isEmpty {
                     SerreEmptyState(title: copy("clean.empty.title"), message: copy("clean.empty.message"))
                 } else {
-                    VStack(spacing: 12) {
-                        ForEach(Array(groups.enumerated()), id: \.element.id) { index, item in group(item).cascade(index + 1) }
-                    }
+                    VStack(spacing: 10) { ForEach(groups) { group($0) } }
                 }
             }
             if let notice { PageNoticeBanner(notice: notice, french: french, disabled: busy, chooseAgain: {}, retryScan: { start() }) }
@@ -100,16 +94,12 @@ struct CleanView: View {
     /// The answer first: how much can go, and the one button that does it.
     private var summary: some View {
         SerreParcel {
-            HStack(alignment: .center, spacing: 22) {
-                LiquidGauge(fraction: (report?.bytes ?? 0) > 0 ? Double(selectedBytes) / Double(report?.bytes ?? 1) : 0, tint: Palette.accent.color)
-                    .frame(width: 84, height: 84)
-                    .overlay { SerreIcon(.cleanup, size: 26).foregroundStyle(Palette.ink.color.opacity(0.55)) }
+            HStack(alignment: .center, spacing: 20) {
                 VStack(alignment: .leading, spacing: 4) {
-                    CountingText(value: shownSelected) { [french] value in ProductFormat.bytes(Int64(value), french: french) }
-                        .font(.custom("IowanOldStyle-Bold", size: 60, relativeTo: .largeTitle)).foregroundStyle(Palette.ink.color)
-                        .onChange(of: phase == .ready ? selectedBytes : 0, initial: true) { _, value in
-                            withAnimation(reduceMotion ? nil : .timingCurve(0.16, 1, 0.3, 1, duration: 1.1)) { shownSelected = Double(value) }
-                        }
+                    Text(ProductFormat.bytes(phase == .ready ? selectedBytes : 0, french: french))
+                        .font(CoreTendTypography.hero).foregroundStyle(Palette.ink.color)
+                        .contentTransition(.numericText())
+                        .motion(.standard, value: selectedBytes)
                     Text(summaryCaption)
                         .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
                         .fixedSize(horizontal: false, vertical: true)
@@ -122,7 +112,7 @@ struct CleanView: View {
                             .buttonStyle(.serre(.secondary))
                             .disabled(phase == .scanning || busy)
                         Button { Task { await review() } } label: { Text(copy("clean.review")) }
-                            .buttonStyle(GlowButtonStyle())
+                            .buttonStyle(.serre(.primary))
                             .keyboardShortcut(.defaultAction)
                             .disabled(selected.isEmpty || phase != .ready || busy)
                     }
@@ -162,17 +152,11 @@ struct CleanView: View {
         let open = expanded.contains(group.id)
         return VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 12) {
-                Button {
-                    toggleGroup(ids)
-                    if !ids.isSubset(of: selected) || chosen < ids.count { bursts[group.id, default: 0] += 1 }
-                } label: {
+                Button { toggleGroup(ids) } label: {
                     SerreCheck(isOn: chosen == ids.count)
                         .opacity(chosen > 0 && chosen < ids.count ? 0.55 : 1)
-                        .scaleEffect(chosen == ids.count ? 1.12 : 1)
-                        .animation(.spring(response: 0.3, dampingFraction: 0.5), value: chosen == ids.count)
                 }
                 .buttonStyle(.serre(.icon))
-                .overlay { LeafBurst(trigger: bursts[group.id] ?? 0, tint: Palette.accent.color).frame(width: 140, height: 140).allowsHitTesting(false) }
                 .accessibilityLabel(copy(group.rule.titleKey))
                 .accessibilityValue(chosen == ids.count ? copy("clean.all") : (chosen == 0 ? copy("clean.none") : "\(chosen)/\(ids.count)"))
                 Button { withAnimation(reduceMotion ? nil : .snappy) { toggleExpanded(group.id) } } label: {
@@ -181,14 +165,12 @@ struct CleanView: View {
                             Text(copy(group.rule.titleKey)).font(CoreTendTypography.body.weight(.semibold)).foregroundStyle(Palette.ink.color)
                             Text(copy(group.rule.explanationKey)).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                                 .fixedSize(horizontal: false, vertical: true)
-                            StemBar(fraction: Double(group.bytes) / Double(max(groups.map(\.bytes).max() ?? 1, 1)), lit: chosen > 0)
-                                .frame(height: 6).padding(.top, 6)
                         }
                         Spacer(minLength: 8)
                         SerreRiskBadge(riskLevel(group.rule.risk), label: copy("cleanup.risk.\(group.rule.risk.rawValue)"))
                         Text(ProductFormat.bytes(group.bytes, french: french))
-                            .font(.custom("IowanOldStyle-Bold", size: 22, relativeTo: .title3).monospacedDigit()).foregroundStyle(Palette.ink.color)
-                            .frame(minWidth: 96, alignment: .trailing)
+                            .font(CoreTendTypography.body.monospacedDigit()).foregroundStyle(Palette.ink.color)
+                            .frame(minWidth: 80, alignment: .trailing)
                         Image(systemName: "chevron.right").rotationEffect(.degrees(open ? 90 : 0))
                             .foregroundStyle(Palette.tertiaryInk.color)
                     }
@@ -210,12 +192,8 @@ struct CleanView: View {
                 .padding(8)
             }
         }
-        .serreGlass(cornerRadius: 20)
-        .overlay {
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .strokeBorder(Palette.accent.color.opacity(chosen > 0 ? 0.55 : 0), lineWidth: 1.5)
-                .animation(.easeOut(duration: 0.25), value: chosen > 0)
-        }
+        .background(Palette.surface.color, in: LeafCorner.parcel.shape)
+        .overlay(LeafCorner.parcel.shape.strokeBorder(Palette.separator.color, lineWidth: 1))
         .disabled(busy)
     }
 
@@ -428,32 +406,5 @@ final class ProgressRelay: @unchecked Sendable {
         if due { last = now }
         lock.unlock()
         if due { deliver(count) }
-    }
-}
-
-/// A stem measuring one group against the largest: it grows in, glows while the group is ticked.
-private struct StemBar: View {
-    let fraction: Double
-    let lit: Bool
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var grown = false
-
-    var body: some View {
-        GeometryReader { proxy in
-            ZStack(alignment: .leading) {
-                Capsule().fill(Palette.ink.color.opacity(0.07))
-                Capsule()
-                    .fill(LinearGradient(colors: lit ? [Palette.accent.color.opacity(0.65), Palette.accent.color] : [Palette.tertiaryInk.color.opacity(0.35), Palette.tertiaryInk.color.opacity(0.55)],
-                                         startPoint: .leading, endPoint: .trailing))
-                    .frame(width: max(6, proxy.size.width * min(max(fraction, 0), 1) * (grown ? 1 : 0)))
-                    .shadow(color: lit ? Palette.accent.color.opacity(0.6) : .clear, radius: 6)
-            }
-        }
-        .frame(maxWidth: 420)
-        .animation(.easeOut(duration: 0.3), value: lit)
-        .onAppear {
-            if reduceMotion { grown = true } else { withAnimation(.spring(response: 1.1, dampingFraction: 0.8).delay(0.25)) { grown = true } }
-        }
-        .accessibilityHidden(true)
     }
 }

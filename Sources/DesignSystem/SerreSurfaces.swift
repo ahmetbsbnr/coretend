@@ -11,11 +11,12 @@ public struct SerreParcel<Content: View>: View {
     public init(@ViewBuilder content: () -> Content) { self.content = content() }
 
     public var body: some View {
+        let shape = LeafCorner.parcel.shape
         content
-            .padding(22)
+            .padding(20)
             .frame(maxWidth: .infinity, alignment: .leading)
-            // Decision 0008: tinted glass, never a flat white card.
-            .serreGlass()
+            .background(Palette.surface.color, in: shape)
+            .overlay(shape.strokeBorder(settled ? Palette.separator.color : Palette.accent.color.opacity(0.5), lineWidth: 1))
             .scaleEffect(settled ? 1 : 0.985)
             .onAppear {
                 guard !settled else { return }
@@ -104,15 +105,13 @@ struct WiltedLeaf: View {
     }
 }
 
-/// An empty or initial view (decision 0008): a seed of light at the centre of a glass stage,
-/// waves rising from it and motes orbiting, with an invitation below. Still under Reduce Motion
-/// or when ambient motion is paused.
+/// An empty or initial view: a seed with an invitation. The seed sprouts once when the view
+/// appears; under Reduce Motion it is shown sprouted.
 public struct SerreEmptyState<Action: View>: View {
     let title: String
     let message: String
     let action: Action
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.serreAmbientAllowed) private var allowed
     @State private var grown = false
 
     public init(title: String, message: String, @ViewBuilder action: () -> Action = { EmptyView() }) {
@@ -122,43 +121,18 @@ public struct SerreEmptyState<Action: View>: View {
     }
 
     public var body: some View {
-        VStack(spacing: 16) {
-            ZStack {
-                TimelineView(.animation(minimumInterval: 1 / 30, paused: !allowed)) { timeline in
-                    let t = allowed ? timeline.date.timeIntervalSinceReferenceDate : 0
-                    Canvas { context, size in
-                        let c = CGPoint(x: size.width / 2, y: size.height / 2)
-                        for ring in 0..<4 {
-                            let p = (t * 0.35 + Double(ring) / 4).truncatingRemainder(dividingBy: 1)
-                            let r = 20 + p * min(size.width, size.height) * 0.48
-                            context.stroke(Path(ellipseIn: CGRect(x: c.x - r, y: c.y - r, width: r * 2, height: r * 2)),
-                                           with: .color(Palette.accent.color.opacity(0.35 * (1 - p))), lineWidth: 1.5)
-                        }
-                        context.fill(Path(ellipseIn: CGRect(x: c.x - 70, y: c.y - 70, width: 140, height: 140)),
-                                     with: .radialGradient(Gradient(colors: [Palette.accent.color.opacity(0.35), .clear]), center: c, startRadius: 0, endRadius: 70))
-                        for mote in 0..<10 {
-                            let a = t * (0.4 + Double(mote) * 0.05) + Double(mote) * 0.63
-                            let r = 46 + Double(mote % 4) * 14
-                            let p = CGPoint(x: c.x + cos(a) * r, y: c.y + sin(a) * r * 0.6)
-                            context.fill(Path(ellipseIn: CGRect(x: p.x - 2, y: p.y - 2, width: 4, height: 4)), with: .color(Palette.accent.color.opacity(0.7)))
-                        }
-                    }
-                }
-                SerreGlyphShape(glyph: .overview)
-                    .trim(from: 0, to: grown ? 1 : 0)
-                    .stroke(Palette.accent.color, style: StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
-                    .frame(width: 64, height: 64)
-                    .shadow(color: Palette.accent.color.opacity(0.6), radius: 10)
-            }
-            .frame(height: 170)
-            .accessibilityHidden(true)
-            Text(title).font(.custom("IowanOldStyle-Bold", size: 28, relativeTo: .title)).foregroundStyle(Palette.ink.color)
-                .multilineTextAlignment(.center)
-            Text(message).font(CoreTendTypography.lede).foregroundStyle(Palette.secondaryInk.color)
-                .multilineTextAlignment(.center).frame(maxWidth: 520)
+        VStack(spacing: 14) {
+            SerreGlyphShape(glyph: .overview)
+                .trim(from: 0, to: grown ? 1 : 0)
+                .stroke(Palette.accent.color, style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+                .frame(width: 72, height: 72)
+                .accessibilityHidden(true)
+            Text(title).font(CoreTendTypography.body.weight(.semibold)).foregroundStyle(Palette.ink.color)
+            Text(message).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+                .multilineTextAlignment(.center).frame(maxWidth: 420)
             action
         }
-        .padding(.vertical, 28)
+        .padding(.vertical, 36)
         .frame(maxWidth: .infinity)
         .onAppear {
             if reduceMotion { grown = true } else {

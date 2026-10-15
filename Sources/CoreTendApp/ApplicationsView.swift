@@ -251,7 +251,7 @@ struct ApplicationsView: View {
                 }
             }
             .padding(.horizontal, 12).padding(.vertical, 9)
-            .serreGlass(cornerRadius: 12, glow: false)
+            .background(Palette.raisedSurface.color, in: LeafCorner.control.shape)
             .overlay(LeafCorner.control.shape.strokeBorder(searchText.isEmpty ? Palette.strongSeparator.color : Palette.accent.color, lineWidth: 1))
             HStack(spacing: 12) {
                 Picker(copy("apps.sort"), selection: $sortMode) {

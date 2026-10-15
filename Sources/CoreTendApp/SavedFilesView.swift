@@ -63,7 +63,7 @@ struct SavedFilesView: View {
                     }
                     .padding(16)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .serreGlass(cornerRadius: 20)
+                    .background(Palette.surface.color, in: LeafCorner.parcel.shape)
                 }
             }
             if let status, !records.isEmpty {

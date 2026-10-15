@@ -6,37 +6,15 @@ import AppShell
 private struct SpaceSwitch<Tag: Hashable>: View {
     let options: [(Tag, String)]
     @Binding var selection: Tag
-    @Namespace private var pill
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 6) {
             ForEach(options, id: \.0) { option in
-                let selected = selection == option.0
-                Button {
-                    withAnimation(reduceMotion ? nil : .spring(response: 0.42, dampingFraction: 0.78)) { selection = option.0 }
-                } label: {
-                    Text(option.1)
-                        .font(CoreTendTypography.body.weight(selected ? .semibold : .medium))
-                        .foregroundStyle(selected ? Palette.onAccent.color : Palette.secondaryInk.color)
-                        .padding(.horizontal, 18).padding(.vertical, 9)
-                        .background {
-                            if selected {
-                                Capsule()
-                                    .fill(LinearGradient(colors: [Palette.accent.color, Palette.accent.color.opacity(0.8)], startPoint: .top, endPoint: .bottom))
-                                    .shadow(color: Palette.accent.color.opacity(0.45), radius: 10, y: 3)
-                                    .matchedGeometryEffect(id: "pill", in: pill)
-                            }
-                        }
-                        .contentShape(Capsule())
-                }
-                .buttonStyle(.serre(.bare))
-                .accessibilityAddTraits(selected ? .isSelected : [])
+                Button(option.1) { selection = option.0 }
+                    .buttonStyle(.serre(selection == option.0 ? .primary : .secondary))
+                    .accessibilityAddTraits(selection == option.0 ? .isSelected : [])
             }
         }
-        .padding(4)
-        .background(.ultraThinMaterial, in: Capsule())
-        .overlay(Capsule().strokeBorder(Color.white.opacity(0.35), lineWidth: 1))
     }
 }
 

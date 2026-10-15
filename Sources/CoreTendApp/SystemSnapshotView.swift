@@ -50,6 +50,7 @@ struct SystemSnapshotView: View {
             }
             if let snapshot {
                 if destination == .overview {
+                    GreenhouseScene(state: greenhouseState(snapshot)).serreRise(1)
                     // Side by side when the window is wide enough, stacked otherwise.
                     ViewThatFits(in: .horizontal) {
                         HStack(alignment: .top, spacing: 16) {
@@ -97,11 +98,8 @@ struct SystemSnapshotView: View {
             VStack(alignment: .leading, spacing: 10) {
                 Text(copy("metrics.freeSpace")).font(CoreTendTypography.sectionTitle)
                     .foregroundStyle(Palette.secondaryInk.color)
-                HStack(alignment: .center, spacing: 18) {
-                    if case .known(let free) = value.availableBytes, case .known(let total) = value.totalBytes, total > 0 {
-                        LiquidGauge(fraction: Double(free) / Double(total), tint: Palette.accent.color).frame(width: 72, height: 72)
-                    }
-                    Text(format(value.availableBytes)).font(.custom("IowanOldStyle-Bold", size: 52, relativeTo: .largeTitle))
+                HStack(alignment: .firstTextBaseline, spacing: 10) {
+                    Text(format(value.availableBytes)).font(CoreTendTypography.hero)
                         .foregroundStyle(Palette.ink.color)
                         .contentTransition(.numericText())
                         .motion(.standard, value: value.availableBytes)
@@ -212,9 +210,10 @@ struct SystemSnapshotView: View {
                     .multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            .padding(18)
-            .frame(maxWidth: .infinity, minHeight: 104, alignment: .topLeading)
-            .serreGlass(cornerRadius: 20)
+            .padding(16)
+            .frame(maxWidth: .infinity, minHeight: 96, alignment: .topLeading)
+            .background(Palette.surface.color, in: LeafCorner.parcel.shape)
+            .overlay(LeafCorner.parcel.shape.strokeBorder(Palette.separator.color, lineWidth: 1))
         }
         .buttonStyle(.serre(.tile))
     }
@@ -359,7 +358,7 @@ struct SystemSnapshotView: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .serreGlass(cornerRadius: 20)
+        .background(Palette.surface.color, in: LeafCorner.parcel.shape)
         .overlay(LeafCorner.parcel.shape.strokeBorder(Palette.separator.color, lineWidth: 1))
         .serreRise(order)
         .accessibilityElement(children: .ignore)
@@ -389,7 +388,7 @@ struct SystemSnapshotView: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .serreGlass(cornerRadius: 20)
+        .background(Palette.surface.color, in: LeafCorner.parcel.shape)
         .overlay(LeafCorner.parcel.shape.strokeBorder(Palette.separator.color, lineWidth: 1))
         .serreRise(5)
     }
