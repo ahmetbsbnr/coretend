@@ -96,7 +96,7 @@ COPY = {
             "tools_lead": "No dashboard to decode: each space answers one question and has one main button.",
             "alive_title": "A greenhouse that lives",
             "alive": [
-                ("Motion with a cause", "Roots descend as files are read. A moved file falls as a leaf into the Trash. A file that stays says why."),
+                ("Motion with a cause", "Shoots come out of the soil one by one and bend away from your pointer. Figures count up to their value. Roots descend as files are read; ticking a rule shakes leaves off it; a moved file falls as a leaf into the Trash."),
                 ("Alive, never busy", "Leaves sway and pollen drifts while the window is in front — drawn by macOS itself, for almost no energy — and everything rests the moment you look away."),
                 ("Calm on request", "Reduce Motion, Low Power Mode or one switch in Settings: the greenhouse stands still, every piece of information still in place."),
             ],
@@ -226,7 +226,7 @@ COPY = {
             "tools_lead": "Pas de tableau de bord à déchiffrer : chaque espace répond à une question et a un seul bouton principal.",
             "alive_title": "Une serre qui vit",
             "alive": [
-                ("Des mouvements qui ont une cause", "Les racines descendent au rythme des fichiers lus. Un fichier déplacé tombe en feuille dans la Corbeille. Un fichier resté en place dit pourquoi."),
+                ("Des mouvements qui ont une cause", "Les pousses sortent de terre une à une et s’écartent du pointeur. Les chiffres comptent jusqu’à leur valeur. Les racines descendent au rythme des fichiers lus ; cocher une règle en fait tomber des feuilles ; un fichier déplacé tombe en feuille dans la Corbeille."),
                 ("Vivante, jamais agitée", "Les feuilles se balancent et le pollen flotte quand la fenêtre est devant — dessinés par macOS lui-même, pour presque aucune énergie — et tout se repose dès que vous regardez ailleurs."),
                 ("Calme sur demande", "« Réduire les animations », le mode économie d’énergie ou un interrupteur dans Réglages : la serre s’immobilise, toute l’information reste en place."),
             ],
@@ -355,11 +355,12 @@ SCENES = {"narrow": (13, 960, (20, 330, 640), 1.0, "meet"), "wide": (20, 1440, (
 def sprout(x: float, height: float, index: int) -> str:
     top = 300 - height
     return (f'<g class="shoot shoot-{index}{" shoot-wilted" if index == WILTED else ""}" transform="translate({x} 0)">'
-            f'<g class="shoot-sway">'
+            f'<rect class="shoot-hit" x="-36" y="{top - 30}" width="72" height="{height + 30}"/>'
+            f'<g class="shoot-bend"><g class="shoot-sway">'
             f'<path class="shoot-stem" pathLength="1" d="M0 300 C 0 {300 - height * 0.5}, -4 {top + 20}, 2 {top}"/>'
             f'<path class="shoot-leaf" d="M1 {top + height * 0.35} C -18 {top + height * 0.35}, -34 {top + height * 0.2}, -38 {top} C -20 {top - 2}, -4 {top + 10}, 1 {top + height * 0.35} Z"/>'
             f'<path class="shoot-leaf" d="M2 {top + 8} C 10 {top - 14}, 28 {top - 26}, 44 {top - 24} C 42 {top - 4}, 24 {top + 10}, 2 {top + 8} Z"/>'
-            f'</g></g>')
+            f'</g></g></g>')
 
 
 def greenhouse(css: str = "", scene: str = "narrow") -> str:
