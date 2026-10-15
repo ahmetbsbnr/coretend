@@ -98,6 +98,7 @@ struct ApplicationsView: View {
                     }
                 }
             }
+            TrashedAppsSection(french: french)
             if let notice, !notice.nearActions { banner(notice) }
             if scanning && associationApp == nil {
                 SerreParcel {

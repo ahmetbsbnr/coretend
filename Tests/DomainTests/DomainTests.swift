@@ -962,3 +962,48 @@ extension FileActionServiceTests {
         XCTAssertEqual(FullDiskAccessProbe(probes: [missing, folder]).status(), .granted)
     }
 }
+
+final class CareAlertTests: XCTestCase {
+    private func makeHome() throws -> URL {
+        let home = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-care-\(UUID())", isDirectory: true)
+        func write(_ path: String, _ data: Data = Data(repeating: 1, count: 4096)) throws {
+            let url = home.appendingPathComponent(path)
+            try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try data.write(to: url)
+        }
+        func app(_ path: String, id: String, name: String) throws {
+            let plist = try PropertyListSerialization.data(fromPropertyList: ["CFBundleIdentifier": id, "CFBundleName": name], format: .xml, options: 0)
+            try write(path + "/Contents/Info.plist", plist)
+        }
+        try app(".Trash/Gone.app", id: "com.example.gone", name: "Gone")
+        try app(".Trash/Folder/Nested.app", id: "com.example.nested", name: "Nested")
+        try app(".Trash/Kept.app", id: "com.example.kept", name: "Kept")
+        try app(".Trash/Clean.app", id: "com.example.clean", name: "Clean")
+        try write("Library/Caches/com.example.gone/cache.db")
+        try write("Library/Preferences/com.example.nested.plist")
+        try write("Library/Caches/com.example.kept/cache.db")
+        return home
+    }
+
+    func testTrashedAppsWithLeftoversAreFoundAndAppsStillInstalledAreNot() throws {
+        let home = try makeHome()
+        defer { try? FileManager.default.removeItem(at: home) }
+        let found = TrashedAppFinder(home: home) { $0 == "com.example.kept" }.find()
+        XCTAssertEqual(Set(found.map(\.bundleIdentifier)), ["com.example.gone", "com.example.nested"])
+        XCTAssertEqual(found.first { $0.bundleIdentifier == "com.example.gone" }?.leftovers.map(\.url.lastPathComponent), ["com.example.gone"])
+        XCTAssertTrue(FileManager.default.fileExists(atPath: home.appendingPathComponent("Library/Caches/com.example.gone").path), "read-only")
+    }
+
+    func testAlertsFireOnMeasuredThresholdsAndStayQuietForADay() {
+        let policy = CareAlertPolicy()
+        let now = Date(timeIntervalSince1970: 1_000_000)
+        let full = CareAlertReading(freeBytes: 8_000_000_000, totalBytes: 500_000_000_000, trashBytes: 6_000_000_000, trashedAppsWithLeftovers: 1)
+        XCTAssertEqual(policy.due(full, lastShown: [:], now: now), [.lowDiskSpace, .heavyTrash, .trashedAppLeftovers])
+        XCTAssertEqual(policy.due(full, lastShown: [.lowDiskSpace: now.addingTimeInterval(-3600)], now: now), [.heavyTrash, .trashedAppLeftovers])
+        XCTAssertEqual(policy.due(full, lastShown: [.lowDiskSpace: now.addingTimeInterval(-90_000)], now: now).first, .lowDiskSpace)
+        let fine = CareAlertReading(freeBytes: 200_000_000_000, totalBytes: 500_000_000_000, trashBytes: 10, trashedAppsWithLeftovers: 0)
+        XCTAssertTrue(policy.due(fine, lastShown: [:], now: now).isEmpty)
+        let unknown = CareAlertReading(freeBytes: nil, totalBytes: nil, trashBytes: nil, trashedAppsWithLeftovers: 0)
+        XCTAssertTrue(policy.due(unknown, lastShown: [:], now: now).isEmpty, "nothing is said about what was not measured")
+    }
+}

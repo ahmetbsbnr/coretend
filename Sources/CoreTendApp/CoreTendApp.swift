@@ -25,6 +25,7 @@ struct CoreTendApp: App {
         _navigation = State(initialValue: CoreTendNavigation(language: preferences.resolvedLanguage(storedValue: nil)))
         _menuBarEnabled = State(initialValue: preferences.menuBarEnabled)
         _appearance = State(initialValue: preferences.appearance)
+        Task { @MainActor in CareAlertMonitor.shared.start() }
     }
 
     var body: some Scene {

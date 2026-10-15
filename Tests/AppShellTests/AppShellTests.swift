@@ -83,7 +83,13 @@ final class AppShellTests: XCTestCase {
         XCTAssertTrue(fixture.soundsEnabled)
         fixture.saveSoundsEnabled(false)
         XCTAssertNil(defaults.object(forKey: "coretend.sounds.enabled"))
-        for key in ["settings.sound.title", "settings.sound.toggle", "settings.sound.help", "metrics.purgeable"] {
+        XCTAssertFalse(fixture.alertsEnabled, "alerts never run in fixtures")
+        for key in ["settings.sound.title", "settings.sound.toggle", "settings.sound.help", "metrics.purgeable",
+                    "settings.alerts.title", "settings.alerts.toggle", "settings.alerts.help", "settings.alerts.denied",
+                    "alerts.lowDiskSpace.title", "alerts.lowDiskSpace.body", "alerts.heavyTrash.title", "alerts.heavyTrash.body",
+                    "alerts.trashedAppLeftovers.title", "alerts.trashedAppLeftovers.body",
+                    "apps.trashed.title", "apps.trashed.help", "apps.trashed.action", "apps.trashed.none", "apps.trashed.confirm",
+                    "scan.rootSlow", "scan.partialSlow"] {
             XCTAssertNotEqual(ProductCopy.value(for: key, french: false), key)
             XCTAssertNotEqual(ProductCopy.value(for: key, french: true), key)
         }

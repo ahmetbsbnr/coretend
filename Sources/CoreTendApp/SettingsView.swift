@@ -27,6 +27,8 @@ struct SettingsView: View {
     @State private var status: String?
     @AppStorage("coretend.livingGreenhouse") private var livingGreenhouse = true
     @State private var soundsEnabled = CoreTendPreferences().soundsEnabled
+    @State private var alertsEnabled = CoreTendPreferences().alertsEnabled
+    @State private var alertsDenied = false
     @Environment(AppUpdater.self) private var updater
     @State private var tab = "general"
 
@@ -88,6 +90,22 @@ struct SettingsView: View {
                         Toggle(ProductCopy.value(for: "settings.sound.toggle", french: french), isOn: $soundsEnabled)
                             .font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
                             .onChange(of: soundsEnabled) { _, value in CoreTendPreferences().saveSoundsEnabled(value) }
+                    }
+                    section(ProductCopy.value(for: "settings.alerts.title", french: french), help: ProductCopy.value(for: "settings.alerts.help", french: french)) {
+                        Toggle(ProductCopy.value(for: "settings.alerts.toggle", french: french), isOn: $alertsEnabled)
+                            .font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
+                            .disabled(!CoreTendPreferences().usesPersistentStorage)
+                            .onChange(of: alertsEnabled) { _, value in
+                                Task { @MainActor in
+                                    if value, !(await CareAlertMonitor.shared.requestPermission()) {
+                                        alertsDenied = true; alertsEnabled = false; return
+                                    }
+                                    alertsDenied = false
+                                    CoreTendPreferences().saveAlertsEnabled(value)
+                                    if value { await CareAlertMonitor.shared.check() }
+                                }
+                            }
+                        if alertsDenied { note(ProductCopy.value(for: "settings.alerts.denied", french: french)) }
                     }
                     section(french ? "Barre des menus" : "Menu bar") {
                         Toggle(ProductCopy.value(for: "settings.menubar.title", french: french), isOn: $menuBarEnabled)

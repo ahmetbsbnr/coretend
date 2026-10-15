@@ -79,6 +79,30 @@ public struct CoreTendPreferences {
         return defaults.bool(forKey: "coretend.menuBar.enabled")
     }
 
+    /// Local notifications about the disk, the Trash and trashed apps. Off by default, never in fixtures.
+    public var alertsEnabled: Bool {
+        guard usesPersistentStorage else { return false }
+        return defaults.bool(forKey: "coretend.alerts.enabled")
+    }
+
+    public func saveAlertsEnabled(_ value: Bool) {
+        guard usesPersistentStorage else { return }
+        defaults.set(value, forKey: "coretend.alerts.enabled")
+    }
+
+    /// When each alert subject was last shown, by its raw name.
+    public var alertsLastShown: [String: Date] {
+        guard usesPersistentStorage, let raw = defaults.dictionary(forKey: "coretend.alerts.lastShown") as? [String: Double] else { return [:] }
+        return raw.mapValues { Date(timeIntervalSince1970: $0) }
+    }
+
+    public func saveAlertShown(_ subject: String, at date: Date) {
+        guard usesPersistentStorage else { return }
+        var raw = (defaults.dictionary(forKey: "coretend.alerts.lastShown") as? [String: Double]) ?? [:]
+        raw[subject] = date.timeIntervalSince1970
+        defaults.set(raw, forKey: "coretend.alerts.lastShown")
+    }
+
     /// A short sound when a scan or a clean ends. Off by default.
     public var soundsEnabled: Bool {
         if !usesPersistentStorage { return environment["CORETEND_TEST_SOUNDS_ENABLED"] == "1" }

@@ -66,7 +66,7 @@ public struct AppLeftoverFinder: Sendable {
     }
 
     /// Allocated bytes of a file or folder, symbolic links not followed.
-    static func allocatedBytes(_ url: URL) -> Int64 {
+    public static func allocatedBytes(_ url: URL) -> Int64 {
         var info = stat()
         guard lstat(url.path, &info) == 0 else { return 0 }
         if (info.st_mode & S_IFMT) != S_IFDIR { return Int64(info.st_blocks) * 512 }
