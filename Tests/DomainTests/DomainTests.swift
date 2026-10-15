@@ -1007,3 +1007,38 @@ final class CareAlertTests: XCTestCase {
         XCTAssertTrue(policy.due(unknown, lastShown: [:], now: now).isEmpty, "nothing is said about what was not measured")
     }
 }
+
+final class AppUpdateTests: XCTestCase {
+    private let attributeFeed = Data("""
+    <?xml version="1.0" encoding="utf-8"?>
+    <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"><channel>
+    <item><title>3.4</title><sparkle:minimumSystemVersion>10.10.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://example.invalid/a.zip" sparkle:version="3804" sparkle:shortVersionString="3.4"/></item>
+    <item><title>3.6.8</title><enclosure url="https://example.invalid/b.zip" sparkle:version="4332" sparkle:shortVersionString="3.6.8"/></item>
+    <item><title>4.0</title><sparkle:minimumSystemVersion>99.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://example.invalid/c.zip" sparkle:version="5000" sparkle:shortVersionString="4.0"/></item>
+    </channel></rss>
+    """.utf8)
+
+    private let elementFeed = Data("""
+    <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"><channel>
+    <item><sparkle:version>230</sparkle:version><sparkle:shortVersionString>2.3.0</sparkle:shortVersionString><enclosure url="https://example.invalid/d.zip"/></item>
+    </channel></rss>
+    """.utf8)
+
+    func testAppcastItemsAreReadFromAttributesAndElements() {
+        XCTAssertEqual(AppcastReader.items(from: attributeFeed).map(\.shortVersion), ["3.4", "3.6.8", "4.0"])
+        XCTAssertEqual(AppcastReader.items(from: elementFeed), [AppcastItem(version: "230", shortVersion: "2.3.0", minimumSystemVersion: nil)])
+        XCTAssertTrue(AppcastReader.items(from: Data("not xml".utf8)).isEmpty)
+    }
+
+    func testTheNewestCompatibleReleaseNewerThanTheInstalledBuildIsOffered() {
+        let items = AppcastReader.items(from: attributeFeed)
+        let system = OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0)
+        XCTAssertEqual(AppcastReader.newer(than: "3804", installedShort: "3.4", in: items, system: system)?.shortVersion, "3.6.8",
+                       "4.0 needs a newer macOS")
+        XCTAssertNil(AppcastReader.newer(than: "4332", installedShort: "3.6.8", in: items, system: system))
+        XCTAssertEqual(VersionOrder.compare("1.10", "1.9"), .orderedDescending)
+        XCTAssertEqual(VersionOrder.compare("2.0", "2"), .orderedSame)
+    }
+}

@@ -94,6 +94,8 @@ network_patterns = (
 )
 # The system helper runs one program, launchctl, with arguments it builds itself (decision 0006).
 LAUNCHCTL_RUNNER = 'Sources/CoreTendHelper/Launchctl.swift'
+# Decision 0007: one place reads apps' own HTTPS appcasts, on the person's click only.
+FEED_FETCHER = 'Sources/CoreTendApp/AppUpdateFeedFetcher.swift'
 for file in (root/'Sources').rglob('*.swift'):
  text=file.read_text()
  if file.relative_to(root).as_posix() == LAUNCHCTL_RUNNER:
@@ -102,6 +104,10 @@ for file in (root/'Sources').rglob('*.swift'):
    errors.append('the helper may only run /bin/launchctl, from one place')
   else:
    text = text.replace('Process()', '', 1)
+ if file.relative_to(root).as_posix() == FEED_FETCHER:
+  if len(re.findall(r'\bURLSession\b', text)) != 1 or 'URLSessionConfiguration.ephemeral' not in text:
+   errors.append('the appcast reader may create one ephemeral URLSession, from one place')
+  text = re.sub(r'\bURLSession(?:Configuration)?\b', '', text)
  for pattern in network_patterns:
   if re.search(pattern,text,re.MULTILINE):
    errors.append(f'network client or telemetry API in runtime: {file.relative_to(root)}: {pattern}')

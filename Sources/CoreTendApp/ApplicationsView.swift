@@ -49,6 +49,9 @@ struct ApplicationsView: View {
     /// The app whose row is open with its actions.
     @State private var expanded: String?
     @State private var associationEvidence: [URL: AssociationEvidence] = [:]
+    /// Results of the last update check the person started, by app id (decision 0007).
+    @State private var updateResults: [String: AppUpdateResult] = [:]
+    @State private var checkingUpdates = false
 
     private var locked: Bool { scanning || removalBusy || removalReview != nil }
 
@@ -187,7 +190,33 @@ struct ApplicationsView: View {
                 }
                 Text(copy("apps.limits")).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                     .fixedSize(horizontal: false, vertical: true)
+                if records.contains(where: { if case .declaredHTTPSFeed = $0.updateSource { true } else { false } }) {
+                    HStack(spacing: 10) {
+                        Button(checkingUpdates ? copy("apps.updates.checking") : copy("apps.updates.check")) { checkUpdates() }
+                            .buttonStyle(.serre(.secondary))
+                            .disabled(locked || checkingUpdates)
+                            .accessibilityHint(copy("apps.updates.help"))
+                        if checkingUpdates { ProgressView().controlSize(.small) }
+                        if !updateResults.isEmpty && !checkingUpdates {
+                            let count = updateResults.values.filter { if case .available = $0 { true } else { false } }.count
+                            Text(String(format: copy("apps.updates.summary"), "\(count)"))
+                                .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+                        }
+                    }
+                    Text(copy("apps.updates.help")).font(CoreTendTypography.caption).foregroundStyle(Palette.tertiaryInk.color)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
+        }
+    }
+
+    private func checkUpdates() {
+        guard !checkingUpdates else { return }
+        checkingUpdates = true
+        let apps = records
+        Task { @MainActor in
+            defer { checkingUpdates = false }
+            updateResults = await AppUpdateCheck(fetch: { try await AppUpdateFeedFetcher.fetch($0) }).check(apps)
         }
     }
 
@@ -473,8 +502,19 @@ struct ApplicationsView: View {
     }
 
     @ViewBuilder private func updateSourceView(for app: ApplicationRecord) -> some View {
-        switch app.updateSource {
-        case .declaredHTTPSFeed(let url):
+        switch (app.updateSource, updateResults[app.id]) {
+        case (.declaredHTTPSFeed, .available(let version)?):
+            HStack(spacing: 8) {
+                Text(String(format: copy("apps.updates.available"), version, app.version ?? "?"))
+                    .font(CoreTendTypography.secondary.weight(.semibold)).foregroundStyle(Palette.accent.color)
+                Button(copy("apps.updates.open")) { NSWorkspace.shared.open(app.url) }
+                    .buttonStyle(.serre(.icon)).font(CoreTendTypography.caption)
+            }
+        case (.declaredHTTPSFeed, .upToDate?):
+            Text(copy("apps.updates.upToDate")).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+        case (.declaredHTTPSFeed, .unavailable?):
+            Text(copy("apps.updates.unreachable")).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+        case (.declaredHTTPSFeed(let url), nil):
             Text(french ? "Flux HTTPS déclaré par l’app : \(url.host ?? "hôte inconnu") · version non vérifiée" : "App-declared HTTPS feed: \(url.host ?? "unknown host") · version not checked")
                 .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
             Link(destination: url) {
@@ -483,10 +523,10 @@ struct ApplicationsView: View {
             }
             .buttonStyle(.serre(.icon))
                 .accessibilityHint(french ? "Ouvre l’adresse HTTPS déclarée par cette app dans le navigateur. CoreTend ne vérifie aucune version." : "Opens this app’s declared HTTPS address in the browser. CoreTend does not compare versions.")
-        case .invalidDeclaredFeed:
+        case (.invalidDeclaredFeed, _):
             Text(french ? "Adresse de mise à jour déclarée inutilisable." : "Declared update address is unusable.")
                 .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
-        case .unknown:
+        case (.unknown, _):
             // Said once in the scope note ("updates are not checked"), not repeated on every row.
             EmptyView()
         }

@@ -53,8 +53,9 @@ History of every scan and move stays at the sidebar's foot.
 - **Erase anything for good.** Moves go to the macOS Trash after your review; CoreTend checks each
   item again just before, and Undo puts it back.
 - **Scare you.** No health score, no alarm, no invented figure.
-- **Watch you.** No account, no telemetry. The only request asks this site whether an update
-  exists, and you can turn it off in Settings.
+- **Watch you.** No account, no telemetry, nothing in the background. CoreTend asks this site
+  whether an update exists (you can turn it off), and reads your apps' own update feeds only when
+  you click Check for updates in Apps.
 
 ## Install
 
