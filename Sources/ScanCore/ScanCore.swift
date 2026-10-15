@@ -183,17 +183,56 @@ public struct FoundationUbiquitousItemMetadataReader: UbiquitousItemMetadataRead
 }
 
 public struct LocalScanEngine: ScanEngine {
+    /// How long one folder may take to list its entries before the scan reports it and moves on.
+    public static let defaultDirectoryTimeout: Duration = .seconds(20)
+
     private let metadataReader: any UbiquitousItemMetadataReading
     private let workerDidFinish: @Sendable () -> Void
+    private let directoryTimeout: Duration
+    private let listDirectory: @Sendable (URL) throws -> [URL]
 
     public init(metadataReader: any UbiquitousItemMetadataReading = FoundationUbiquitousItemMetadataReader()) {
-        self.metadataReader = metadataReader
-        self.workerDidFinish = {}
+        self.init(metadataReader: metadataReader, workerDidFinish: {})
     }
 
-    init(metadataReader: any UbiquitousItemMetadataReading, workerDidFinish: @escaping @Sendable () -> Void) {
+    init(metadataReader: any UbiquitousItemMetadataReading, workerDidFinish: @escaping @Sendable () -> Void,
+         directoryTimeout: Duration = LocalScanEngine.defaultDirectoryTimeout,
+         listDirectory: @escaping @Sendable (URL) throws -> [URL] = LocalScanEngine.contents(of:)) {
         self.metadataReader = metadataReader
         self.workerDidFinish = workerDidFinish
+        self.directoryTimeout = directoryTimeout
+        self.listDirectory = listDirectory
+    }
+
+    static func contents(of directory: URL) throws -> [URL] {
+        try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: prefetchedKeys, options: [.skipsPackageDescendants])
+    }
+
+    enum Listing { case listed([URL]), failed(Error), timedOut }
+
+    /// Lists a folder on another thread and stops waiting after `timeout`: a folder on a volume
+    /// that stops answering (a network share, a disconnected disk) is reported instead of holding
+    /// the whole scan. The stuck read is left to finish on its own; its answer is ignored.
+    static func listing(_ directory: URL, timeout: Duration, list: @escaping @Sendable (URL) throws -> [URL]) async -> Listing {
+        await withCheckedContinuation { continuation in
+            let gate = ResumeGate()
+            DispatchQueue.global(qos: .utility).async {
+                let result: Listing
+                do { result = .listed(try list(directory)) } catch { result = .failed(error) }
+                if gate.claim() { continuation.resume(returning: result) }
+            }
+            let (seconds, attoseconds) = timeout.components
+            let delay = Double(seconds) + Double(attoseconds) / 1e18
+            DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + delay) {
+                if gate.claim() { continuation.resume(returning: .timedOut) }
+            }
+        }
+    }
+
+    private final class ResumeGate: @unchecked Sendable {
+        private let lock = NSLock()
+        private var claimed = false
+        func claim() -> Bool { lock.withLock { defer { claimed = true }; return !claimed } }
     }
 
     public func scan(_ request: ScanRequest) -> AsyncThrowingStream<ScanEvent, Error> {
@@ -234,9 +273,12 @@ public struct LocalScanEngine: ScanEngine {
             while let (directory, canonicalDirectory) = pending.popLast() {
                 guard !Task.isCancelled else { return }
                 let children: [URL]
-                do { children = try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: Self.prefetchedKeys, options: [.skipsPackageDescendants]) }
-                catch {
+                switch await Self.listing(directory, timeout: directoryTimeout, list: listDirectory) {
+                case .listed(let found): children = found
+                case .failed(let error):
                     continuation.yield(.itemFailure(path: directory.path, reason: Self.failureReason(error))); continue
+                case .timedOut:
+                    continuation.yield(.itemFailure(path: directory.path, reason: "directory_timeout")); continue
                 }
                 for child in children {
                     guard !Task.isCancelled else { return }
@@ -273,7 +315,7 @@ public struct LocalScanEngine: ScanEngine {
         if !Task.isCancelled { continuation.yield(.finished) }
     }
 
-    private static let prefetchedKeys: [URLResourceKey] = [.isDirectoryKey, .isSymbolicLinkKey, .fileSizeKey,
+    static let prefetchedKeys: [URLResourceKey] = [.isDirectoryKey, .isSymbolicLinkKey, .fileSizeKey,
                                                              .contentModificationDateKey]
 
     private static func isExcluded(_ url: URL, by exclusions: [String]) -> Bool {

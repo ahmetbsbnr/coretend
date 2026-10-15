@@ -102,7 +102,9 @@ public enum ProductCopy {
         "scan.choose": "Choose a folder to inspect", "scan.choose.hint": "CoreTend reads this folder without changing its files.",
         "scan.progress": "Reading selected folder…", "scan.failed": "The folder could not be read.",
         "scan.accessDenied": "Access to the selected folder is unavailable.", "scan.rootAccessDenied": "macOS denied access to the selected folder.",
-        "scan.rootUnavailable": "The selected folder's availability could not be determined.", "scan.partial": "Some items could not be read.",
+        "scan.rootUnavailable": "The selected folder's availability could not be determined.",
+        "scan.rootSlow": "The folder did not answer within 20 seconds; its volume may be disconnected or slow.",
+        "scan.partialSlow": "Some folders did not answer within 20 seconds and were skipped; everything else was read.", "scan.partial": "Some items could not be read.",
         "scan.rootMissing": "The selected folder no longer exists.", "scan.rootSymlink": "The selected folder is a symbolic link; choose its real folder.",
         "scan.rootExcluded": "This folder is excluded in Settings.", "scan.rootNotFolder": "The selected item is not a folder.",
         "scan.empty": "No files found in the selected folder.", "scan.unknownSize": "Unknown size",
@@ -362,7 +364,9 @@ public enum ProductCopy {
         "scan.choose": "Choisir un dossier à examiner", "scan.choose.hint": "CoreTend lit ce dossier sans modifier ses fichiers.",
         "scan.progress": "Lecture du dossier sélectionné…", "scan.failed": "Impossible de lire ce dossier.",
         "scan.accessDenied": "L’accès au dossier sélectionné est indisponible.", "scan.rootAccessDenied": "macOS a refusé l’accès au dossier sélectionné.",
-        "scan.rootUnavailable": "Impossible de déterminer la disponibilité du dossier choisi.", "scan.partial": "Certains éléments n’ont pas pu être lus.",
+        "scan.rootUnavailable": "Impossible de déterminer la disponibilité du dossier choisi.",
+        "scan.rootSlow": "Le dossier n’a pas répondu en 20 secondes ; son volume est peut-être déconnecté ou lent.",
+        "scan.partialSlow": "Certains dossiers n’ont pas répondu en 20 secondes et ont été passés ; tout le reste a été lu.", "scan.partial": "Certains éléments n’ont pas pu être lus.",
         "scan.rootMissing": "Le dossier choisi n’existe plus.", "scan.rootSymlink": "Le dossier choisi est un lien symbolique; choisissez le dossier réel.",
         "scan.rootExcluded": "Ce dossier est exclu dans les réglages.", "scan.rootNotFolder": "L’élément choisi n’est pas un dossier.",
         "scan.empty": "Aucun fichier dans le dossier sélectionné.", "scan.unknownSize": "Taille inconnue",
@@ -602,6 +606,7 @@ public enum ProductCopy {
         case "root_symlink": key = "scan.rootSymlink"
         case "root_excluded": key = "scan.rootExcluded"
         case "root_not_directory": key = "scan.rootNotFolder"
+        case "directory_timeout": key = "scan.rootSlow"
         case "metadata_unavailable", "directory_read_failed": key = "scan.rootUnavailable"
         default: key = "scan.rootUnavailable"
         }
@@ -609,6 +614,7 @@ public enum ProductCopy {
     }
 
     public static func scanPartialFailure(reasons: Set<String>, french isFrench: Bool) -> String {
+        if reasons.contains("directory_timeout") { return value(for: "scan.partialSlow", french: isFrench) }
         let denied = reasons.contains("permission_denied")
         let missing = reasons.contains("missing")
         let other = reasons.contains(where: { !["permission_denied", "missing"].contains($0) })

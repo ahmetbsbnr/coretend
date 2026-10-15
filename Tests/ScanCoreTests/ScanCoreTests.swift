@@ -713,3 +713,32 @@ final class CleanupNewRuleTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: home.appendingPathComponent("Downloads/Tool-1.2.dmg").path), "read-only")
     }
 }
+
+final class DirectoryTimeoutTests: XCTestCase {
+    func testAFolderThatDoesNotAnswerIsReportedAndTheRestIsStillRead() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-slow-\(UUID())", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        for path in ["fast/a.txt", "slow/b.txt", "c.txt"] {
+            let url = root.appendingPathComponent(path)
+            try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try Data(repeating: 1, count: 512).write(to: url)
+        }
+        let engine = LocalScanEngine(metadataReader: FoundationUbiquitousItemMetadataReader(), workerDidFinish: {},
+                                     directoryTimeout: .milliseconds(200)) { directory in
+            if directory.lastPathComponent == "slow" { Thread.sleep(forTimeInterval: 2) }
+            return try LocalScanEngine.contents(of: directory)
+        }
+        var names: [String] = [], failures: [String: String] = [:]
+        let started = Date()
+        for try await event in engine.scan(ScanRequest(roots: [ScanRoot(url: root, ruleID: .explore)])) {
+            switch event {
+            case .result(let result): names.append(result.url.lastPathComponent)
+            case .itemFailure(let path, let reason): failures[URL(fileURLWithPath: path).lastPathComponent] = reason
+            default: break
+            }
+        }
+        XCTAssertEqual(Set(names), ["a.txt", "c.txt"])
+        XCTAssertEqual(failures["slow"], "directory_timeout")
+        XCTAssertLessThan(Date().timeIntervalSince(started), 1.5, "the scan does not wait for the stuck folder")
+    }
+}
