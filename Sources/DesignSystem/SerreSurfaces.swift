@@ -112,6 +112,7 @@ public struct SerreEmptyState<Action: View>: View {
     let message: String
     let action: Action
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.serreAmbientAllowed) private var allowed
     @State private var grown = false
 
     public init(title: String, message: String, @ViewBuilder action: () -> Action = { EmptyView() }) {
@@ -122,14 +123,34 @@ public struct SerreEmptyState<Action: View>: View {
 
     public var body: some View {
         VStack(spacing: 14) {
-            SerreGlyphShape(glyph: .overview)
-                .trim(from: 0, to: grown ? 1 : 0)
-                .stroke(Palette.accent.color, style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
-                .frame(width: 72, height: 72)
-                .accessibilityHidden(true)
-            Text(title).font(CoreTendTypography.body.weight(.semibold)).foregroundStyle(Palette.ink.color)
-            Text(message).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
-                .multilineTextAlignment(.center).frame(maxWidth: 420)
+            ZStack {
+                // Decision 0009: rings widen in the soil around the seed, like water reaching it.
+                TimelineView(.animation(minimumInterval: 1 / 20, paused: !allowed || reduceMotion)) { timeline in
+                    let t = allowed && !reduceMotion ? timeline.date.timeIntervalSinceReferenceDate : 0
+                    Canvas { context, size in
+                        let c = CGPoint(x: size.width / 2, y: size.height * 0.72)
+                        for ring in 0..<3 {
+                            let p = (t * 0.3 + Double(ring) / 3).truncatingRemainder(dividingBy: 1)
+                            let rx = 26 + p * size.width * 0.45, ry = rx * 0.26
+                            context.stroke(Path(ellipseIn: CGRect(x: c.x - rx, y: c.y - ry, width: rx * 2, height: ry * 2)),
+                                           with: .color(Palette.accent.color.opacity(0.45 * (1 - p))), lineWidth: 1.2)
+                        }
+                        context.fill(Path(ellipseIn: CGRect(x: c.x - 34, y: c.y - 6, width: 68, height: 12)), with: .color(Palette.deep.color.opacity(0.6)))
+                    }
+                }
+                SerreGlyphShape(glyph: .overview)
+                    .trim(from: 0, to: grown ? 1 : 0)
+                    .stroke(Palette.accent.color, style: StrokeStyle(lineWidth: 2.2, lineCap: .round, lineJoin: .round))
+                    .frame(width: 72, height: 72)
+                    .ambientSway(degrees: 6)
+                    .offset(y: -8)
+            }
+            .frame(width: 320, height: 130)
+            .accessibilityHidden(true)
+            Text(title).font(.custom("IowanOldStyle-Bold", size: 26, relativeTo: .title)).foregroundStyle(Palette.ink.color)
+                .multilineTextAlignment(.center)
+            Text(message).font(CoreTendTypography.lede).foregroundStyle(Palette.secondaryInk.color)
+                .multilineTextAlignment(.center).frame(maxWidth: 480)
             action
         }
         .padding(.vertical, 36)

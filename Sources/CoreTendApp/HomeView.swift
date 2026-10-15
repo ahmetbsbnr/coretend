@@ -10,9 +10,12 @@ import Domain
 struct HomeView: View {
     let french: Bool
     @Environment(CoreTendNavigation.self) private var navigation
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var access = FullDiskAccessStatus.unknown
     @State private var surveying = false
     @State private var showPerformance = false
+    /// The figure, counted up from zero to what the last read measured (decision 0009).
+    @State private var shownBytes: Double = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -64,9 +67,9 @@ struct HomeView: View {
             HStack(alignment: .center, spacing: 20) {
                 VStack(alignment: .leading, spacing: 4) {
                     if let report = navigation.cleanupReport {
-                        Text(ProductFormat.bytes(report.bytes, french: french))
-                            .font(CoreTendTypography.hero).foregroundStyle(Palette.ink.color)
-                            .contentTransition(.numericText())
+                        CountingText(value: shownBytes) { [french] value in ProductFormat.bytes(Int64(value), french: french) }
+                            .font(.custom("IowanOldStyle-Bold", size: 60, relativeTo: .largeTitle)).foregroundStyle(Palette.ink.color)
+                            .onChange(of: report.bytes, initial: true) { _, bytes in countUp(to: bytes) }
                         Text(copy(report.bytes > 0 ? "home.recoverable" : "home.recoverable.none"))
                             .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
                     } else {
@@ -82,6 +85,12 @@ struct HomeView: View {
                     .disabled(navigation.cleanupReport == nil || navigation.cleanupReport?.bytes == 0)
             }
         }
+    }
+
+    private func countUp(to bytes: Int64) {
+        guard !reduceMotion else { shownBytes = Double(bytes); return }
+        shownBytes = 0
+        withAnimation(.timingCurve(0.16, 1, 0.3, 1, duration: 1.6).delay(0.25)) { shownBytes = Double(bytes) }
     }
 
     private func refreshAccess() { access = FullDiskAccessProbe(home: HomeFolder.url).status() }

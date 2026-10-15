@@ -8,14 +8,16 @@ public struct SerreRise: ViewModifier {
     @State private var shown = false
 
     public func body(content: Content) -> some View {
+        // Decision 0009: each block rises out of the bed like a shoot, one after another.
         content
-            .offset(y: shown ? 0 : 12)
+            .offset(y: shown ? 0 : 26)
+            .scaleEffect(x: 1, y: shown ? 1 : 0.94, anchor: .bottom)
             .opacity(shown ? 1 : 0)
             .onAppear {
                 guard !shown else { return }
                 if reduceMotion { shown = true; return }
-                let delay = min(Double(order) * 0.035, 0.24)
-                withAnimation(MotionCurve.sap.animation(duration: MotionToken.standard.duration).delay(delay)) { shown = true }
+                let delay = min(Double(order) * 0.07, 0.56)
+                withAnimation(.spring(response: 0.62, dampingFraction: 0.74).delay(delay)) { shown = true }
             }
     }
 }

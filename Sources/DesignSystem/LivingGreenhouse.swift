@@ -42,11 +42,15 @@ public struct GreenhouseState: Equatable, Sendable {
     public var freeFraction: Double?
     public var lastActionFailed: Bool
     public var recentlyPruned: Bool
+    /// Something can be given back now (the last Clean read found items): some shoots carry a
+    /// ripe seed head (decision 0009).
+    public var ripe: Bool
 
-    public init(freeFraction: Double?, lastActionFailed: Bool, recentlyPruned: Bool) {
+    public init(freeFraction: Double?, lastActionFailed: Bool, recentlyPruned: Bool, ripe: Bool = false) {
         self.freeFraction = freeFraction.map { min(max($0, 0), 1) }
         self.lastActionFailed = lastActionFailed
         self.recentlyPruned = recentlyPruned
+        self.ripe = ripe
     }
 
     /// How tall the shoots stand (0…1): free ground lets them grow. Unknown free space: a
@@ -58,25 +62,34 @@ public struct GreenhouseState: Equatable, Sendable {
 /// ground, a wilted shoot when the last action failed, a cut stem when something was pruned.
 /// The leaves sway slowly while ambient life is allowed; otherwise the scene is still.
 public struct GreenhouseScene: View {
-    static let count = 13
+    static let count = 21
     let state: GreenhouseState
+    let height: CGFloat
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var grown = false
+    /// Where the pointer is over the bed, so the shoots bend away from it (decision 0009).
+    @State private var pointerX: CGFloat?
 
-    public init(state: GreenhouseState) { self.state = state }
+    public init(state: GreenhouseState, height: CGFloat = 150) { self.state = state; self.height = height }
 
     public var body: some View {
         GeometryReader { proxy in
             let size = proxy.size
             ZStack(alignment: .topLeading) {
-                Canvas { canvas, size in drawGlass(&canvas, size: size) }
+                Canvas { canvas, size in drawGlass(&canvas, size: size); drawBackRow(&canvas, size: size) }
                 PollenField(density: 1)
                 ForEach(0..<Self.count, id: \.self) { index in
-                    ShootView(state: state, index: index, count: Self.count, size: size)
+                    ShootView(state: state, index: index, count: Self.count, size: size, pointerX: pointerX)
+                }
+            }
+            .onContinuousHover { phase in
+                switch phase {
+                case .active(let location): pointerX = location.x
+                case .ended: pointerX = nil
                 }
             }
         }
-        .frame(height: 150)
+        .frame(height: height)
         .background(sky, in: LeafCorner.parcel.shape)
         .clipShape(LeafCorner.parcel.shape)
         .overlay(LeafCorner.parcel.shape.strokeBorder(Palette.separator.color, lineWidth: 1))
@@ -100,6 +113,31 @@ public struct GreenhouseScene: View {
         case .night: top = Palette.deep.color
         }
         return LinearGradient(colors: [top, Palette.surface.color], startPoint: .top, endPoint: .bottom)
+    }
+
+    /// A paler back row of fine shoots and grasses, for depth (decision 0009).
+    private func drawBackRow(_ canvas: inout GraphicsContext, size: CGSize) {
+        let w = size.width, h = size.height
+        let soilTop = h * 0.78
+        var random = SeededRandom(seed: 41)
+        for index in 0..<46 {
+            let x = w * (Double(index) + random.next()) / 46
+            let height = h * (0.18 + 0.42 * random.next()) * (0.55 + 0.45 * state.growth)
+            let lean = (random.next() - 0.5) * 0.5
+            var blade = Path()
+            blade.move(to: CGPoint(x: x, y: soilTop))
+            blade.addQuadCurve(to: CGPoint(x: x + lean * height, y: soilTop - height),
+                               control: CGPoint(x: x + lean * height * 0.2, y: soilTop - height * 0.6))
+            canvas.stroke(blade, with: .color(Palette.strongSeparator.color.opacity(0.28)), style: StrokeStyle(lineWidth: 1.3, lineCap: .round))
+            if index % 3 == 0 {
+                let tip = CGPoint(x: x + lean * height, y: soilTop - height)
+                var leaf = Path()
+                leaf.move(to: tip)
+                leaf.addQuadCurve(to: CGPoint(x: tip.x + 8, y: tip.y - 6), control: CGPoint(x: tip.x + 6, y: tip.y + 2))
+                leaf.addQuadCurve(to: tip, control: CGPoint(x: tip.x + 1, y: tip.y - 7))
+                canvas.fill(leaf, with: .color(Palette.strongSeparator.color.opacity(0.3)))
+            }
+        }
     }
 
     private func drawGlass(_ canvas: inout GraphicsContext, size: CGSize) {
@@ -129,6 +167,9 @@ private struct ShootView: View {
     let index: Int
     let count: Int
     let size: CGSize
+    let pointerX: CGFloat?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var sprouted = false
 
     var body: some View {
         let w = size.width, h = size.height
@@ -145,7 +186,22 @@ private struct ShootView: View {
         }
         .frame(width: box.width, height: box.height)
         .ambientSway(degrees: wilted || cut ? 0 : 6, phase: Double(index) * 0.37)
+        // Out of the soil one after another, then bending away from the pointer.
+        .scaleEffect(x: sprouted ? 1 : 0.4, y: sprouted ? 1 : 0.02, anchor: .bottom)
+        .rotationEffect(.degrees(lean(at: x)), anchor: .bottom)
+        .animation(reduceMotion ? nil : .spring(response: 0.5, dampingFraction: 0.55), value: pointerX)
         .position(x: x, y: soilTop - box.height / 2)
+        .onAppear {
+            if reduceMotion { sprouted = true; return }
+            withAnimation(.spring(response: 0.7, dampingFraction: 0.62).delay(0.15 + Double(index) * 0.045)) { sprouted = true }
+        }
+    }
+
+    private func lean(at x: Double) -> Double {
+        guard let pointerX, !reduceMotion else { return 0 }
+        let distance = x - pointerX
+        guard abs(distance) < 160 else { return 0 }
+        return (distance > 0 ? 1 : -1) * (160 - abs(distance)) / 160 * 22
     }
 
     private func shoot(_ canvas: inout GraphicsContext, base: CGPoint, height: Double, lean: Double,
@@ -157,6 +213,12 @@ private struct ShootView: View {
         let tone = wilted ? Palette.danger.color : Palette.accent.color
         canvas.stroke(stem, with: .color(tone), style: StrokeStyle(lineWidth: 2.4, lineCap: .round))
         guard !cut else { return }
+        // A ripe seed head: something can be given back.
+        if state.ripe && !wilted && index % 4 == 1 {
+            canvas.fill(Path(ellipseIn: CGRect(x: tip.x - 4, y: tip.y - 7, width: 8, height: 10)), with: .color(Palette.caution.color))
+            canvas.stroke(Path { $0.move(to: CGPoint(x: tip.x, y: tip.y - 7)); $0.addLine(to: CGPoint(x: tip.x, y: tip.y + 1)) },
+                          with: .color(Palette.onAccent.color.opacity(0.5)), lineWidth: 1)
+        }
         for (fraction, side) in [(0.4, -1.0), (0.62, 1.0), (0.85, -1.0)] {
             let at = CGPoint(x: base.x + (tip.x - base.x) * fraction, y: base.y + (tip.y - base.y) * fraction)
             let angle = side * (wilted ? 1.9 : 0.9) + lean * 2

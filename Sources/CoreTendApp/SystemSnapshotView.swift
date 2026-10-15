@@ -50,7 +50,7 @@ struct SystemSnapshotView: View {
             }
             if let snapshot {
                 if destination == .overview {
-                    GreenhouseScene(state: greenhouseState(snapshot)).serreRise(1)
+                    GreenhouseScene(state: greenhouseState(snapshot), height: 200).serreRise(1)
                     // Side by side when the window is wide enough, stacked otherwise.
                     ViewThatFits(in: .horizontal) {
                         HStack(alignment: .top, spacing: 16) {
@@ -140,7 +140,8 @@ struct SystemSnapshotView: View {
         let day: TimeInterval = 86_400
         return GreenhouseState(freeFraction: free,
                                lastActionFailed: recentEvents.first?.kind == .failed,
-                               recentlyPruned: recentEvents.contains { $0.kind == .movedToTrash && $0.occurredAt > .now - day })
+                               recentlyPruned: recentEvents.contains { $0.kind == .movedToTrash && $0.occurredAt > .now - day },
+                               ripe: (navigation.cleanupReport?.bytes ?? 0) > 0)
     }
 
     @ViewBuilder private func eventLeaf(_ kind: ActivityKind) -> some View {

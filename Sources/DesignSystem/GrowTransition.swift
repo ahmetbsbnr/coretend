@@ -41,9 +41,11 @@ public extension AnyTransition {
     /// Under Reduce Motion, a 120 ms crossfade.
     static func grow(from origin: CGPoint, reduceMotion: Bool) -> AnyTransition {
         if reduceMotion { return .opacity.animation(.easeOut(duration: 0.12)) }
+        // Decision 0009: the page grows from the chosen row and settles with a stem's spring.
         let arrive = AnyTransition.modifier(active: GrowMask(progress: 0, origin: origin), identity: GrowMask(progress: 1, origin: origin))
-            .combined(with: .offset(y: 12))
-            .animation(MotionCurve.sap.animation(duration: MotionToken.grow.duration))
+            .combined(with: .offset(y: 18))
+            .combined(with: .scale(scale: 0.97, anchor: .topLeading))
+            .animation(.spring(response: 0.6, dampingFraction: 0.8))
         let leave = AnyTransition.opacity.combined(with: .offset(y: 6))
             .animation(MotionCurve.retreat.animation(duration: 0.18))
         return .asymmetric(insertion: arrive, removal: leave)

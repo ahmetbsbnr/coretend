@@ -296,7 +296,7 @@ struct ExploreScanView: View {
                 }
                 .id(mapSeed)
             }
-            .frame(height: 240)
+            .frame(height: 400)
             .padding(8)
             .background(Palette.deep.color, in: LeafCorner.parcel.shape)
             .accessibilityElement(children: .contain)
@@ -357,18 +357,23 @@ struct ExploreScanView: View {
                 scrollTarget = "explore.list"
             }
         } label: {
+            // Decision 0009: neighbours by size alternate lagoon and chlorophyll, flat.
+            let hue = rank.isMultiple(of: 2) ? (folder ? Palette.lagoon.color : Palette.accent.color) : (folder ? Palette.accent.color : Palette.lagoon.color)
             shape
-                .fill(Palette.accent.color.opacity(hovered || focused ? strength + 0.2 : strength))
+                .fill(hue.opacity(hovered || focused ? min(1, strength + 0.25) : strength + 0.08))
                 .overlay(shape.strokeBorder(focused ? Palette.ink.color : Palette.deep.color.opacity(0.6), lineWidth: focused ? 2 : 1))
                 .overlay(alignment: .topLeading) {
                     if tile.frame.width > 90 && tile.frame.height > 38 {
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text((folder ? "▸ " : "") + URL(fileURLWithPath: tile.id).lastPathComponent).font(CoreTendTypography.caption.weight(.semibold))
+                        let large = tile.frame.width > 180 && tile.frame.height > 110
+                        VStack(alignment: .leading, spacing: large ? 3 : 1) {
+                            Text((folder ? "▸ " : "") + URL(fileURLWithPath: tile.id).lastPathComponent)
+                                .font(large ? CoreTendTypography.body.weight(.semibold) : CoreTendTypography.caption.weight(.semibold))
                                 .lineLimit(1)
-                            Text(ProductFormat.bytes(tile.bytes, french: french)).font(CoreTendTypography.caption)
+                            Text(ProductFormat.bytes(tile.bytes, french: french))
+                                .font(large ? .custom("IowanOldStyle-Bold", size: 24, relativeTo: .title2) : CoreTendTypography.caption)
                         }
                         .foregroundStyle(Palette.ink.color)
-                        .padding(6)
+                        .padding(large ? 12 : 6)
                     }
                 }
         }

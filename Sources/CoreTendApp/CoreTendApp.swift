@@ -157,7 +157,10 @@ private struct CoreTendRootView: View {
             SerreSidebar(selection: $navigation.selection, french: french, searchNamespace: searchSpace,
                          openSearch: toggleSearch,
                          openSettings: { navigation.activeSheet = .settings })
-                .navigationSplitViewColumnWidth(min: 200, ideal: 232)
+                .toolbar(removing: .sidebarToggle)
+                // A width macOS restores can be narrower than the minimum; the content holds its own.
+                .frame(minWidth: 252)
+                .navigationSplitViewColumnWidth(min: 252, ideal: 268, max: 340)
                 .navigationTitle("CoreTend")
         } detail: {
             GeometryReader { detail in
@@ -184,7 +187,8 @@ private struct CoreTendRootView: View {
         .environment(\.serreAmbientAllowed, livingGreenhouse && controlActiveState == .key && scenePhase == .active)
         .tint(Palette.accent.color)
         .preferredColorScheme(effectiveColorScheme)
-        .toolbarBackground(Palette.canvas.color, for: .windowToolbar)
+        // Decision 0009: no title band; the window buttons sit on the sidebar.
+        .toolbarBackground(.hidden, for: .windowToolbar)
         .modifier(HiddenWindowTitle())
         .overlay {
             if navigation.searchOpen {
@@ -451,10 +455,10 @@ private struct DestinationView: View {
                 destinationContent
                     .serreRise(2)
             }
-            .padding(32)
-            .frame(maxWidth: 1280, alignment: .leading)
-            // The whole width scrolls, not only the reading column.
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 40).padding(.top, 30).padding(.bottom, 44)
+            .frame(maxWidth: 1360, alignment: .leading)
+            // The column stays centred in a wide window; the whole width scrolls.
+            .frame(maxWidth: .infinity, alignment: .center)
         }
         .onPreferenceChange(PlantActivityKey.self) { plantActivity = $0 }
                     .accessibilityIdentifier("destination-\(destination.rawValue)")

@@ -1,6 +1,8 @@
 import SwiftUI
 import AppShell
 import DesignSystem
+import Domain
+import ScanCore
 
 /// Where each destination's row sits in the window, so the content can grow from the row that
 /// was chosen (UI guide § 8, "changement de destination").
@@ -28,6 +30,9 @@ struct SerreSidebar: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var vine = 0.0
     @State private var vineOpacity = 0.0
+    @Environment(CoreTendNavigation.self) private var navigation
+    /// The volume as macOS measures it, read on arrival and every minute.
+    @State private var snapshot: SystemSnapshot?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
@@ -35,7 +40,8 @@ struct SerreSidebar: View {
             searchButton
             Color.clear.frame(height: 10)
             ForEach(Destination.sidebarOrder) { destination in row(destination) }
-            Spacer(minLength: 12)
+            Spacer(minLength: 16)
+            freeGround
             row(.record)
             Button(action: openSettings) {
                 Label { Text(ProductCopy.value(for: "settings.title", french: french)) } icon: { SerreIcon(.settings) }
@@ -57,6 +63,70 @@ struct SerreSidebar: View {
         .onKeyPress(.downArrow) { move(1) }
         .onKeyPress(.upArrow) { move(-1) }
         .onChange(of: selection) { _, _ in growVine() }
+        .task {
+            // The Clean figure is read once even when the app opens on another space.
+            guard navigation.cleanupReport == nil else { return }
+            let home = HomeFolder.url
+            let exclusions = (try? await LocalStoreAccess.exclusions()) ?? []
+            if let found = try? await Task.detached(priority: .utility, operation: { try await CleanupSurvey(home: home).run(exclusions: exclusions) }).value,
+               navigation.cleanupReport == nil {
+                navigation.cleanupReport = found
+                navigation.cleanupReportDate = .now
+            }
+        }
+        .task {
+            while !Task.isCancelled {
+                snapshot = await Task.detached(priority: .utility) { MacOSSystemSnapshotReader().read() }.value
+                try? await Task.sleep(for: .seconds(60))
+            }
+        }
+    }
+
+    /// What each space measures right now, in a few words (decision 0009).
+    private func metric(_ destination: Destination) -> String? {
+        switch destination {
+        case .home:
+            guard let snapshot, case .known(let free) = snapshot.availableBytes else { return nil }
+            return ProductCopy.inline("%1$@ libres", "%1$@ free", french: french, ProductFormat.bytes(free, french: french))
+        case .space: return ProductCopy.inline("Carte, gros fichiers, doublons", "Map, large files, duplicates", french: french)
+        case .clean:
+            guard let report = navigation.cleanupReport else { return ProductCopy.inline("Lecture…", "Reading…", french: french) }
+            return report.bytes > 0
+                ? ProductCopy.inline("%1$@ à récupérer", "%1$@ to give back", french: french, ProductFormat.bytes(report.bytes, french: french))
+                : ProductCopy.inline("Rien à nettoyer", "Nothing to clean", french: french)
+        case .apps: return ProductCopy.inline("Désinstaller, mises à jour", "Uninstall, updates", french: french)
+        case .record: return nil
+        }
+    }
+
+    /// The free ground of the volume, as a small bed at the foot of the sidebar.
+    @ViewBuilder private var freeGround: some View {
+        if let snapshot, case .known(let free) = snapshot.availableBytes, case .known(let total) = snapshot.totalBytes, total > 0 {
+            Button { selection = .home } label: {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Text(ProductFormat.bytes(free, french: french))
+                            .font(.custom("IowanOldStyle-Bold", size: 19, relativeTo: .headline)).foregroundStyle(Palette.ink.color)
+                            .lineLimit(1).contentTransition(.numericText())
+                        Text(ProductCopy.inline("libres sur %1$@", "free of %1$@", french: french, ProductFormat.bytes(total, french: french)))
+                            .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color).lineLimit(1)
+                    }
+                    SoilBand(used: 1 - Double(free) / Double(total), free: Double(free) / Double(total))
+                    if case .known(let purgeable) = snapshot.purgeableBytes, purgeable > 0 {
+                        Text(ProductCopy.inline("+ %1$@ purgeables", "+ %1$@ purgeable", french: french, ProductFormat.bytes(purgeable, french: french)))
+                            .font(CoreTendTypography.caption).foregroundStyle(Palette.tertiaryInk.color).lineLimit(1)
+                    }
+                }
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Palette.surface.color, in: LeafCorner.parcel.shape)
+                .overlay(LeafCorner.parcel.shape.strokeBorder(Palette.separator.color, lineWidth: 1))
+            }
+            .buttonStyle(.serre(.tile))
+            .environment(\.serreFocusRing, false)
+            .padding(.bottom, 8)
+            .accessibilityElement(children: .combine)
+        }
     }
 
     private var brand: some View {
@@ -99,7 +169,17 @@ struct SerreSidebar: View {
             focused = true
         } label: {
             Label {
-                Text(ProductCopy.value(for: destination.titleKey, french: french))
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(ProductCopy.value(for: destination.titleKey, french: french)).lineLimit(1)
+                    if let metric = metric(destination) {
+                        Text(metric)
+                            .font(CoreTendTypography.caption.monospacedDigit())
+                            .foregroundStyle(selected ? Palette.accent.color : Palette.tertiaryInk.color)
+                            .lineLimit(1)
+                            .contentTransition(.numericText())
+                    }
+                }
+                .padding(.vertical, 3)
             } icon: {
                 SerreIcon(destination.glyph).foregroundStyle(selected ? Palette.accent.color : Palette.secondaryInk.color)
                     .ambientSway(degrees: selected ? 6 : 3, phase: Double(destination.shortcutNumber) * 0.61)
