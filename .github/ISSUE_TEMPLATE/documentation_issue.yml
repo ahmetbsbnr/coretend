@@ -1,5 +1,5 @@
 name: Documentation issue
-description: Something in Documentation/ or the README is missing, wrong, or unclear.
+description: Something in docs/ or the README is missing, wrong, or unclear.
 labels: ["documentation"]
 body:
 

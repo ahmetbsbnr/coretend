@@ -1,6 +1,15 @@
 # Changelog
 
-## Unreleased
+## 2.3.0 — 2026-10-17
+
+CoreTend redesigned, and level with the mainstream cleaners. Still local; your files still go to the Trash.
+
+### Redesigned
+- **The living greenhouse**: pale green surfaces, a full sidebar that says what each space
+  measures, and motion that always has a cause — shoots sprout and bend away from the pointer,
+  figures count up, rule stems grow, ticking drops leaves, the map grows by size, a click in the
+  greenhouse shakes it. Everything stops when the window is inactive, in Low Power Mode, with
+  Reduce Motion or with the Settings switch.
 
 ### New in Clean
 - **AI tools**: older Claude Code versions (the one in use is never offered), Claude app logs,

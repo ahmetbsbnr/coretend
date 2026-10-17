@@ -1,11 +1,12 @@
-## Changement
+## What changes
 
-Décrire comportement utilisateur et exigence de `Documentation/Traceability.csv` concernée.
+What the person using CoreTend will see or experience differently.
 
-## Vérification
+## How it was checked
 
-Indiquer commandes exécutées, résultat et limites. Pour opérations fichier, utiliser uniquement fixtures isolées.
+Commands you ran (`make check` at least), their result, and what you could not check. File
+operations are tested on temporary folders only.
 
-## Publication
+## Anything else to update
 
-Indiquer si documentation, site, confidentialité, licence ou notes de version doivent changer.
+Documentation, site, privacy notes or changelog.

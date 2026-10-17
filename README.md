@@ -18,7 +18,7 @@ Your whole Mac in one click, caches and developer files cleaned in one review, a
 <p align="center">
   <a href="https://coretend.ahmetbsbnr.com">Website</a> ·
   <a href="https://coretend.ahmetbsbnr.com/en/download">Download</a> ·
-  <a href="CHANGELOG.md">What's new in 2.2</a> ·
+  <a href="CHANGELOG.md">What's new in 2.3</a> ·
   <a href="https://coretend.ahmetbsbnr.com/fr/index">Français</a>
 </p>
 
@@ -45,8 +45,8 @@ History of every scan and move stays at the sidebar's foot.
 - **Widget:** free space and what the last Clean found.
 - **Finder:** right-click a folder › Analyze with CoreTend; or drop it on the Dock icon.
 - **System features (optional):** tidy `/Library/Caches` and turn third-party system services on or
-  off through a small signed helper, installed only when you turn it on in Settings › System
-  ([decision 0006](Documentation/Decisions/0006-integrations-helper-intel.md)).
+  off, delete a local Time Machine snapshot or rebuild the Spotlight index, through a small signed
+  helper installed only when you turn it on in Settings › System.
 
 ## What CoreTend will never do
 
@@ -60,9 +60,9 @@ History of every scan and move stays at the sidebar's foot.
 
 ## Install
 
-- **Download** `CoreTend-2.2.0-universal.dmg` (notarized) from [Releases](https://github.com/ahmetbsbnr/coretend/releases/latest) or the [site](https://coretend.ahmetbsbnr.com).
+- **Download** `CoreTend-2.3.0-universal.dmg` (notarized) from [Releases](https://github.com/ahmetbsbnr/coretend/releases/latest) or the [site](https://coretend.ahmetbsbnr.com).
 - **Homebrew:** `brew install --cask ahmetbsbnr/coretend/coretend` (also links `coretend` in your PATH)
-- **Terminal and AI assistants:** [`coretend` on npm](https://www.npmjs.com/package/coretend) — `npx coretend clean` · `npx -y coretend mcp`; see [CLI.md](Documentation/CLI.md).
+- **Terminal and AI assistants:** [`coretend` on npm](https://www.npmjs.com/package/coretend) — `npx coretend clean` · `npx -y coretend mcp`; see [docs/CLI.md](docs/CLI.md).
 
 macOS 14 Sonoma or later, Apple silicon or Intel. English, French, German, Spanish, Italian and Japanese (follows macOS). CoreTend asks for Full
 Disk Access once, to read Mail, Safari and app data; without it, it reads what macOS allows.
@@ -72,8 +72,8 @@ Disk Access once, to read Mail, Safari and app data; without it, it reads what m
 ```sh
 swift build --product CoreTendApp   # the app
 swift build --product CoreTendCLI   # a read-only command-line tool
-make qualify                        # every test, gate and check
-make package-local                  # an unsigned CoreTend.app in Artifacts/
+make check                          # tests, the safety audit and the site checks
+make app                            # an unsigned CoreTend.app in Artifacts/
 ```
 
 Swift 6, SwiftPM; one runtime dependency, [Sparkle](https://sparkle-project.org), for signed updates. The code is organised in modules: `DesignSystem` (the Serre
@@ -84,5 +84,6 @@ the widget (`CoreTendWidget`), the Finder menu (`CoreTendFinder`) and the option
 
 ## Contributing
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md) and [GOVERNANCE](.github/GOVERNANCE.md). Security issues:
-[SECURITY.md](SECURITY.md). Code under [Apache 2.0](LICENSE), documentation under CC BY 4.0.
+Read [CONTRIBUTING](.github/CONTRIBUTING.md) and [GOVERNANCE](.github/GOVERNANCE.md). Security issues:
+[SECURITY](.github/SECURITY.md). Privacy: [docs/Privacy.md](docs/Privacy.md). Code under
+[Apache 2.0](LICENSE), documentation under CC BY 4.0 ([docs/LICENSING.md](docs/LICENSING.md)).

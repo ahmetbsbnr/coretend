@@ -31,7 +31,7 @@ certifying the [Developer Certificate of Origin](https://developercertificate.or
 Anything touching `SafetyCore`, the cleanup rule catalog (`ScanCore/CleanupRuleCatalog.swift`), or
 any code path that deletes/moves a user's file requires: a maintainer
 review specifically of the safety implications, and a passing test that
-proves the relevant invariant (`make qualify` must pass).
+proves the relevant invariant (`make check` must pass).
 This is not optional and cannot be waived by general PR approval.
 
 ## Changing this document

@@ -1,11 +1,11 @@
 {
-  "version": "2.2.0",
+  "version": "2.3.0",
   "published": true,
-  "date": "2026-10-07",
-  "url": "https://github.com/ahmetbsbnr/coretend/releases/download/v2.2.0/CoreTend-2.2.0-universal.dmg",
-  "sha256": "c87afec0a2b996bd36153150590e8206a6fa11261d4448678e117458ec583b81",
+  "date": "2026-10-17",
+  "url": "https://github.com/ahmetbsbnr/coretend/releases/download/v2.3.0/CoreTend-2.3.0-universal.dmg",
+  "sha256": "5d590bed4bd04514d99637268f6f64870171e5033293d59f5f33eab946870979",
   "dmg": {
-    "url": "https://github.com/ahmetbsbnr/coretend/releases/download/v2.2.0/CoreTend-2.2.0-universal.zip",
-    "sha256": "ae2e6e15b821fd2347f7b63551c20e483992b4104c1e8959ddccdcb1ee81ce9b"
+    "url": "https://github.com/ahmetbsbnr/coretend/releases/download/v2.3.0/CoreTend-2.3.0-universal.zip",
+    "sha256": "2f22bb603ce49c06369c4dc9ab05a8b4e44781e1b90e16e27fb00cef8b88fdb5"
   }
 }
